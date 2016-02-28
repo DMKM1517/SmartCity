@@ -1,0 +1,9 @@
+{
+  "name": "smart",
+  "dependencies": {
+    "angular-route": "~1.5.0",
+    "angular": "~1.5.0",
+    "jquery": "~2.2.1",
+    "bootstrap": "~3.3.6"
+  }
+}
