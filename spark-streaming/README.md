@@ -8,4 +8,4 @@ TODO:
 
 To run:
  - Import the maven project to eclipse
- - Run as `twitstream.scala` scala application 
+ - Run `twitstream.scala` as scala application 
