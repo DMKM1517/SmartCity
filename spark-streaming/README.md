@@ -6,6 +6,6 @@ TODO:
  - Connect to Postgres Database
  - Write test cases
 
-To run:
+To Run:
  - Import the maven project to eclipse
  - Run `twitstream.scala` as scala application 
