@@ -74,12 +74,21 @@ module.exports.connections = {
   *                                                                          *
   *                                                                          *
   ***************************************************************************/
-  somePostgresqlServer: {
+  smartPostgresql: {
     adapter: 'sails-postgresql',
-    host: 'YOUR_POSTGRES_SERVER_HOSTNAME_OR_IP_ADDRESS',
-    user: 'YOUR_POSTGRES_USER',
-    password: 'YOUR_POSTGRES_PASSWORD',
-    database: 'YOUR_POSTGRES_DB'
+    host: '25.145.132.49',
+    user: 'dmkm',
+    password: 'dmkm1234',
+    database: 'smart',
+    port: 5432
+  },
+
+  smartPostgresqlLocal: {
+    adapter: 'sails-postgresql',
+    host: 'localhost',
+    user: 'postgres',
+    password: 'postgres',
+    database: 'smart'
   }
 
 
