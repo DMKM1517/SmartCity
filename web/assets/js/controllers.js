@@ -1,6 +1,6 @@
 var ctrl = angular.module('SmartControllers', []);
 
-ctrl.controller('MainCtrl', function($scope, $http) {
+ctrl.controller('MainCtrl', ['$scope','$http',function($scope, $http) {
 	console.log('MainCtrl');
 	map = new google.maps.Map(document.getElementById('map'), {
 		center: { lat: 45.737646, lng: 4.8965753 },
@@ -27,4 +27,4 @@ ctrl.controller('MainCtrl', function($scope, $http) {
 	// map.addListener('bounds_changed',function() {
 	// 	console.log(map.getBounds());
 	// });
-});
+}]);

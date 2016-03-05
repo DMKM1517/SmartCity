@@ -17,8 +17,8 @@ module.exports.models = {
   * connections (see `config/connections.js`)                                *
   *                                                                          *
   ***************************************************************************/
-  // connection: 'smartPostgresql',
-  connection: 'smartPostgresqlLocal',
+  connection: 'smartPostgresql',
+  // connection: 'smartPostgresqlLocal',
 
   /***************************************************************************
   *                                                                          *
