@@ -7,6 +7,9 @@
 
 module.exports = {
 	tableName: 'interest_points',
+	meta: {
+		schemaName: 'ip'
+	},
   attributes: {
 		id: {
 			type: 'integer',
