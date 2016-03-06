@@ -1,5 +1,6 @@
 module.exports.autoreload = {
   active: true,
+  overrideMigrateSetting: false,
   usePolling: false,
   dirs: [
     "api/models",
