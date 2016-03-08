@@ -26,8 +26,9 @@ To run:
 		      password: '<password>',
 		      database: 'smart',
 		      port: 5432
+			}
 		}
-	}
+	} 
   ```
 
  - Start the server `sails lift`
