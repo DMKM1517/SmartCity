@@ -24,7 +24,13 @@ module.exports = function(grunt) {
 
       // When assets are changed:
       tasks: ['syncAssets' , 'linkAssets' ]
-    }
+    },
+    // tests: {
+    // 	files: ['assets/**/*', 'assets/js/*.js', '!**/node_modules/**'],
+
+    //   // When assets are changed:
+    //   tasks: ['tests' ]
+    // }
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');

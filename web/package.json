@@ -1,9 +1,8 @@
 {
-  "name": "smart",
+  "name": "TourisLyon",
   "private": true,
-  "version": "0.0.0",
-  "description": "a Sails application",
-  "keywords": [],
+  "version": "0.0.1",
+  "description": "TourisLyon",
   "dependencies": {
     "ejs": "2.3.4",
     "grunt": "0.4.5",
@@ -27,13 +26,15 @@
   },
   "scripts": {
     "debug": "node debug app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "node ./node_modules/mocha/bin/mocha test/bootstrap.test.js test/**/*.test.js"
   },
   "main": "app.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/anonymous node/sails user/smart.git"
-  },
-  "author": "anonymous node/sails user",
-  "license": ""
+  "author": "DMKM1517",
+  "license": "",
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "mocha": "^2.4.5",
+    "supertest": "^1.2.0"
+  }
 }

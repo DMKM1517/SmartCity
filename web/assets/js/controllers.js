@@ -1,70 +1,68 @@
 var ctrl = angular.module('SmartControllers', []);
 
-ctrl.controller('MainCtrl', ['$scope', '$http', function($scope, $http) {
+ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($scope, GoogleMaps, PointsService) {
 	console.log('MainCtrl');
 	var initial_zoom = 12;
-	var points = [];
-	var markers = [];
 	var pages_loaded = [];
-	map = new google.maps.Map(document.getElementById('map'), {
+	$scope.markers = [];
+	$scope.points = [];
+	$scope.map = GoogleMaps.createMap(document.getElementById('map'), {
 		// center: { lat: 45.737646, lng: 4.8965753 },
 		center: { lat: 45.7591739, lng: 4.8846752 },
 		zoom: initial_zoom
 	});
-	getPoints(initial_zoom);
-	map.addListener('zoom_changed', function() {
-		getPoints(map.getZoom());
+	$scope.map.addListener('zoom_changed', function() {
+		$scope.getPoints($scope.map.getZoom());
 	});
 	// map.addListener('bounds_changed',function() {
 	// 	console.log(map.getBounds());
 	// });
 
-	function getPoints(zoom) {
+	$scope.getPoints = function(zoom) {
 		var marker, point;
 		var page = zoom - initial_zoom;
 		if (page < 0) {
 			page = 0;
 		}
-		console.log('page:' + page);
 		setMarkers(page);
 		if (pages_loaded.indexOf(page) == -1) {
-			markers[page] = [];
-			$http.get('/points/getPoints?page=' + (page + 1))
-				.success(function(data) {
-					if (data) {
-						for (var i in data) {
-							point = data[i];
-							point_id = points.map(function(e) {
-								return e.id;
-							}).indexOf(point.id);
-							if (point_id == -1) {
-								points.push(point);
-								marker = new google.maps.Marker({
-									position: {
-										lat: parseFloat(point.latitude),
-										lng: parseFloat(point.longitude)
-									},
-									title: point.name,
-									label: point.sentiment.toString()
-								});
-								markers[page][point.id] = marker;
-								markers[page][point.id].setMap(map);
-							}
+			$scope.markers[page] = [];
+			PointsService.getPoints(page).then(function(data) {
+				if (data) {
+					for (var i in data) {
+						point = data[i];
+						point_id = $scope.points.map(function(e) {
+							return e.id;
+						}).indexOf(point.id);
+						if (point_id == -1) {
+							$scope.points.push(point);
+							marker = GoogleMaps.createMarker({
+								position: {
+									lat: parseFloat(point.latitude),
+									lng: parseFloat(point.longitude)
+								},
+								title: point.name,
+								label: point.sentiment.toString()
+							});
+							$scope.markers[page][point.id] = marker;
+							$scope.markers[page][point.id].setMap($scope.map);
 						}
-						pages_loaded.push(page);
-						console.log(points.length);
 					}
-				}).error(function(error) {
-					console.log(error);
-				});
+					pages_loaded.push(page);
+				}
+			}, function(response) {
+				console.log(response);
+			});
 		}
 
-	}
+	};
+
+	$scope.getPoints(initial_zoom);
 
 	function setMarkers(page) {
-		setMapOn(markers, null);
-		var markers_page = markers.slice(0, page + 1);
-		setMapOn(markers_page, map);
+		setMapOn($scope.markers, null);
+		var markers_page = $scope.markers.slice(0, page + 1);
+		setMapOn(markers_page, $scope.map);
 	}
 
 	function setMapOn(markers_map, new_map) {
