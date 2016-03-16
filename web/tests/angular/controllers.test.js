@@ -43,7 +43,7 @@ describe('MainCtrl', function() {
       }];
       mockPointsService.getPoints = function(page) {
         var defer = $q.defer();
-        if (page == 0) {
+        if (page === 0) {
           defer.resolve(this.data.slice(0, 3));
         } else {
           defer.resolve(this.data.slice(3, this.data.length));
@@ -78,14 +78,14 @@ describe('MainCtrl', function() {
           }
         },
         setMap: function(map) {}
-      }
+      };
       mockGoogleMaps.createMap = function(element, options) {
         return this.map;
       };
       mockGoogleMaps.createMarker = function(options) {
         return this.marker;
       };
-    })
+    });
   });
 
   beforeEach(inject(function($controller, $rootScope, _GoogleMaps_, _PointsService_) {
@@ -102,39 +102,43 @@ describe('MainCtrl', function() {
 
 
   it('creates a google map', function() {
-    expect(scope.map).toBeDefined();
+    expect(scope.map).to.not.be.undefined;
   });
 
   it('gets initial points', function() {
-    expect(Object.keys(scope.points).length).not.toBeLessThan(1);
+    expect(Object.keys(scope.points).length).to.be.above(1);
   });
 
   it('creates markers', function() {
-    expect(Object.keys(scope.markers[0]).length).not.toBeLessThan(1);
+    expect(Object.keys(scope.markers[0]).length).to.be.above(1);
   });
 
   it('does not create markers if they already exist', function() {
-    expect(Object.keys(scope.markers[0]).length).toEqual(2);
+    expect(Object.keys(scope.markers[0]).length).to.eql(2);
   });
 
   it('gets more points and markers when zoomming in', function() {
-    expect(Object.keys(scope.points).length).toEqual(2);
-    expect(Object.keys(scope.markers[0]).length).toEqual(2);
+    expect(Object.keys(scope.points).length).to.eql(2);
+    expect(Object.keys(scope.markers[0]).length).to.eql(2);
     scope.getPoints(13);
     scope.$apply();
-    expect(Object.keys(scope.points).length).toEqual(4);
-    expect(scope.markers.length).toEqual(2);
-    expect(Object.keys(scope.markers[1]).length).toEqual(2);
+    expect(Object.keys(scope.points).length).to.eql(4);
+    expect(scope.markers.length).to.eql(2);
+    expect(Object.keys(scope.markers[1]).length).to.eql(2);
   });
 
   it('does not get more points nor markers when zoomming out', function() {
-    expect(Object.keys(scope.points).length).toEqual(2);
-    expect(Object.keys(scope.markers[0]).length).toEqual(2);
+    expect(Object.keys(scope.points).length).to.eql(2);
+    expect(Object.keys(scope.markers[0]).length).to.eql(2);
     scope.getPoints(11);
     scope.$apply();
-    expect(Object.keys(scope.points).length).toEqual(2);
-    expect(scope.markers.length).toEqual(1);
-    expect(Object.keys(scope.markers[0]).length).toEqual(2);
+    expect(Object.keys(scope.points).length).to.eql(2);
+    expect(scope.markers.length).to.eql(1);
+    expect(Object.keys(scope.markers[0]).length).to.eql(2);
   });
+
+  // it('opens an info window when clicking a point', function() {
+  //   expect(4).to.eql(2);
+  // });
 
 });

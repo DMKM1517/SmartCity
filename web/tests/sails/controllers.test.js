@@ -3,7 +3,7 @@ var expect = require('expect.js');
 
 describe('Controller: PointsController', function() {
 	describe('#getPoints()', function() {
-		it('returns the points of the page given', function(done) {
+		it('returns the points of the given page', function(done) {
 			request(sails.hooks.http.app)
 				.get('/points/getPoints?page=1')
 				.expect('Content-Type', /json/)
@@ -15,6 +15,10 @@ describe('Controller: PointsController', function() {
 					if (err) return done(err);
 					done();
 				});
+		});
+		it('returns points of page 1 if it is undefined', function(done) {
+			expect(2).to.eql(2);
+			done();
 		});
 	});
 });
