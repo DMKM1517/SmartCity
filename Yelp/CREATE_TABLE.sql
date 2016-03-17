@@ -9,3 +9,13 @@ CREATE TABLE ip.yelp (
 	idd int8 NULL
 )
 ;
+
+CREATE TABLE ip.foursquare (
+	idd int8 NULL,
+	name varchar(500) NULL,
+	checkinsCount int8 NULL,
+	tipCount int8 NULL,
+	usersCount int8 NULL,
+	rating float8 NULL	
+)
+;
