@@ -34,17 +34,20 @@
   "license": "",
   "devDependencies": {
     "blanket": "^1.2.2",
+    "browserify": "^13.0.0",
     "chai": "^3.5.0",
     "expect.js": "^0.3.1",
     "grunt-karma": "^0.12.1",
     "grunt-mocha-test": "^0.12.7",
     "karma": "^0.13.22",
+    "karma-browserify": "^5.0.2",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^0.2.2",
     "karma-coverage": "^0.5.5",
     "karma-mocha": "^0.2.2",
     "karma-mocha-reporter": "^2.0.0",
     "mocha": "^2.4.5",
-    "supertest": "^1.2.0"
+    "supertest": "^1.2.0",
+    "watchify": "^3.7.0"
   }
 }

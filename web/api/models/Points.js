@@ -37,6 +37,30 @@ module.exports = {
       type: 'integer',
       columnName: 'sentiment'
     },
+    address: {
+      type: 'string',
+      columnName: 'addresse'
+    },
+    email: {
+      type: 'string',
+      columnName: 'email'
+    },
+    phone: {
+      type: 'string',
+      columnName: 'telephone'
+    },
+    web: {
+      type: 'string',
+      columnName: 'siteweb'
+    },
+    facebook: {
+      type: 'string',
+      columnName: 'facebook'
+    },
+    schedule: {
+      type: 'string',
+      columnName: 'ouverture'
+    },
     use: {
       type: 'binary',
       columnName: 'in_use'

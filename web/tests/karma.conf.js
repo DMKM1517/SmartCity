@@ -10,7 +10,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'chai'],
+    frameworks: ['mocha', 'chai', 'browserify'],
 
 
     // list of files / patterns to load in the browser
@@ -18,6 +18,7 @@ module.exports = function(config) {
       '../assets/bower_components/angular/angular.js',
       '../assets/bower_components/angular-route/angular-route.js',
       '../assets/bower_components/angular-mocks/angular-mocks.js',
+      'google_maps_mock.js',
       {pattern: '../assets/js/*.js'},
       {pattern: 'angular/**/*.test.js'}
     ],
@@ -31,7 +32,8 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      '../assets/js/*.js': ['coverage']
+      '../assets/js/*.js': ['coverage'],
+      'angular/**/*.test.js': ['browserify']
     },
 
 

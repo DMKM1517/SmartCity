@@ -14,9 +14,7 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 	$scope.map.addListener('zoom_changed', function() {
 		$scope.getPoints($scope.map.getZoom());
 	});
-	// map.addListener('bounds_changed',function() {
-	// 	console.log(map.getBounds());
-	// });
+	$scope.infoWindow = GoogleMaps.createInfoWindow();
 
 	$scope.getPoints = function(zoom) {
 		var marker, point;
@@ -31,21 +29,18 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 				if (data) {
 					for (var i in data) {
 						point = data[i];
-						point_id = $scope.points.map(function(e) {
-							return e.id;
-						}).indexOf(point.id);
-						if (point_id == -1) {
-							$scope.points.push(point);
+						if (!$scope.points[point.id]) {
+							$scope.points[point.id] = point;
 							marker = GoogleMaps.createMarker({
 								position: {
 									lat: parseFloat(point.latitude),
 									lng: parseFloat(point.longitude)
 								},
-								title: point.name,
-								label: point.sentiment.toString()
-							});
+								title: point.name
+							}, point.sentiment);
 							$scope.markers[page][point.id] = marker;
 							$scope.markers[page][point.id].setMap($scope.map);
+							addListenerMarker(page, point.id);
 						}
 					}
 					pages_loaded.push(page);
@@ -55,6 +50,36 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 			});
 		}
 
+	};
+
+	$scope.openInfoWindow = function(page, point_id) {
+		var point = $scope.points[point_id];
+		var content = '<div style="max-width:400px">' +
+			'<h4>' + point.name + '</h4>';
+		if (point.email) {
+			content += '<b>Email:</b> <a href="mailto:' + point.email + '">' + point.email + '</a><br>';
+		}
+		if (point.address) {
+			content += '<b>Address:</b> ' + point.address + '<br>';
+		}
+		if (point.web) {
+			content += '<b>Web:</b> <a href="' + point.web + '" target="_blank">' + point.web + '</a><br>';
+		}
+		if (point.facebook) {
+			content += '<b>Facebook:</b> ' + point.facebook + '<br>';
+		}
+		if (point.phone) {
+			content += '<b>Phone:</b> ' + point.phone + '<br>';
+		}
+		if (point.schedule) {
+			content += '<b>Schedule:</b> ' + point.schedule;
+		}
+		if (content.endsWith('<br>')) {
+			content = content.slice(0, -4);
+		}
+		content += '</div>';
+		$scope.infoWindow.setContent(content);
+		$scope.infoWindow.open($scope.map, $scope.markers[page][point_id]);
 	};
 
 	$scope.getPoints(initial_zoom);
@@ -71,5 +96,11 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 				markers_map[page][i].setMap(new_map);
 			}
 		}
+	}
+
+	function addListenerMarker(page, point_id) {
+		$scope.markers[page][point_id].addListener('click', function() {
+			$scope.openInfoWindow(page, point_id);
+		});
 	}
 }]);
