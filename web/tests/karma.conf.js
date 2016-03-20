@@ -5,7 +5,7 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
+    basePath: '../',
 
 
     // frameworks to use
@@ -15,12 +15,13 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      '../assets/bower_components/angular/angular.js',
-      '../assets/bower_components/angular-route/angular-route.js',
-      '../assets/bower_components/angular-mocks/angular-mocks.js',
-      'google_maps_mock.js',
-      {pattern: '../assets/js/*.js'},
-      {pattern: 'angular/**/*.test.js'}
+      'assets/bower/js/core/angular/angular.min.js',
+      'assets/bower/js/angular-route/angular-route.min.js',
+      'assets/bower/dev/angular-mocks/angular-mocks.js',
+      'tests/google_maps_mock.js',
+      {pattern: 'assets/templates/*.html'},
+      {pattern: 'assets/js/*.js'},
+      {pattern: 'tests/angular/**/*.test.js'}
     ],
 
 
@@ -32,8 +33,9 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      '../assets/js/*.js': ['coverage'],
-      'angular/**/*.test.js': ['browserify']
+      'assets/js/*.js': ['coverage'],
+      'tests/angular/**/*.test.js': ['browserify'],
+      'assets/templates/*.html': ['ng-html2js']
     },
 
 
@@ -45,8 +47,13 @@ module.exports = function(config) {
 
     coverageReporter: {
       type: 'html',
-      dir: 'coverage',
+      dir: 'tests/coverage',
       subdir: 'client'
+    },
+
+    ngHtml2JsPreprocessor: {
+      stripPrefix: 'assets',
+      moduleName: 'templates'
     },
 
 

@@ -8,5 +8,22 @@
   },
   "devDependencies": {
   	"angular-mocks": "~1.5.0"
+  },
+  "exportsOverride": {
+    "jquery": {
+      "js/core": "dist/jquery.min.js"
+    },
+    "angular": {
+      "js/core": "angular.min.js"
+    },
+    "angular-route": {
+      "js": "angular-route.min.js"
+    },
+    "bootstrap": {
+      "css": "dist/css/bootstrap.min.css"
+    },
+    "angular-mocks": {
+      "dev": "angular-mocks.js"
+    }
   }
 }

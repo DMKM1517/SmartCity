@@ -1,7 +1,9 @@
+/*jshint esnext: true */
+
 var ctrl = angular.module('SmartControllers', []);
 
 ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($scope, GoogleMaps, PointsService) {
-	console.log('MainCtrl');
+	// console.log('MainCtrl');
 	var initial_zoom = 12;
 	var pages_loaded = [];
 	$scope.markers = [];
@@ -63,7 +65,11 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 			content += '<b>Address:</b> ' + point.address + '<br>';
 		}
 		if (point.web) {
-			content += '<b>Web:</b> <a href="' + point.web + '" target="_blank">' + point.web + '</a><br>';
+			var links = point.web.split(';');
+			content += '<b>Web:</b> ';
+			for (let link of links) {
+				content += '<a href="' + link + '" target="_blank">' + link + '</a><br>';
+			}
 		}
 		if (point.facebook) {
 			content += '<b>Facebook:</b> ' + point.facebook + '<br>';

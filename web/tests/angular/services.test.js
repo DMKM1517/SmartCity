@@ -2,6 +2,9 @@ describe('Service: PointsService', function() {
 	var PointsService, httpBackend, q;
 	beforeEach(function() {
 		window.angular.mock.module('SmartApp');
+		
+		// templates html
+		window.angular.mock.module('templates');
 	});
 
 	beforeEach(inject(function(_PointsService_, $httpBackend) {
