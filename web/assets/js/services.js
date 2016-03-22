@@ -19,12 +19,12 @@ SmartApp.factory('GoogleMaps', function() {
 		},
 		createMarker: function(options, sentiment) {
 			var marker = new google.maps.Marker(options);
-			var colors = ['red', 'orange', 'yellow', 'lightblue', 'green'];
+			var colors = ['red', 'orange', 'yellow', 'lgreen', 'green'];
 			var sent = sentiment;
 			if (sent < 0 || sent > 4) {
 				sent = 0;
 			}
-			marker.setIcon('http://maps.google.com/mapfiles/ms/icons/' + colors[sent] + '.png');
+			marker.setIcon('/images/map_marker_colors/' + colors[sent] + '.png');
 			return marker;
 		},
 		createInfoWindow: function() {

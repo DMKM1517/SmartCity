@@ -8,7 +8,7 @@ module.exports = function(grunt) {
 			options: {
 				targetDir: './assets/bower',
 				install: false,
-				cleanTargetDir: true,
+				cleanTargetDir: false,
 				cleanBowerDir: false
 			}
 		}
