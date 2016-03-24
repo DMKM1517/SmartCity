@@ -5,5 +5,4 @@ cd /var/www/html
 ln -s ~/ dmkm
 cd 
 git clone https://github.com/DMKM1517/SmartCity.git
-cd SmartCity/EC2_tweet
-python tweet.py >> tweet.txt
+python SmartCity/EC2_tweet/tweet.py >> tweet.txt
