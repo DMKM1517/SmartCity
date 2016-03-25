@@ -1,5 +1,3 @@
-/*jshint esnext: true */
-
 var ctrl = angular.module('SmartControllers', []);
 
 ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($scope, GoogleMaps, PointsService) {
@@ -67,8 +65,8 @@ ctrl.controller('MainCtrl', ['$scope', 'GoogleMaps', 'PointsService', function($
 		if (point.web) {
 			var links = point.web.split(';');
 			content += '<b>Web:</b> ';
-			for (let link of links) {
-				content += '<a href="' + link + '" target="_blank">' + link + '</a><br>';
+			for (var i in links) {
+				content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
 			}
 		}
 		if (point.facebook) {
