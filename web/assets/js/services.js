@@ -21,8 +21,11 @@ SmartApp.factory('GoogleMaps', function() {
 			var marker = new google.maps.Marker(options);
 			var colors = ['red', 'orange', 'yellow', 'lgreen', 'green'];
 			var sent = sentiment;
-			if (sent < 0 || sent > 4) {
+			if (sent < 0) {
 				sent = 0;
+			}
+			if (sent > 4) {
+				sent = 4;
 			}
 			marker.setIcon('/images/map_marker_colors/' + colors[sent] + '.png');
 			return marker;

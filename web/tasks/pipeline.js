@@ -18,7 +18,8 @@
 //  to change `assets/styles/importer.less` instead.)
 var cssFilesToInject = [
   // 'bower_components/bootstrap/dist/css/bootstrap.css',
-  'bower/css/**/*.css',
+  // 'bower/css/**/*.css',
+  'bower/**/*.css',
   'styles/**/*.css'
 ];
 
@@ -35,12 +36,17 @@ var jsFilesToInject = [
   // 'bower_components/angular-route/angular-route.js',
   // Dependencies like jQuery, or Angular are brought in here
   // 'js/dependencies/**/*.js',
-  'bower/js/core/**/*.*',
-  'bower/js/**/*.*',
+  // 'bower/js/core/**/*.*',
+  // 'bower/js/**/*.*',
+  'bower/**/core/*.js',
+  'bower/**/*.js',
 
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
-  'js/**/*.js'
+  'js/**/*.js',
+
+  // excluded
+  '!bower/**/dev/*'
 ];
 
 
@@ -64,12 +70,12 @@ var templateFilesToInject = [
 
 
 // Default path for public folder (see documentation for more information)
-var tmpPath = '.tmp/public/';
+// var tmpPath = '.tmp/public/';
 
 // Prefix relative paths to source files so they point to the proper locations
 // (i.e. where the other Grunt tasks spit them out, or in some cases, where
 // they reside in the first place)
-module.exports.cssFilesToInject = cssFilesToInject.map(function(cssPath) {
+/*module.exports.cssFilesToInject = cssFilesToInject.map(function(cssPath) {
   return require('path').join('.tmp/public/', cssPath);
 });
 module.exports.jsFilesToInject = jsFilesToInject.map(function(jsPath) {
@@ -77,6 +83,23 @@ module.exports.jsFilesToInject = jsFilesToInject.map(function(jsPath) {
 });
 module.exports.templateFilesToInject = templateFilesToInject.map(function(tplPath) {
   return require('path').join('assets/',tplPath);
+});*/
+
+module.exports.cssFilesToInject = cssFilesToInject.map(function(cssPath) {
+  var tmpPath = '.tmp/public/';
+  if (cssPath.substring(0,1) == '!')
+  	return '!' + tmpPath + cssPath.substring(1);
+  return tmpPath + cssPath;
 });
-
-
+module.exports.jsFilesToInject = jsFilesToInject.map(function(jsPath) {
+  var tmpPath = '.tmp/public/';
+  if (jsPath.substring(0,1) == '!')
+    return '!' + tmpPath + jsPath.substring(1);
+  return tmpPath + jsPath;
+});
+module.exports.templateFilesToInject = templateFilesToInject.map(function(tplPath) {
+  var tmpPath = 'assets/';
+  if (tplPath.substring(0,1) == '!')
+    return '!' + tmpPath + tplPath.substring(1);
+  return tmpPath + tplPath;
+});

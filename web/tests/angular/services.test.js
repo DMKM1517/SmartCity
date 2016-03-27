@@ -2,7 +2,7 @@ describe('Service: PointsService', function() {
 	var PointsService, httpBackend, q;
 	beforeEach(function() {
 		window.angular.mock.module('SmartApp');
-		
+
 		// templates html
 		window.angular.mock.module('templates');
 	});
@@ -17,7 +17,7 @@ describe('Service: PointsService', function() {
 			nom: 'point 0'
 		});
 		PointsService.getPoints(0).then(function(data) {
-			expect(data).to.eql({nom: 'point 0'});
+			expect(data).to.eql({ nom: 'point 0' });
 		});
 		httpBackend.flush();
 	});
@@ -37,26 +37,29 @@ describe('Factory: GoogleMaps', function() {
 	}));
 
 	it('returns a map', function() {
-		var map = GoogleMaps.createMap('div',{});
+		var map = GoogleMaps.createMap('div', {});
 		expect(map).to.not.be.undefined;
 	});
 
 	it('returns a marker with color according to the sentiment', function() {
+		var path_images = '/images/map_marker_colors/';
 		var marker = GoogleMaps.createMarker({}, 4);
 		expect(marker).to.not.be.undefined;
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/green.png');
-		marker = GoogleMaps.createMarker({}, 3);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/lightblue.png');
-		marker = GoogleMaps.createMarker({}, 2);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/yellow.png');
-		marker = GoogleMaps.createMarker({}, 1);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/orange.png');
-		marker = GoogleMaps.createMarker({}, 0);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/red.png');
-		marker = GoogleMaps.createMarker({}, -1);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/red.png');
+		expect(marker.icon).to.eql(path_images + 'green.png');
 		marker = GoogleMaps.createMarker({}, 5);
-		expect(marker.icon).to.eql('http://maps.google.com/mapfiles/ms/icons/red.png');
+		expect(marker.icon).to.eql(path_images + 'green.png');
+		marker = GoogleMaps.createMarker({}, 3);
+		expect(marker.icon).to.eql(path_images + 'lgreen.png');
+		marker = GoogleMaps.createMarker({}, 2);
+		expect(marker.icon).to.eql(path_images + 'yellow.png');
+		marker = GoogleMaps.createMarker({}, 1);
+		expect(marker.icon).to.eql(path_images + 'orange.png');
+		marker = GoogleMaps.createMarker({}, 0);
+		expect(marker.icon).to.eql(path_images + 'red.png');
+		marker = GoogleMaps.createMarker({}, -1);
+		expect(marker.icon).to.eql(path_images + 'red.png');
+		marker = GoogleMaps.createMarker({}, 6);
+		expect(marker.icon).to.eql(path_images + 'green.png');
 	});
 
 	it('returns a infoWindow', function() {

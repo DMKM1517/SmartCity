@@ -1,4 +1,4 @@
-var SmartApp = angular.module('SmartApp', ['ngRoute', 'SmartControllers']);
+var SmartApp = angular.module('SmartApp', ['ngRoute', 'ui.bootstrap', 'ui.bootstrap.tpls']);
 
 SmartApp.config(['$routeProvider',
 	function($routeProvider){

@@ -6,21 +6,23 @@ describe('Controller: MainCtrl', function() {
 	var data = [{
 		id: 0,
 		name: 'point 0',
+		category: 'category 1',
 		latitude: 1,
 		longitude: 1,
-		sentiment: 1,
+		rating: 1,
 		email: 'email@email.com',
 		address: 'address 0',
 		phone: '123456789',
-		web: 'www.web.com;www.web.com',
+		web: 'www.web.com',
 		facebook: 'facebook.com/point',
 		schedule: '9:00 - 18:00'
 	}, {
 		id: 0,
 		name: 'point 0',
+		category: 'category 1',
 		latitude: 1,
 		longitude: 1,
-		sentiment: 1,
+		rating: 1,
 		email: 'email@email.com',
 		address: 'address 0',
 		phone: '123456789',
@@ -30,23 +32,26 @@ describe('Controller: MainCtrl', function() {
 	}, {
 		id: 1,
 		name: 'point 1',
+		category: 'category 1',
 		latitude: 1,
 		longitude: 1,
-		sentiment: 1,
-		email: 'email@email.com',
-		address: 'address 1',
+		rating: 1,
+		address: 'address 1'
 	}, {
 		id: 2,
 		name: 'point 2',
+		category: 'category 1',
 		latitude: 1,
 		longitude: 1,
-		sentiment: 1
+		rating: 1,
+		web: 'www.web.com;www.web.com'
 	}, {
 		id: 3,
 		name: 'point 3',
+		category: 'category 2',
 		latitude: 1,
 		longitude: 1,
-		sentiment: 1,
+		rating: 1,
 		address: 'address 3'
 	}];
 
@@ -181,31 +186,91 @@ describe('Controller: MainCtrl', function() {
 
 	describe('info window when clicking a point', function() {
 
-		it('displays only the information available', function() {
+		it('displays only address, web and schedule if available', function() {
+			scope.openInfoWindow(0, 0);
+			var point = scope.points[0];
+			expect(scope.infoWindow.content).to.equal(
+				'<div class="info_window">' +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
+				'<h4>' + point.name + '</h4>' +
+				'<div class="category">' + point.category + '</div>' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<div class="stars star_orange">' +
+				'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
+				'</div>' +
+				'1.0' +
+				'</div>' +
+				'</div>' +
+				'<b>Address:</b> ' + point.address + '<br>' +
+				'<b>Web:</b> <a href="www.web.com" target="_blank">www.web.com</a><br>' +
+				'<b>Schedule:</b> ' + point.schedule +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<a href="#/point/' + point.id + '">More information</a>' +
+				'</div>' +
+				'</div>' +
+				'</div>'
+			);
 			scope.openInfoWindow(0, 1);
 			point = scope.points[1];
 			expect(scope.infoWindow.content).to.equal(
-				'<div style="max-width:400px">' +
+				'<div class="info_window">' +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
 				'<h4>' + point.name + '</h4>' +
-				'<b>Email:</b> <a href="mailto:' + point.email + '">' + point.email + '</a><br>' +
+				'<div class="category">' + point.category + '</div>' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<div class="stars star_orange">' +
+				'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
+				'</div>' +
+				'1.0' +
+				'</div>' +
+				'</div>' +
 				'<b>Address:</b> ' + point.address +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<a href="#/point/' + point.id + '">More information</a>' +
+				'</div>' +
+				'</div>' +
 				'</div>'
 			);
 		});
 
 		it('displays in different lines when more than one web link', function() {
-			scope.openInfoWindow(0, 0);
-			var point = scope.points[0];
+			scope.getPoints(13);
+			scope.$apply();
+			scope.openInfoWindow(1, 2);
+			var point = scope.points[2];
 			expect(scope.infoWindow.content).to.equal(
-				'<div style="max-width:400px">' +
+				'<div class="info_window">' +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
 				'<h4>' + point.name + '</h4>' +
-				'<b>Email:</b> <a href="mailto:' + point.email + '">' + point.email + '</a><br>' +
-				'<b>Address:</b> ' + point.address + '<br>' +
+				'<div class="category">' + point.category + '</div>' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<div class="stars star_orange">' +
+				'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
+				'</div>' +
+				'1.0' +
+				'</div>' +
+				'</div>' +
 				'<b>Web:</b> <a href="www.web.com" target="_blank">www.web.com</a><br>' +
-				'<a href="www.web.com" target="_blank">www.web.com</a><br>' +
-				'<b>Facebook:</b> ' + point.facebook + '<br>' +
-				'<b>Phone:</b> ' + point.phone + '<br>' +
-				'<b>Schedule:</b> ' + point.schedule +
+				'<a href="www.web.com" target="_blank">www.web.com</a>' +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<a href="#/point/' + point.id + '">More information</a>' +
+				'</div>' +
+				'</div>' +
 				'</div>'
 			);
 		});

@@ -6,7 +6,8 @@
  */
 
 module.exports = {
-  tableName: 'interest_points',
+  tableName: 'v_interest_points_agregated',
+  // tableName: 'interest_points',
   meta: {
     schemaName: 'ip'
   },
@@ -19,9 +20,9 @@ module.exports = {
     },
     name: {
       type: 'string',
-      columnName: 'nom'
+      columnName: 'name'
     },
-    type: {
+    category: {
       type: 'string',
       columnName: 'type'
     },
@@ -32,10 +33,6 @@ module.exports = {
     longitude: {
       type: 'string',
       columnName: 'coordinates_long'
-    },
-    sentiment: {
-      type: 'integer',
-      columnName: 'sentiment'
     },
     address: {
       type: 'string',
@@ -64,6 +61,14 @@ module.exports = {
     use: {
       type: 'binary',
       columnName: 'in_use'
+    },
+    image: {
+      type: 'string',
+      columnName: 'image_url'
+    },
+    rating: {
+      type: 'float',
+      columnName: 'averagerating'
     },
     createdAt: {
       type: 'date',

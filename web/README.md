@@ -39,5 +39,5 @@ To test:
 
  - Client: `grunt karma`
 	 - To see the coverage open `tests/coverage/client/index.html`
- - Server: `grunt mocha`
+ - Server: `grunt mochaTest`
 	 - To see the coverage open `tests/coverage/server.html`

@@ -17,8 +17,17 @@ describe('Controller: PointsController', function() {
 				});
 		});
 		it('returns points of page 1 if it is undefined', function(done) {
-			expect(2).to.eql(2);
-			done();
+			request(sails.hooks.http.app)
+				.get('/points/getPoints')
+				.expect('Content-Type', /json/)
+				.expect(200)
+				.expect(function(res) {
+					expect(res.body).to.have.length(50);
+				})
+				.end(function(err, res) {
+					if (err) return done(err);
+					done();
+				});
 		});
 	});
 });
