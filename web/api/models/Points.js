@@ -36,7 +36,7 @@ module.exports = {
     },
     address: {
       type: 'string',
-      columnName: 'addresse'
+      columnName: 'address'
     },
     email: {
       type: 'string',
@@ -48,7 +48,7 @@ module.exports = {
     },
     web: {
       type: 'string',
-      columnName: 'siteweb'
+      columnName: 'website'
     },
     facebook: {
       type: 'string',
@@ -56,11 +56,7 @@ module.exports = {
     },
     schedule: {
       type: 'string',
-      columnName: 'ouverture'
-    },
-    use: {
-      type: 'binary',
-      columnName: 'in_use'
+      columnName: 'open_hours'
     },
     image: {
       type: 'string',
@@ -72,11 +68,11 @@ module.exports = {
     },
     createdAt: {
       type: 'date',
-      columnName: 'date_creation'
+      columnName: 'source_create_date'
     },
     updatedAt: {
       type: 'date',
-      columnName: 'last_update'
+      columnName: 'last_update_date'
     }
   }
 };

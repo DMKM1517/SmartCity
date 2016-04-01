@@ -20,24 +20,24 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">95% </span>
+        <span class="strong">92.5% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>19/20</span>
+        <span class='fraction'>37/40</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">91.67% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>11/12</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">87.5% </span>
+        <span class="strong">81.82% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>7/8</span>
+        <span class='fraction'>9/11</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">95% </span>
+        <span class="strong">92.5% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>19/20</span>
+        <span class='fraction'>37/40</span>
       </div>
     </div>
   </div>
@@ -80,17 +80,83 @@
 35
 36
 37
-38</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1×</span>
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -118,16 +184,49 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
-	return {
-		'getPoints': function(page) {
-			var defer = $q.defer();
-			$http.get('/points/getPoints?page=' + (page + 1)).success(function(resp) {
+	var points = {};
+	var pages_loaded = [];
+&nbsp;
+	this.getPoints = function(page, limit) {
+		var ini = page * limit;
+		var defer = $q.defer();
+		if (pages_loaded.indexOf(page) == -1) {
+			$http.get('/points/getPoints?page=' + (page + 1) + '&amp;limit=' + limit).success(function(data) {
+				<span class="missing-if-branch" title="else path not taken" >E</span>if (data) {
+					for (var i in data) {
+						point = data[i];
+						if (!points[point.id]) {
+							points[point.id] = point;
+						}
+					}
+					pages_loaded.push(page);
+					defer.resolve(points);
+					// defer.resolve(points.slice(ini, ini + limit));
+				} else {
+<span class="cstat-no" title="statement not covered" >					defer.reject('no data');</span>
+				}
+			}).error(<span class="fstat-no" title="function not covered" >function(err) {</span>
+<span class="cstat-no" title="statement not covered" >				defer.reject(err);</span>
+			});
+		} else {
+			defer.resolve(points);
+			// defer.resolve(points.slice(ini, ini + limit));
+		}
+		return defer.promise;
+	};
+&nbsp;
+	this.getPoint = function(id) {
+		var defer = $q.defer();
+		if (!points[id]) {
+			$http.get('/points/' + id).success(function(resp) {
 				defer.resolve(resp);
 			}).error(<span class="fstat-no" title="function not covered" >function(err) {</span>
 <span class="cstat-no" title="statement not covered" >				defer.reject(err);</span>
 			});
-			return defer.promise;
+		} else {
+			defer.resolve(points[id]);
 		}
+		return defer.promise;
 	};
 }]);
 &nbsp;
@@ -160,7 +259,7 @@ SmartApp.factory('GoogleMaps', function() {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Mar 27 2016 23:30:16 GMT+0200 (Romance Daylight Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 01 2016 17:25:25 GMT+0200 (Romance Daylight Time)
 </div>
 </div>
 <script src="../prettify.js"></script>

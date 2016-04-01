@@ -1,6 +1,7 @@
 describe('Service: PointsService', function() {
 	var PointsService, httpBackend, q;
 	beforeEach(function() {
+		// main module app
 		window.angular.mock.module('SmartApp');
 
 		// templates html
@@ -13,14 +14,91 @@ describe('Service: PointsService', function() {
 	}));
 
 	it('gets points', function() {
-		httpBackend.whenGET('/points/getPoints?page=1').respond({
-			nom: 'point 0'
+		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+			id: 0,
+			name: 'point 0'
+		}, {
+			id: 1,
+			name: 'point 1'
+		}]);
+		PointsService.getPoints(0, 2).then(function(data) {
+			expect(data).to.eql({
+				0: {
+					id: 0,
+					name: 'point 0'
+				},
+				1: {
+					id: 1,
+					name: 'point 1'
+				}
+			});
 		});
-		PointsService.getPoints(0).then(function(data) {
-			expect(data).to.eql({ nom: 'point 0' });
+		httpBackend.flush();
+		PointsService.getPoints(0, 2).then(function(data) {
+			expect(data).to.eql({
+				0: {
+					id: 0,
+					name: 'point 0'
+				},
+				1: {
+					id: 1,
+					name: 'point 1'
+				}
+			});
+		});
+	});
+
+	it('does not store duplicated points', function() {
+		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+			id: 0,
+			name: 'point 0'
+		}, {
+			id: 0,
+			name: 'point 1'
+		}]);
+		PointsService.getPoints(0, 2).then(function(data) {
+			expect(data).to.eql({
+				0: {
+					id: 0,
+					name: 'point 0'
+				}
+			});
 		});
 		httpBackend.flush();
 	});
+
+	it('gets one point', function() {
+		httpBackend.whenGET('/points/0').respond({
+			id: 0,
+			name: 'point 0'
+		});
+		PointsService.getPoint(0).then(function(data) {
+			expect(data).to.eql({
+				id: 0,
+				name: 'point 0'
+			});
+		});
+		httpBackend.flush();
+	});
+
+	it('gets one point already stored', function() {
+		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+			id: 0,
+			name: 'point 0'
+		}, {
+			id: 1,
+			name: 'point 1'
+		}]);
+		PointsService.getPoints(0, 2);
+		httpBackend.flush();
+		PointsService.getPoint(0).then(function(data) {
+			expect(data).to.eql({
+				id: 0,
+				name: 'point 0'
+			});
+		});
+	});
+
 });
 
 
