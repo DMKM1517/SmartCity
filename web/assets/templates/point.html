@@ -1,3 +1,32 @@
 <h1>{{ point.name }}
 <button type="button" ng-click="back()" class="btn btn-default btn-lg pull-right" aria-label="Close"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></button></h1>
-<img ng-src="{{ point.image }}">
+<div class="row">
+	<div class="col-sm-7">
+		<div class="stars {{ RF.star_class }}">
+			<input type="hidden" class="rating" data-fractions="2" value="{{ RF.rating2 }}" data-readonly/>
+		</div>
+		{{ RF.rating1 }}
+		<h4>{{ point.category }}</h4>
+		<div ng-show="point.address">
+			<label>Address: </label>{{ point.address }}
+		</div>
+		<div ng-show="point.web">
+			<label>Web: </label>{{ point.web }}
+		</div>
+		<div ng-show="point.email">
+			<label>Email: </label>{{ point.email }}
+		</div>
+		<div ng-show="point.phone">
+			<label>Phone: </label>{{ point.phone }}
+		</div>
+		<div ng-show="point.facebook">
+			<label>Facebook: </label>{{ point.facebook }}
+		</div>
+		<div ng-show="point.schedule">
+			<label>Schedule: </label>{{ point.schedule }}
+		</div>
+	</div>
+	<div class="col-sm-3">
+		<img ng-src="{{ point.image }}" class="img-responsive center-block">
+	</div>
+</div>

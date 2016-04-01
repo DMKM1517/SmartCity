@@ -1,6 +1,7 @@
-SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsService', function($scope, $location, GoogleMaps, PointsService) {
+/* MainCtrl */
+SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $location, GoogleMaps, PointsService, colorsCnst, RatingFactory) {
 
-	/* -- Variables -- */
+	/* Variables */
 
 	var initial_zoom = 12;
 	var limit = 50;
@@ -23,10 +24,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		$scope.getPoints($scope.map.getZoom());
 	});
 
-	/* -- -- */
+	/* --Variables-- */
 
 
-	/* -- Functions -- */
+	/* Functions */
 
 	// get the points and create the markers
 	$scope.getPoints = function(zoom) {
@@ -63,17 +64,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	// open the info window
 	$scope.openInfoWindow = function(point_id) {
 		var point = $scope.points[point_id];
-		var rating = point.rating.toFixed(1);
-		var tmp_rating = Math.floor(rating);
-		var tmp_rating2 = (Math.round(point.rating * 2) / 2).toFixed(1);
-		var colors = ['red', 'orange', 'yellow', 'lgreen', 'green'];
-		var star_class = '';
-		if (tmp_rating < 0 || tmp_rating > 5) {
-			tmp_rating = 0;
-		}
-		if (tmp_rating !== 0) {
-			star_class = 'star_' + colors[tmp_rating];
-		}
+		var RF = RatingFactory.getRatingsAndClass(point.rating);
 		var content = '<div class="info_window">' +
 			'<div class="row">' +
 			'<div class="col-xs-9">' +
@@ -81,10 +72,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 			'<div class="category">' + point.category + '</div>' +
 			'</div>' +
 			'<div class="col-xs-3">' +
-			'<div class="stars ' + star_class + '">' +
-			'<input type="hidden" class="rating" data-fractions="2" value="' + tmp_rating2 + '" data-readonly/>' +
+			'<div class="stars ' + RF.star_class + '">' +
+			'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
 			'</div>' +
-			rating +
+			RF.rating1 +
 			'</div>' +
 			'</div>';
 		if (point.address) {
@@ -117,10 +108,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		$('.rating').rating();
 	};
 
-	/* -- -- */
+	/* --Functions-- */
 
 
-	/* -- Initialization -- */
+	/* Initialization */
 
 	// get initial points
 	$scope.getPoints(initial_zoom);
@@ -142,10 +133,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	}, true);
 
 
-	/* -- -- */
+	/* --Initialization-- */
 
 
-	/* -- Aux Functions -- */
+	/* Aux Functions */
 
 	/*function setMarkers(page) {
 		setMapOn($scope.markers, null);
@@ -177,8 +168,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 					time_elapsed++;
 					openPreviousInfoWindow(point_id, zoom);
 				}, 500);
-			}
-			else{
+			} else {
 				console.log('no loaded the point');
 				time_elapsed = 0;
 			}
@@ -188,22 +178,49 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		}
 	}
 
-	/* -- -- */
+	/* --Aux Functions-- */
+
 }]);
+/* --MainCtrl-- */
 
 
-SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'PointsService', function($scope, $routeParams, $location, PointsService) {
+/* PointCtrl */
+SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $routeParams, $location, PointsService, colorsCnst, RatingFactory) {
+
+	/* Variables */
+
 	var initial_zoom = 12;
 	var id = $routeParams.id;
 	var searchParam = $location.search();
 	var param_zoom = searchParam.z;
+
+	/* --Variables-- */
+
+
+	/* Initialization */
+
 	if (!param_zoom) {
 		param_zoom = initial_zoom;
 	}
+
 	PointsService.getPoint(id).then(function(data) {
 		$scope.point = data;
+		$scope.RF = RatingFactory.getRatingsAndClass($scope.point.rating);
+		setTimeout(function() {
+			$('.rating').rating();
+		}, 100);
 	});
+
+	/* --Initialization-- */
+
+
+	/* Functions */
+
 	$scope.back = function() {
 		$location.path('/').search({ id: id, z: param_zoom });
 	};
+
+	/* --Functions-- */
+
 }]);
+/* --PointCtrl-- */

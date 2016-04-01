@@ -103,15 +103,16 @@ describe('Service: PointsService', function() {
 
 
 describe('Factory: GoogleMaps', function() {
-	var GoogleMaps, google;
+	var GoogleMaps, google, colorsCnst;
 
 	beforeEach(function() {
 		var mockGoogleMaps = {};
 		window.angular.mock.module('SmartApp');
 	});
 
-	beforeEach(inject(function(_GoogleMaps_) {
+	beforeEach(inject(function(_GoogleMaps_, _colorsCnst_) {
 		GoogleMaps = _GoogleMaps_;
+		colorsCnst = _colorsCnst_;
 	}));
 
 	it('returns a map', function() {
@@ -123,25 +124,78 @@ describe('Factory: GoogleMaps', function() {
 		var path_images = '/images/map_marker_colors/';
 		var marker = GoogleMaps.createMarker({}, 4);
 		expect(marker).to.not.be.undefined;
-		expect(marker.icon).to.eql(path_images + 'green.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[4] + '.png');
 		marker = GoogleMaps.createMarker({}, 5);
-		expect(marker.icon).to.eql(path_images + 'green.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[4] + '.png');
 		marker = GoogleMaps.createMarker({}, 3);
-		expect(marker.icon).to.eql(path_images + 'lgreen.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[3] + '.png');
 		marker = GoogleMaps.createMarker({}, 2);
-		expect(marker.icon).to.eql(path_images + 'yellow.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[2] + '.png');
 		marker = GoogleMaps.createMarker({}, 1);
-		expect(marker.icon).to.eql(path_images + 'orange.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[1] + '.png');
 		marker = GoogleMaps.createMarker({}, 0);
-		expect(marker.icon).to.eql(path_images + 'red.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[0] + '.png');
 		marker = GoogleMaps.createMarker({}, -1);
-		expect(marker.icon).to.eql(path_images + 'red.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[0] + '.png');
 		marker = GoogleMaps.createMarker({}, 6);
-		expect(marker.icon).to.eql(path_images + 'green.png');
+		expect(marker.icon).to.eql(path_images + colorsCnst[4] + '.png');
 	});
 
 	it('returns a infoWindow', function() {
 		var infoWindow = GoogleMaps.createInfoWindow();
 		expect(infoWindow).to.not.be.undefined;
+	});
+});
+
+describe('Factory: RatingFactory', function() {
+	var RatingFactory, colorsCnst;
+
+	beforeEach(function() {
+		// main module app
+		window.angular.mock.module('SmartApp');
+	});
+
+	beforeEach(inject(function(_RatingFactory_, _colorsCnst_) {
+		RatingFactory = _RatingFactory_;
+		colorsCnst = _colorsCnst_;
+	}));
+
+	it('returns an object with rating1 with 1 decimal', function() {
+		var RF = RatingFactory.getRatingsAndClass(4.35);
+		expect(RF.rating1).to.eql('4.3');
+		RF = RatingFactory.getRatingsAndClass(5.35);
+		expect(RF.rating1).to.eql('5.0');
+		RF = RatingFactory.getRatingsAndClass(-0.35);
+		expect(RF.rating1).to.eql('0.0');
+	});
+
+	it('returns an object with rating2 with .0 or .5', function() {
+		var RF = RatingFactory.getRatingsAndClass(4.35);
+		expect(RF.rating2).to.eql('4.0');
+		RF = RatingFactory.getRatingsAndClass(4.65);
+		expect(RF.rating2).to.eql('4.5');
+		RF = RatingFactory.getRatingsAndClass(5.35);
+		expect(RF.rating2).to.eql('5.0');
+		RF = RatingFactory.getRatingsAndClass(-0.35);
+		expect(RF.rating2).to.eql('0.0');
+	});
+
+	it('returns an object with the star class', function() {
+		var RF = RatingFactory.getRatingsAndClass(4.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[4]);
+		RF = RatingFactory.getRatingsAndClass(5.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[4]);
+		RF = RatingFactory.getRatingsAndClass(3.65);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[3]);
+		RF = RatingFactory.getRatingsAndClass(2.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[2]);
+		RF = RatingFactory.getRatingsAndClass(1.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[1]);
+		RF = RatingFactory.getRatingsAndClass(0.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[0]);
+		RF = RatingFactory.getRatingsAndClass(-0.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[0]);
+		RF = RatingFactory.getRatingsAndClass(6.35);
+		expect(RF.star_class).to.eql('star_' + colorsCnst[4]);
 	});
 });

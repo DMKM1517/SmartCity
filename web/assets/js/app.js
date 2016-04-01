@@ -1,5 +1,9 @@
 var SmartApp = angular.module('SmartApp', ['ngRoute', 'ui.bootstrap', 'ui.bootstrap.tpls', 'angular-loading-bar']);
 
+
+/* Config */
+
+// routes
 SmartApp.config(['$routeProvider',
 	function($routeProvider){
 		$routeProvider.when('/', {
@@ -14,7 +18,17 @@ SmartApp.config(['$routeProvider',
 	}
 ]);
 
+// loading bar
 SmartApp.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
 	cfpLoadingBarProvider.parentSelector = '#loader';
 	cfpLoadingBarProvider.spinnerTemplate = '<div>loading...</div>';
 }]);
+
+/* --Config-- */
+
+
+/* Constants */
+
+SmartApp.constant('colorsCnst', ['red', 'orange', 'yellow', 'lgreen', 'green']);
+
+/* --Constants-- */

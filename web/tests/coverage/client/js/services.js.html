@@ -20,24 +20,24 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">92.5% </span>
+        <span class="strong">94.34% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>37/40</span>
+        <span class='fraction'>50/53</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">91.67% </span>
+        <span class="strong">94.44% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>11/12</span>
+        <span class='fraction'>17/18</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">81.82% </span>
+        <span class="strong">84.62% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>9/11</span>
+        <span class='fraction'>11/13</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">92.5% </span>
+        <span class="strong">94.34% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>37/40</span>
+        <span class='fraction'>50/53</span>
       </div>
     </div>
   </div>
@@ -113,7 +113,37 @@
 68
 69
 70
-71</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -160,13 +190,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-yes">8×</span>
@@ -183,7 +215,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-yes">20×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/* PointsService */
+SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	var points = {};
 	var pages_loaded = [];
 &nbsp;
@@ -229,15 +288,17 @@
 		return defer.promise;
 	};
 }]);
+/* --PointsService-- */
 &nbsp;
-SmartApp.factory('GoogleMaps', function() {
+&nbsp;
+/* GoogleMaps */
+SmartApp.factory('GoogleMaps', ['colorsCnst', function(colorsCnst) {
 	return {
 		createMap: function(element, options) {
 			return new google.maps.Map(element, options);
 		},
 		createMarker: function(options, sentiment) {
 			var marker = new google.maps.Marker(options);
-			var colors = ['red', 'orange', 'yellow', 'lgreen', 'green'];
 			var sent = sentiment;
 			if (sent &lt; 0) {
 				sent = 0;
@@ -245,21 +306,47 @@ SmartApp.factory('GoogleMaps', function() {
 			if (sent &gt; 4) {
 				sent = 4;
 			}
-			marker.setIcon('/images/map_marker_colors/' + colors[sent] + '.png');
+			marker.setIcon('/images/map_marker_colors/' + colorsCnst[sent] + '.png');
 			return marker;
 		},
 		createInfoWindow: function() {
 			return new google.maps.InfoWindow();
 		}
 	};
-});
+}]);
+/* --GoogleMaps-- */
+&nbsp;
+&nbsp;
+/* RatingFactory */
+SmartApp.factory('RatingFactory', ['colorsCnst', function(colorsCnst) {
+	return {
+		getRatingsAndClass: function(rating_full) {
+			var rating = rating_full.toFixed(1);
+			if (rating &gt; 5) {
+				rating = '5.0';
+			}
+			if (rating &lt; 0) {
+				rating = '0.0';
+			}
+			var tmp_rating = Math.floor(rating);
+			var rating2 = (Math.floor(rating * 2) / 2).toFixed(1);
+			var star_class = 'star_';
+			if (tmp_rating &gt;= 5) {
+				tmp_rating = 4;
+			}
+			star_class += colorsCnst[tmp_rating];
+			return { rating1: rating, rating2: rating2, star_class: star_class };
+		}
+	};
+}]);
+/* --RatingFactory-- */
 &nbsp;</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 01 2016 21:35:11 GMT+0200 (Romance Daylight Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Apr 02 2016 00:49:11 GMT+0200 (Romance Daylight Time)
 </div>
 </div>
 <script src="../prettify.js"></script>
