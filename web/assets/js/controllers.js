@@ -130,7 +130,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	}, function() {
 		var param_id = $location.search().id;
 		var param_zoom = $location.search().z;
-		current_zoom = initial_zoom;
+		current_zoom = initial_zoom + 1;
 		if (!param_zoom) {
 			param_zoom = initial_zoom;
 		} else {
@@ -170,9 +170,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	function openPreviousInfoWindow(point_id, zoom) {
 		if (!$scope.points[point_id]) {
 			if (!loading && current_zoom <= zoom) {
-				$scope.getPoints(zoom);
-				// $scope.getPoints(current_zoom++);
-				// console.log(current_zoom);
+				$scope.getPoints(current_zoom++);
 			}
 			if (time_elapsed < max_time_elapsed) {
 				setTimeout(function() {
@@ -185,7 +183,6 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 				time_elapsed = 0;
 			}
 		} else {
-			console.log('loaded');
 			$scope.map.setZoom(zoom);
 			$scope.openInfoWindow(point_id);
 		}

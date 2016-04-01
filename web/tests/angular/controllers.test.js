@@ -292,13 +292,13 @@ describe('Controller: MainCtrl', function() {
 				scope.$apply();
 				var point = scope.points[0];
 				expect(scope.infoWindow.content).to.contain(point.name);
+				$location.search({ id: 3, z: 13 });
+				scope.$apply();
 				setTimeout(function() {
-					$location.search({ id: 3, z: 13 });
-					scope.$apply();
 					point = scope.points[3];
 					expect(scope.infoWindow.content).to.contain(point.name);
 					done();
-				}, 1000);
+				}, 1500);
 			});
 		});
 

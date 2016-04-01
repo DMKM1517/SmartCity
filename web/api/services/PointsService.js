@@ -7,7 +7,7 @@ module.exports = {
 					// 	'>=': sentiment_level
 					// }
 				// },
-				sort: 'sentiment DESC'
+				sort: 'rating DESC'
 			}).paginate({ page: page, limit: limit })
 			.exec(function(err, points) {
 				if (err) throw err;
