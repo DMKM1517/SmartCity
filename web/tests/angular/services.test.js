@@ -13,90 +13,107 @@ describe('Service: PointsService', function() {
 		httpBackend = $httpBackend;
 	}));
 
-	it('gets points', function() {
-		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
-			id: 0,
-			name: 'point 0'
-		}, {
-			id: 1,
-			name: 'point 1'
-		}]);
-		PointsService.getPoints(0, 2).then(function(data) {
-			expect(data).to.eql({
-				0: {
-					id: 0,
-					name: 'point 0'
-				},
-				1: {
-					id: 1,
-					name: 'point 1'
-				}
+	describe('getPoints()', function() {
+
+		it('gets points', function() {
+			httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+				id: 0,
+				name: 'point 0'
+			}, {
+				id: 1,
+				name: 'point 1'
+			}]);
+			PointsService.getPoints(0, 2).then(function(data) {
+				expect(data).to.eql({
+					0: {
+						id: 0,
+						name: 'point 0'
+					},
+					1: {
+						id: 1,
+						name: 'point 1'
+					}
+				});
+			});
+			httpBackend.flush();
+			PointsService.getPoints(0, 2).then(function(data) {
+				expect(data).to.eql({
+					0: {
+						id: 0,
+						name: 'point 0'
+					},
+					1: {
+						id: 1,
+						name: 'point 1'
+					}
+				});
 			});
 		});
-		httpBackend.flush();
-		PointsService.getPoints(0, 2).then(function(data) {
-			expect(data).to.eql({
-				0: {
-					id: 0,
-					name: 'point 0'
-				},
-				1: {
-					id: 1,
-					name: 'point 1'
-				}
+
+		it('does not store duplicated points', function() {
+			httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+				id: 0,
+				name: 'point 0'
+			}, {
+				id: 0,
+				name: 'point 1'
+			}]);
+			PointsService.getPoints(0, 2).then(function(data) {
+				expect(data).to.eql({
+					0: {
+						id: 0,
+						name: 'point 0'
+					}
+				});
 			});
+			httpBackend.flush();
 		});
 	});
 
-	it('does not store duplicated points', function() {
-		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
-			id: 0,
-			name: 'point 0'
-		}, {
-			id: 0,
-			name: 'point 1'
-		}]);
-		PointsService.getPoints(0, 2).then(function(data) {
-			expect(data).to.eql({
-				0: {
-					id: 0,
-					name: 'point 0'
-				}
-			});
-		});
-		httpBackend.flush();
-	});
+	describe('getPoint()', function() {
 
-	it('gets one point', function() {
-		httpBackend.whenGET('/points/0').respond({
-			id: 0,
-			name: 'point 0'
-		});
-		PointsService.getPoint(0).then(function(data) {
-			expect(data).to.eql({
+		it('gets one point', function() {
+			httpBackend.whenGET('/points/0').respond({
 				id: 0,
 				name: 'point 0'
 			});
+			PointsService.getPoint(0).then(function(data) {
+				expect(data).to.eql({
+					id: 0,
+					name: 'point 0'
+				});
+			});
+			httpBackend.flush();
 		});
-		httpBackend.flush();
-	});
 
-	it('gets one point already stored', function() {
-		httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
-			id: 0,
-			name: 'point 0'
-		}, {
-			id: 1,
-			name: 'point 1'
-		}]);
-		PointsService.getPoints(0, 2);
-		httpBackend.flush();
-		PointsService.getPoint(0).then(function(data) {
-			expect(data).to.eql({
+		it('gets one point already stored', function() {
+			httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
 				id: 0,
 				name: 'point 0'
+			}, {
+				id: 1,
+				name: 'point 1'
+			}]);
+			PointsService.getPoints(0, 2);
+			httpBackend.flush();
+			PointsService.getPoint(0).then(function(data) {
+				expect(data).to.eql({
+					id: 0,
+					name: 'point 0'
+				});
 			});
 		});
+
+		it('returns an error if not found', function() {
+			httpBackend.whenGET('/points/10').respond(404, 'Not found');
+			PointsService.getPoint(10).then(function(data) {
+				expect(data).to.be.undefined;
+			}, function(resp) {
+				expect(resp).to.eql('Not found');
+			});
+			httpBackend.flush();
+		});
+
 	});
 
 });

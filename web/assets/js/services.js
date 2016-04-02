@@ -34,8 +34,11 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	this.getPoint = function(id) {
 		var defer = $q.defer();
 		if (!points[id]) {
-			$http.get('/points/' + id).success(function(resp) {
-				defer.resolve(resp);
+			$http.get('/points/' + id).success(function(point) {
+				if (!points[point.id]) {
+					points[point.id] = point;
+				}
+				defer.resolve(point);
 			}).error(function(err) {
 				defer.reject(err);
 			});

@@ -7,11 +7,8 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	var limit = 50;
 	var loading = true;
 	var latlong = { lat: 45.7591739, lng: 4.8846752 };
-	var time_elapsed = 0;
-	var max_time_elapsed = 10;
 	var current_zoom = initial_zoom;
 	$scope.markers = [];
-	$scope.points = {};
 	// initialize google maps
 	$scope.map = GoogleMaps.createMap(document.getElementById('map'), {
 		center: latlong,
@@ -32,80 +29,68 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	// get the points and create the markers
 	$scope.getPoints = function(zoom) {
 		loading = true;
-		var marker, point;
 		var page = zoom - initial_zoom;
 		if (page < 0) {
 			page = 0;
 		}
 		//setMarkers(page);
 		PointsService.getPoints(page, limit).then(function(data) {
-			$scope.points = data;
 			for (var i in data) {
-				point = data[i];
-				if (!$scope.markers[point.id]) {
-					marker = GoogleMaps.createMarker({
-						position: {
-							lat: parseFloat(point.latitude),
-							lng: parseFloat(point.longitude)
-						},
-						title: point.name
-					}, Math.floor(point.rating));
-					$scope.markers[point.id] = marker;
-					$scope.markers[point.id].setMap($scope.map);
-					addListenerMarker(point.id);
-				}
+				createMarker(data[i]);
 			}
 			loading = false;
 		}, function(response) {
 			console.log(response);
+			loading = false;
 		});
 	};
 
 	// open the info window
 	$scope.openInfoWindow = function(point_id) {
-		var point = $scope.points[point_id];
-		var RF = RatingFactory.getRatingsAndClass(point.rating);
-		var content = '<div class="info_window">' +
-			'<div class="row">' +
-			'<div class="col-xs-9">' +
-			'<h4>' + point.name + '</h4>' +
-			'<div class="category">' + point.category + '</div>' +
-			'</div>' +
-			'<div class="col-xs-3">' +
-			'<div class="stars ' + RF.star_class + '">' +
-			'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
-			'</div>' +
-			RF.rating1 +
-			'</div>' +
-			'</div>';
-		if (point.address) {
-			content += '<b>Address:</b> ' + point.address + '<br>';
-		}
-		if (point.web) {
-			var links = point.web.split(';');
-			content += '<b>Web:</b> ';
-			for (var i in links) {
-				content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
+		PointsService.getPoint(point_id).then(function(point) {
+			var RF = RatingFactory.getRatingsAndClass(point.rating);
+			var content = '<div class="info_window">' +
+				'<div class="row">' +
+				'<div class="col-xs-9">' +
+				'<h4>' + point.name + '</h4>' +
+				'<div class="category">' + point.category + '</div>' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<div class="stars ' + RF.star_class + '">' +
+				'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
+				'</div>' +
+				RF.rating1 +
+				'</div>' +
+				'</div>';
+			if (point.address) {
+				content += '<b>Address:</b> ' + point.address + '<br>';
 			}
-		}
-		if (point.schedule) {
-			content += '<b>Schedule:</b> ' + point.schedule;
-		}
-		if (content.endsWith('<br>')) {
-			content = content.slice(0, -4);
-		}
-		content += '<div class="row">' +
-			'<div class="col-xs-9">' +
-			'</div>' +
-			'<div class="col-xs-3">' +
-			'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">More information</a>' +
-			'</div>' +
-			'</div>' +
-			'</div>';
+			if (point.web) {
+				var links = point.web.split(';');
+				content += '<b>Web:</b> ';
+				for (var i in links) {
+					content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
+				}
+			}
+			if (point.schedule) {
+				content += '<b>Schedule:</b> ' + point.schedule;
+			}
+			if (content.endsWith('<br>')) {
+				content = content.slice(0, -4);
+			}
+			content += '<div class="row">' +
+				'<div class="col-xs-9">' +
+				'</div>' +
+				'<div class="col-xs-3">' +
+				'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">More information</a>' +
+				'</div>' +
+				'</div>' +
+				'</div>';
 
-		$scope.infoWindow.setContent(content);
-		$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
-		$('.rating').rating();
+			$scope.infoWindow.setContent(content);
+			$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
+			$('.rating').rating();
+		});
 	};
 
 	/* --Functions-- */
@@ -152,6 +137,21 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		}
 	}*/
 
+	function createMarker(point) {
+		if (!$scope.markers[point.id]) {
+			var marker = GoogleMaps.createMarker({
+				position: {
+					lat: parseFloat(point.latitude),
+					lng: parseFloat(point.longitude)
+				},
+				title: point.name
+			}, Math.floor(point.rating));
+			$scope.markers[point.id] = marker;
+			$scope.markers[point.id].setMap($scope.map);
+			addListenerMarker(point.id);
+		}
+	}
+
 	function addListenerMarker(point_id) {
 		$scope.markers[point_id].addListener('click', function() {
 			$scope.openInfoWindow(point_id);
@@ -159,23 +159,17 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 	}
 
 	function openPreviousInfoWindow(point_id, zoom) {
-		if (!$scope.points[point_id]) {
-			if (!loading && current_zoom <= zoom) {
-				$scope.getPoints(current_zoom++);
-			}
-			if (time_elapsed < max_time_elapsed) {
-				setTimeout(function() {
-					time_elapsed++;
-					openPreviousInfoWindow(point_id, zoom);
-				}, 500);
-			} else {
-				console.log('no loaded the point');
-				time_elapsed = 0;
-			}
-		} else {
+		loading = true;
+		PointsService.getPoint(point_id).then(function(data) {
+			createMarker(data);
 			$scope.map.setZoom(zoom);
 			$scope.openInfoWindow(point_id);
-		}
+			loading = false;
+		}, function(resp) {
+			console.log('Point ' + point_id + ' not found');
+			$location.search({});
+			loading = false;
+		});
 	}
 
 	/* --Aux Functions-- */
@@ -185,7 +179,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 
 
 /* PointCtrl */
-SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $routeParams, $location, PointsService, colorsCnst, RatingFactory) {
+SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'PointsService', 'RatingFactory', function($scope, $routeParams, $location, PointsService, RatingFactory) {
 
 	/* Variables */
 
@@ -203,12 +197,15 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'Points
 		param_zoom = initial_zoom;
 	}
 
+	// get the information of the point
 	PointsService.getPoint(id).then(function(data) {
 		$scope.point = data;
 		$scope.RF = RatingFactory.getRatingsAndClass($scope.point.rating);
 		setTimeout(function() {
 			$('.rating').rating();
 		}, 100);
+	}, function() {
+		$scope.point = { name: 'Point not found' };
 	});
 
 	/* --Initialization-- */

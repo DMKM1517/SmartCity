@@ -1,59 +1,59 @@
 var EventEmitter = require('events').EventEmitter;
+// test data
+var data = [{
+	id: 0,
+	name: 'point 0',
+	category: 'category 1',
+	latitude: 1,
+	longitude: 1,
+	rating: 1,
+	email: 'email@email.com',
+	address: 'address 0',
+	phone: '123456789',
+	web: 'www.web.com',
+	facebook: 'facebook.com/point',
+	schedule: '9:00 - 18:00'
+}, {
+	id: 0,
+	name: 'point 0',
+	category: 'category 1',
+	latitude: 1,
+	longitude: 1,
+	rating: 1,
+	email: 'email@email.com',
+	address: 'address 0',
+	phone: '123456789',
+	web: 'www.web.com',
+	facebook: 'facebook.com/point',
+	schedule: '9:00 - 18:00'
+}, {
+	id: 1,
+	name: 'point 1',
+	category: 'category 1',
+	latitude: 1,
+	longitude: 1,
+	rating: 1,
+	address: 'address 1'
+}, {
+	id: 2,
+	name: 'point 2',
+	category: 'category 1',
+	latitude: 1,
+	longitude: 1,
+	rating: 1,
+	web: 'www.web.com;www.web.com'
+}, {
+	id: 3,
+	name: 'point 3',
+	category: 'category 2',
+	latitude: 1,
+	longitude: 1,
+	rating: 1,
+	address: 'address 3'
+}];
 
 describe('Controller: MainCtrl', function() {
-	var rootScope, scope, $location, PointsService, GoogleMaps;
-	// test data
-	var data = [{
-		id: 0,
-		name: 'point 0',
-		category: 'category 1',
-		latitude: 1,
-		longitude: 1,
-		rating: 1,
-		email: 'email@email.com',
-		address: 'address 0',
-		phone: '123456789',
-		web: 'www.web.com',
-		facebook: 'facebook.com/point',
-		schedule: '9:00 - 18:00'
-	}, {
-		id: 0,
-		name: 'point 0',
-		category: 'category 1',
-		latitude: 1,
-		longitude: 1,
-		rating: 1,
-		email: 'email@email.com',
-		address: 'address 0',
-		phone: '123456789',
-		web: 'www.web.com',
-		facebook: 'facebook.com/point',
-		schedule: '9:00 - 18:00'
-	}, {
-		id: 1,
-		name: 'point 1',
-		category: 'category 1',
-		latitude: 1,
-		longitude: 1,
-		rating: 1,
-		address: 'address 1'
-	}, {
-		id: 2,
-		name: 'point 2',
-		category: 'category 1',
-		latitude: 1,
-		longitude: 1,
-		rating: 1,
-		web: 'www.web.com;www.web.com'
-	}, {
-		id: 3,
-		name: 'point 3',
-		category: 'category 2',
-		latitude: 1,
-		longitude: 1,
-		rating: 1,
-		address: 'address 3'
-	}];
+	var rootScope, scope, $location, PointsService, GoogleMaps, spy;
 
 	beforeEach(function() {
 		var mockPointsService = {},
@@ -75,6 +75,16 @@ describe('Controller: MainCtrl', function() {
 					defer.resolve(this.data.slice(1, 3));
 				} else {
 					defer.resolve(this.data.slice(1, this.data.length));
+				}
+				return defer.promise;
+			};
+			mockPointsService.getPoint = function(id) {
+				var defer = $q.defer();
+				var point = data[id];
+				if (point) {
+					defer.resolve(point);
+				} else {
+					defer.reject('no point');
 				}
 				return defer.promise;
 			};
@@ -148,12 +158,8 @@ describe('Controller: MainCtrl', function() {
 		expect(scope.map).to.not.be.undefined;
 	});
 
-	it('gets initial points', function() {
-		expect(Object.keys(scope.points).length).to.be.above(1);
-	});
-
-	it('creates markers', function() {
-		expect(Object.keys(scope.markers).length).to.be.above(1);
+	it('gets initial points and create markers', function() {
+		expect(Object.keys(scope.markers).length).to.be.above(0);
 	});
 
 	it('does not create markers if they already exist', function() {
@@ -162,13 +168,11 @@ describe('Controller: MainCtrl', function() {
 
 	it('gets more points and markers when zoomming in', function(done) {
 		var emitter = new EventEmitter();
-		expect(Object.keys(scope.points).length).to.eql(2);
-		expect(scope.markers.length).to.eql(2);
+		expect(Object.keys(scope.markers).length).to.eql(2);
 		emitter.on('zoom_changed', function(zoom) {
 			scope.getPoints(zoom);
 			scope.$apply();
-			expect(Object.keys(scope.points).length).to.eql(4);
-			expect(scope.markers.length).to.eql(4);
+			expect(Object.keys(scope.markers).length).to.eql(4);
 			done();
 		});
 		emitter.emit('zoom_changed', 13);
@@ -177,13 +181,11 @@ describe('Controller: MainCtrl', function() {
 
 	it('does not get more points nor markers when zoomming out', function(done) {
 		var emitter = new EventEmitter();
-		expect(Object.keys(scope.points).length).to.eql(2);
-		expect(scope.markers.length).to.eql(2);
+		expect(Object.keys(scope.markers).length).to.eql(2);
 		emitter.on('zoom_changed', function(zoom) {
 			scope.getPoints(zoom);
 			scope.$apply();
-			expect(Object.keys(scope.points).length).to.eql(2);
-			expect(scope.markers.length).to.eql(2);
+			expect(Object.keys(scope.markers).length).to.eql(2);
 			done();
 		});
 		emitter.emit('zoom_changed', 11);
@@ -196,7 +198,8 @@ describe('Controller: MainCtrl', function() {
 
 			it('displays only address, web and schedule if available', function() {
 				scope.openInfoWindow(0);
-				var point = scope.points[0];
+				scope.$digest();
+				var point = data[0];
 				expect(scope.infoWindow.content).to.equal(
 					'<div class="info_window">' +
 					'<div class="row">' +
@@ -223,8 +226,9 @@ describe('Controller: MainCtrl', function() {
 					'</div>' +
 					'</div>'
 				);
-				scope.openInfoWindow(1);
-				point = scope.points[1];
+				scope.openInfoWindow(2);
+				scope.$digest();
+				point = data[2];
 				expect(scope.infoWindow.content).to.equal(
 					'<div class="info_window">' +
 					'<div class="row">' +
@@ -253,9 +257,10 @@ describe('Controller: MainCtrl', function() {
 
 			it('displays in different lines when more than one web link', function() {
 				scope.getPoints(13);
-				scope.$apply();
-				scope.openInfoWindow(2);
-				var point = scope.points[2];
+				scope.$digest();
+				scope.openInfoWindow(3);
+				scope.$digest();
+				var point = data[3];
 				expect(scope.infoWindow.content).to.equal(
 					'<div class="info_window">' +
 					'<div class="row">' +
@@ -287,21 +292,114 @@ describe('Controller: MainCtrl', function() {
 
 		describe('with parameters passed', function() {
 
-			it('opens the info window of the id passed', function(done) {
+			it('opens the info window of the id passed', function() {
 				$location.search({ id: 0, z: 12 });
-				scope.$apply();
-				var point = scope.points[0];
+				scope.$digest();
+				var point = data[0];
 				expect(scope.infoWindow.content).to.contain(point.name);
 				$location.search({ id: 3, z: 13 });
-				scope.$apply();
-				setTimeout(function() {
-					point = scope.points[3];
-					expect(scope.infoWindow.content).to.contain(point.name);
-					done();
-				}, 1500);
+				scope.$digest();
+				point = data[3];
+				expect(scope.infoWindow.content).to.contain(point.name);
+			});
+
+			it('clears the location.search if point not found', function() {
+				$location.search({ id: 10, z: 12 });
+				scope.$digest();
+				expect($location.search()).to.eql({});
 			});
 		});
 
 	});
 
+});
+
+describe('Controller: PointCtrl', function() {
+	var rootScope, scope, routeParams, PointsService, location;
+
+	beforeEach(function() {
+		var mockPointsService = {};
+		window.angular.mock.module('SmartApp', function($provide) {
+			$provide.value('PointsService', mockPointsService);
+		});
+
+		// templates html
+		window.angular.mock.module('templates');
+
+		// inject PointsService
+		inject(function($q) {
+			mockPointsService.data = data;
+			mockPointsService.getPoints = function(page) {
+				var defer = $q.defer();
+				if (page === 0) {
+					defer.resolve(this.data.slice(1, 3));
+				} else {
+					defer.resolve(this.data.slice(1, this.data.length));
+				}
+				return defer.promise;
+			};
+			mockPointsService.getPoint = function(id) {
+				var defer = $q.defer();
+				var point = data[id];
+				if (point) {
+					defer.resolve(point);
+				} else {
+					defer.reject('no point');
+				}
+				return defer.promise;
+			};
+		});
+
+	});
+
+	beforeEach(inject(function($controller, $rootScope, _$routeParams_, _PointsService_, $location) {
+		rootScope = $rootScope;
+		scope = $rootScope.$new();
+		routeParams = _$routeParams_;
+		routeParams.id = 0;
+		PointsService = _PointsService_;
+		location = $location;
+		location.path('/point/0');
+		$controller('PointCtrl', {
+			$scope: scope,
+			$routeParams: routeParams
+		});
+		scope.$digest();
+	}));
+
+
+	it('gets the information of a point', function() {
+		expect(scope.point).to.not.be.undefined;
+	});
+
+	it('redirects to home with the id and zoom', function() {
+		var spy_path = chai.spy.on(location, 'path');
+		var spy_search = chai.spy.on(location, 'search');
+		scope.back();
+		scope.$apply();
+		expect(spy_path).to.have.been.called.with('/');
+		expect(spy_search).to.have.been.called.with({ id: 0, z: 12 });
+	});
+
+	describe('with non-existing id', function() {
+		beforeEach(inject(function($controller, $rootScope, _$routeParams_, _PointsService_, $location) {
+			rootScope = $rootScope;
+			scope = $rootScope.$new();
+			routeParams = _$routeParams_;
+			routeParams.id = 10;
+			PointsService = _PointsService_;
+			location = $location;
+			location.path('/point/10');
+			$controller('PointCtrl', {
+				$scope: scope,
+				$routeParams: routeParams
+			});
+			scope.$digest();
+		}));
+
+		it('handles point not found', function() {
+			expect(scope.point).to.not.be.undefined;
+			expect(scope.point.name).to.eql('Point not found');
+		});
+	});
 });
