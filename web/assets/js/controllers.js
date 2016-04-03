@@ -1,10 +1,10 @@
 /* MainCtrl */
-SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $location, GoogleMaps, PointsService, colorsCnst, RatingFactory) {
+SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $rootScope, $location, GoogleMaps, PointsService, colorsCnst, RatingFactory) {
 
 	/* Variables */
 
 	var initial_zoom = 12;
-	var limit = 50;
+	var limit = 100;
 	var loading = true;
 	var latlong = { lat: 45.7591739, lng: 4.8846752 };
 	var current_zoom = initial_zoom;
@@ -15,6 +15,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		zoom: initial_zoom
 	});
 	$scope.infoWindow = GoogleMaps.createInfoWindow();
+	$scope.categories = [];
 
 	// listeners
 	$scope.map.addListener('zoom_changed', function() {
@@ -33,11 +34,11 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		if (page < 0) {
 			page = 0;
 		}
-		//setMarkers(page);
 		PointsService.getPoints(page, limit).then(function(data) {
 			for (var i in data) {
 				createMarker(data[i]);
 			}
+			$scope.filter();
 			loading = false;
 		}, function(response) {
 			console.log(response);
@@ -86,11 +87,47 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 				'</div>' +
 				'</div>' +
 				'</div>';
-
 			$scope.infoWindow.setContent(content);
 			$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
-			$('.rating').rating();
+			setTimeout(function() {
+				$('.rating').rating();
+			}, 100);
 		});
+	};
+
+	// toggle menu
+	$scope.toggleMenu = function() {
+		$('#menu').fadeToggle();
+		$('#toggle').toggleClass('on');
+	};
+
+	$scope.filter = function() {
+		$scope.setMapOn($scope.markers, null);
+		var filtered_ids = PointsService.filterCategories($rootScope.selected_categories);
+		var filtered_markers = [];
+		for(var id in $scope.markers){
+			for(var i in filtered_ids) {
+				if (id == filtered_ids[i]) {
+					filtered_markers[id] = $scope.markers[id];
+				}
+			}
+		}
+		$scope.setMapOn(filtered_markers, $scope.map);
+	};
+
+	// set map on markers
+	$scope.setMapOn = function(markers_map, new_map) {
+		for (var i in markers_map) {
+			markers_map[i].setMap(new_map);
+		}
+	};
+
+	// set all values of selected categories
+	$scope.selectAll = function(value) {
+		for (var i in $rootScope.selected_categories) {
+			$rootScope.selected_categories[i] = value;
+		}
+		$scope.filter();
 	};
 
 	/* --Functions-- */
@@ -98,9 +135,24 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 
 	/* Initialization */
 
+	// selected categories
+	if (!$rootScope.selected_categories) {
+		$rootScope.selected_categories = {};
+	}
+	// get categories
+	PointsService.getCategories().then(function(categories) {
+		$scope.categories = categories;
+		// initially all categories are selected
+		for(var i in $scope.categories){
+			if(typeof($rootScope.selected_categories[$scope.categories[i].category]) === 'undefined'){
+				$rootScope.selected_categories[$scope.categories[i].category] = true;
+			}
+		}
+	});
 	// get initial points
 	$scope.getPoints(initial_zoom);
 
+	// watch for changes in location search
 	$scope.$watch(function() {
 		return $location.search();
 	}, function() {
@@ -123,20 +175,6 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 
 	/* Aux Functions */
 
-	/*function setMarkers(page) {
-		setMapOn($scope.markers, null);
-		console.log($scope.markers);
-		var markers_page = $scope.markers.slice(0, (page + 1) * limit);
-		console.log(markers_page);
-		setMapOn(markers_page, $scope.map);
-	}*/
-
-	/*function setMapOn(markers_map, new_map) {
-		for (var i in markers_map) {
-			markers_map[i].setMap(new_map);
-		}
-	}*/
-
 	function createMarker(point) {
 		if (!$scope.markers[point.id]) {
 			var marker = GoogleMaps.createMarker({
@@ -147,15 +185,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 				title: point.name
 			}, Math.floor(point.rating));
 			$scope.markers[point.id] = marker;
-			$scope.markers[point.id].setMap($scope.map);
-			addListenerMarker(point.id);
+			$scope.markers[point.id].addListener('click', function() {
+				$scope.openInfoWindow(point.id);
+			});
 		}
-	}
-
-	function addListenerMarker(point_id) {
-		$scope.markers[point_id].addListener('click', function() {
-			$scope.openInfoWindow(point_id);
-		});
 	}
 
 	function openPreviousInfoWindow(point_id, zoom) {
@@ -163,10 +196,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$location', 'GoogleMaps', 'PointsSer
 		PointsService.getPoint(point_id).then(function(data) {
 			createMarker(data);
 			$scope.map.setZoom(zoom);
+			$scope.filter();
 			$scope.openInfoWindow(point_id);
 			loading = false;
 		}, function(resp) {
-			console.log('Point ' + point_id + ' not found');
 			$location.search({});
 			loading = false;
 		});

@@ -53,8 +53,9 @@ var data = [{
 }];
 
 describe('Controller: MainCtrl', function() {
-	var rootScope, scope, $location, PointsService, GoogleMaps, spy;
+	var rootScope, scope, $location, PointsService, GoogleMaps;
 
+	// inject app, templates, services
 	beforeEach(function() {
 		var mockPointsService = {},
 			mockGoogleMaps = {};
@@ -87,6 +88,24 @@ describe('Controller: MainCtrl', function() {
 					defer.reject('no point');
 				}
 				return defer.promise;
+			};
+			mockPointsService.getCategories = function() {
+				var defer = $q.defer();
+				defer.resolve([
+					{ category: 'category 1', count: 4 },
+					{ category: 'category 2', count: 1 }
+				]);
+				return defer.promise;
+			};
+			mockPointsService.filterCategories = function(selected_categories) {
+				var filtered = [];
+				for (var i in data) {
+					var point = data[i];
+					if (selected_categories[point.category]) {
+						filtered.push(point.id);
+					}
+				}
+				return filtered;
 			};
 		});
 
@@ -138,6 +157,7 @@ describe('Controller: MainCtrl', function() {
 		});
 	});
 
+	// initialize variables and scope
 	beforeEach(inject(function($controller, $rootScope, _$location_, _GoogleMaps_, _PointsService_) {
 		rootScope = $rootScope;
 		scope = $rootScope.$new();
@@ -189,6 +209,14 @@ describe('Controller: MainCtrl', function() {
 			done();
 		});
 		emitter.emit('zoom_changed', 11);
+	});
+
+	it('toggles the menu', function() {
+		$('body').append('<div id="toggle"></div>');
+		scope.toggleMenu();
+		expect($('#toggle')).to.have.class('on');
+		scope.toggleMenu();
+		expect($('#toggle')).to.not.have.class('on');
 	});
 
 
@@ -312,11 +340,38 @@ describe('Controller: MainCtrl', function() {
 
 	});
 
+
+	describe('filtering', function() {
+
+		it('shows only the markers filtered', function() {
+			// var event = { preventDefault: chai.spy() };
+			var spy = chai.spy.on(scope, 'setMapOn');
+			scope.selected_categories['category 1'] = false;
+			scope.filter();
+			// scope.filter(event);
+			// expect(event.preventDefault).to.have.been.called();
+			expect(spy).to.have.been.called.twice();
+		});
+
+		it('allows to select all or none', function() {
+			var i;
+			scope.selectAll(false);
+			for (i in scope.selected_categories) {
+				expect(scope.selected_categories[i]).to.eql(false);
+			}
+			scope.selectAll(true);
+			for (i in scope.selected_categories) {
+				expect(scope.selected_categories[i]).to.eql(true);
+			}
+		});
+	});
+
 });
 
 describe('Controller: PointCtrl', function() {
 	var rootScope, scope, routeParams, PointsService, location;
 
+	// inject app, templates, services
 	beforeEach(function() {
 		var mockPointsService = {};
 		window.angular.mock.module('SmartApp', function($provide) {
@@ -352,6 +407,7 @@ describe('Controller: PointCtrl', function() {
 
 	});
 
+	// initialize variables and scope
 	beforeEach(inject(function($controller, $rootScope, _$routeParams_, _PointsService_, $location) {
 		rootScope = $rootScope;
 		scope = $rootScope.$new();

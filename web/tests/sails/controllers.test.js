@@ -5,7 +5,7 @@ describe('Controller: PointsController', function() {
 	describe('#getPoints()', function() {
 		it('returns the points of the given page', function(done) {
 			request(sails.hooks.http.app)
-				.get('/points/getPoints?page=1')
+				.get('/points/getPoints?page=1&limit=50')
 				.expect('Content-Type', /json/)
 				.expect(200)
 				.expect(function(res) {

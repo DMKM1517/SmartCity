@@ -3,6 +3,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	var points = {};
 	var pages_loaded = [];
 
+	// get points by page with limit
 	this.getPoints = function(page, limit) {
 		var ini = page * limit;
 		var defer = $q.defer();
@@ -31,6 +32,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		return defer.promise;
 	};
 
+	// get a point by id
 	this.getPoint = function(id) {
 		var defer = $q.defer();
 		if (!points[id]) {
@@ -47,6 +49,30 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		}
 		return defer.promise;
 	};
+
+	// get all categories
+	this.getCategories = function() {
+		var defer = $q.defer();
+			$http.get('/points/getCategories').success(function(categories) {
+				defer.resolve(categories);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		return defer.promise;
+	};
+
+	// filter by category
+	this.filterCategories = function(selected_categories) {
+		var filtered = [];
+		for(var i in points) {
+			var point = points[i];
+			if(selected_categories[point.category]){
+				filtered.push(point.id);
+			}
+		}
+		return filtered;
+	};
+
 }]);
 /* --PointsService-- */
 

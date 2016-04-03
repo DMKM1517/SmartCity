@@ -68,6 +68,17 @@ describe('Service: PointsService', function() {
 			});
 			httpBackend.flush();
 		});
+
+		it('returns an error if any error', function() {
+			httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond(500, 'Error');
+			PointsService.getPoints(0, 2).then(function(data) {
+				expect(data).to.be.undefined;
+			}, function(resp) {
+				expect(resp).to.eql('Error');
+			});
+			httpBackend.flush();
+		});
+		
 	});
 
 	describe('getPoint()', function() {
@@ -112,6 +123,54 @@ describe('Service: PointsService', function() {
 				expect(resp).to.eql('Not found');
 			});
 			httpBackend.flush();
+		});
+
+	});
+
+	describe('getCategories()', function() {
+
+		it('gets all the categories', function() {
+			httpBackend.whenGET('/points/getCategories').respond([
+				{ category: 'category 1', count: 3 },
+				{ category: 'category 2', count: 2 }
+			]);
+			PointsService.getCategories().then(function(data) {
+				expect(data).to.eql([
+					{ category: 'category 1', count: 3 },
+					{ category: 'category 2', count: 2 }
+				]);
+			});
+			httpBackend.flush();
+		});
+
+		it('returns an error if any error', function() {
+			httpBackend.whenGET('/points/getCategories').respond(500, 'Error');
+			PointsService.getCategories().then(function(data) {
+				expect(data).to.be.undefined;
+			}, function(resp) {
+				expect(resp).to.eql('Error');
+			});
+			httpBackend.flush();
+		});
+
+	});
+
+	describe('filter()', function() {
+
+		it('filters the selected categories', function() {
+			httpBackend.whenGET('/points/getPoints?page=1&limit=2').respond([{
+				id: 0,
+				name: 'point 0',
+				category: 'category 1'
+			}, {
+				id: 1,
+				name: 'point 1',
+				category: 'category 2'
+			}]);
+			PointsService.getPoints(0, 2);
+			httpBackend.flush();
+			var points = PointsService.filterCategories({ 'category 1': true, 'category 2': false });
+			expect(points).to.eql([0]);
 		});
 
 	});

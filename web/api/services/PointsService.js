@@ -2,10 +2,10 @@ module.exports = {
 	getPoints: function(page, limit, next) {
 		Points.find({
 				// where: {
-					// type: 'PATRIMOINE_CULTUREL',
-					// sentiment: {
-					// 	'>=': sentiment_level
-					// }
+				// type: 'PATRIMOINE_CULTUREL',
+				// sentiment: {
+				// 	'>=': sentiment_level
+				// }
 				// },
 				sort: 'rating DESC'
 			}).paginate({ page: page, limit: limit })
@@ -13,5 +13,11 @@ module.exports = {
 				if (err) throw err;
 				next(points);
 			});
+	},
+	getCategories: function(next) {
+		Points.query('SELECT type AS category, count(*) FROM ip.v_interest_points_agregated GROUP BY type;', function(err, results) {
+			if (err) throw err;
+			next(results.rows);
+		});
 	}
 };
