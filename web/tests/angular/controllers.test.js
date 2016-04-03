@@ -57,15 +57,14 @@ describe('Controller: MainCtrl', function() {
 
 	// inject app, templates, services
 	beforeEach(function() {
-		var mockPointsService = {},
-			mockGoogleMaps = {};
+		var mockPointsService = {};
 		window.angular.mock.module('SmartApp', function($provide) {
 			$provide.value('PointsService', mockPointsService);
-			$provide.value('GoogleMaps', mockGoogleMaps);
 		});
 
 		// templates html
 		window.angular.mock.module('templates');
+		$('body').append('<div id="map"></div>');
 
 		// inject PointsService
 		inject(function($q) {
@@ -109,52 +108,6 @@ describe('Controller: MainCtrl', function() {
 			};
 		});
 
-		// inject GoogleMaps
-		inject(function() {
-			mockGoogleMaps.map = {
-				location: {
-					lat: function() {
-						return 1;
-					},
-					lng: function() {
-						return 2;
-					}
-				},
-				addListener: function(event, callback) {},
-				getZoom: function() {
-					return 12;
-				},
-				setZoom: function(zoom) {}
-			};
-			mockGoogleMaps.marker = {
-				location: {
-					lat: function() {
-						return 1;
-					},
-					lng: function() {
-						return 2;
-					}
-				},
-				setMap: function(map) {},
-				addListener: function(event, callback) {}
-			};
-			mockGoogleMaps.infoWindow = {
-				content: '',
-				setContent: function(content) {
-					this.content = content;
-				},
-				open: function() {}
-			};
-			mockGoogleMaps.createMap = function(element, options) {
-				return this.map;
-			};
-			mockGoogleMaps.createMarker = function(options, sentiment) {
-				return this.marker;
-			};
-			mockGoogleMaps.createInfoWindow = function() {
-				return this.infoWindow;
-			};
-		});
 	});
 
 	// initialize variables and scope
@@ -344,13 +297,12 @@ describe('Controller: MainCtrl', function() {
 	describe('filtering', function() {
 
 		it('shows only the markers filtered', function() {
-			// var event = { preventDefault: chai.spy() };
-			var spy = chai.spy.on(scope, 'setMapOn');
-			scope.selected_categories['category 1'] = false;
+			rootScope.selected_categories['category 1'] = false;
 			scope.filter();
-			// scope.filter(event);
-			// expect(event.preventDefault).to.have.been.called();
-			expect(spy).to.have.been.called.twice();
+			expect(scope.markers_clusters.getTotalMarkers()).to.eql(0);
+			scope.getPoints(13);
+			scope.$digest();
+			expect(scope.markers_clusters.getTotalMarkers()).to.eql(1);
 		});
 
 		it('allows to select all or none', function() {

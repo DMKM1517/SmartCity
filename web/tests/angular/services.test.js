@@ -78,7 +78,7 @@ describe('Service: PointsService', function() {
 			});
 			httpBackend.flush();
 		});
-		
+
 	});
 
 	describe('getPoint()', function() {
@@ -182,8 +182,8 @@ describe('Factory: GoogleMaps', function() {
 	var GoogleMaps, google, colorsCnst;
 
 	beforeEach(function() {
-		var mockGoogleMaps = {};
 		window.angular.mock.module('SmartApp');
+		$('body').append('<div id="map"></div>');
 	});
 
 	beforeEach(inject(function(_GoogleMaps_, _colorsCnst_) {
@@ -192,7 +192,7 @@ describe('Factory: GoogleMaps', function() {
 	}));
 
 	it('returns a map', function() {
-		var map = GoogleMaps.createMap('div', {});
+		var map = GoogleMaps.createMap(document.getElementById('map'), {});
 		expect(map).to.not.be.undefined;
 	});
 
