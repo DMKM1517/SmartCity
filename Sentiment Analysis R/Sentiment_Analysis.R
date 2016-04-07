@@ -1,10 +1,13 @@
-require("RPostgreSQL")
 #install.packages("stringi")
-require("stringi")
 #install.packages("gsubfn")
+#install.packages("dplyr")
+#install.packages("")
+require("RPostgreSQL")
+require("stringi")
 library(gsubfn)
 library(SnowballC)
 library(dplyr)
+
 
 # ######### CONNECTION TO DB ###############
 
@@ -22,18 +25,17 @@ con <- dbConnect(
 
 
 #query to get tweets
-query_kw <- "select text 
-from tweets.tweets
-where lang = 'fr'
-limit 20000
+query_kw <- "SELECT idd::varchar(100), text
+FROM twitter.tweets
+WHERE alch_score != 0 AND lang = 'fr' AND local_score IS NULL
 ;"
 
 # Retreives the table from the database
 df_tweets <-
   dbGetQuery(con, query_kw)
 
-df_tweets <- unlist(df_tweets)
-names(df_tweets) = NULL
+# df_tweets <- unlist(df_tweets)
+# names(df_tweets) = NULL
 
 
 # ######### CONNECTION TO DB ###############
@@ -41,7 +43,7 @@ names(df_tweets) = NULL
 
 
 ########    FUNCTION    ############
-score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none')
 {
   require(plyr)
   require(stringr)
@@ -50,7 +52,9 @@ score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
   # we want a simple array of scores back, so we use "l" + "a" + "ply" = laply:
   scores = laply(sentences, function(sentence, pos.words, neg.words) {
     
+    Encoding(sentence) <- "UTF-8"
     # clean up sentences with R's regex-driven global substitute, gsub():
+    sentence = gsub('http\\S+\\s*', '', sentence)
     sentence = gsub("[\']", " ", sentence)
     sentence = gsub('[[:punct:]]', '', sentence)
     sentence = gsub('[[:cntrl:]]', '', sentence)
@@ -90,9 +94,21 @@ score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
     return(score)
   }, pos.words, neg.words, .progress=.progress )
   
-  scores.df = data.frame(score=scores, text=sentences)
+  scores.df = data.frame(id=idd, score=scores, text=sentences)
   return(scores.df)
 }
+
+# Function to update the database
+
+update <- function(i, con, towrite) {
+#  dbGetQuery(con, "BEGIN TRANSACTION")
+#  browser()
+  txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
+#  print(towrite$id[i])
+  dbGetQuery(con, txt)
+#  dbCommit(con)
+}
+
 ########    FUNCTION    ############
 ###########################################
 
@@ -131,34 +147,32 @@ neg.words <- neg.words[,1]
 
 
 
-
-
-#############################################
-#############    FAKE DATASET  ##############
-tw <- NULL
-
-tw[1] <- "aime aime aime aime"
-tw[2] <- "aime aime"
-tw[3] <- "decoratif decoratif"
-tw[4] <- "Je suis sûr qu'en écrivant ce genre de chose, on ne se rend même pas compte que c'est terrible. Bonne conscience... "
-tw[5] <- "J'ai detesté Le Paris Lyon à Paris. Garçon de café exécrable. Lieu a éviter http://dismoiou.fr/p/bMIHdb"
-tw[6] <- "Je me balade 15 minutes dans Lyon je reviens chez moi avec du café, du chocolat et un sac gratuit ... J'aime cette ville"
-tw[7] = "#Hidalgo :Il reste dans la loi travail des choses que je n'approuve pas ... COUAC COUAC #PS Qu'en pense @jccambadelis ?"
-tw[8] = "#FF moi parce que je suis drôle, jolie, intelligente, modeste et j'aime les bananes."
-tw[9] = "Lyon, meilleure ville pour entreprendre en France d’après"
-Encoding(tw) <- "UTF-8"
-
-#############    FAKE DATASET  ##############
-############################################
-
-
-sentiment.score <- score.sentiment(df_tweets,pos.words,neg.words)
+sentiment.score <- score.sentiment(df_tweets$idd,df_tweets$text,pos.words,neg.words)
 sentiment.score
-# summary(sentiment.score)
-# hist(sentiment.score$sentiment)
 
-sentiment.score$sentiment[sentiment.score$score <= -3] <- 1
-sentiment.score$sentiment[sentiment.score$score == -2 | sentiment.score$score == -1] <- 2
-sentiment.score$sentiment[sentiment.score$score == 0] <- 3
-sentiment.score$sentiment[sentiment.score$score == 1 | sentiment.score$score == 2] <- 4
-sentiment.score$sentiment[sentiment.score$score >= 3] <- 5
+
+sentiment.score$sentiment[sentiment.score$score <= -3] <- 1;
+sentiment.score$sentiment[sentiment.score$score == -2 | sentiment.score$score == -1] <- 2;
+sentiment.score$sentiment[sentiment.score$score == 0] <- 3;
+sentiment.score$sentiment[sentiment.score$score == 1 | sentiment.score$score == 2] <- 4;
+sentiment.score$sentiment[sentiment.score$score >= 3] <- 5;
+
+# what to write in the table
+
+towrite <- sentiment.score[,c("id", "sentiment")]
+
+
+for (i in 1:length(sentiment.score$id)){
+  update(i, con, towrite)
+}
+
+
+
+dbDisconnect(con)
+
+
+
+
+
+
+
