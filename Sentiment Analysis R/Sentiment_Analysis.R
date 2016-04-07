@@ -26,8 +26,9 @@ con <- dbConnect(
 
 #query to get tweets
 query_kw <- "SELECT idd::varchar(100), text
-FROM twitter.tweets
+FROM tweets.tweets
 WHERE alch_score != 0 AND lang = 'fr' AND local_score IS NULL
+limit 10
 ;"
 
 # Retreives the table from the database
@@ -103,7 +104,7 @@ score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none
 update <- function(i, con, towrite) {
 #  dbGetQuery(con, "BEGIN TRANSACTION")
 #  browser()
-  txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
+  txt <- paste("UPDATE tweets.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
 #  print(towrite$id[i])
   dbGetQuery(con, txt)
 #  dbCommit(con)
