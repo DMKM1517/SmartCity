@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">95.61% </span>
+        <span class="strong">94.78% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>109/114</span>
+        <span class='fraction'>109/115</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">88.46% </span>
@@ -30,14 +30,14 @@
         <span class='fraction'>23/26</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88% </span>
+        <span class="strong">84% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>22/25</span>
+        <span class='fraction'>21/25</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">95.61% </span>
+        <span class="strong">94.78% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>109/114</span>
+        <span class='fraction'>109/115</span>
       </div>
     </div>
   </div>
@@ -310,7 +310,10 @@
 265
 266
 267
-268</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+268
+269
+270
+271</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -333,6 +336,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12×</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -376,14 +382,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5×</span>
 <span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5×</span>
@@ -402,9 +410,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5×</span>
 <span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -522,6 +527,7 @@
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
@@ -601,6 +607,9 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 	$scope.map.addListener('zoom_changed', function() {
 		$scope.getPoints($scope.map.getZoom());
 	});
+	$scope.infoWindow.addListener('domready', <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >		$('.rating').rating();</span>
+	});
 &nbsp;
 	/* --Variables-- */
 &nbsp;
@@ -637,10 +646,12 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 				'&lt;div class="category"&gt;' + point.category + '&lt;/div&gt;' +
 				'&lt;/div&gt;' +
 				'&lt;div class="col-xs-3"&gt;' +
-				'&lt;div class="stars ' + RF.star_class + '"&gt;' +
+				'&lt;div class="stars pull-right ' + RF.star_class + '"&gt;' +
 				'&lt;input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/&gt;' +
 				'&lt;/div&gt;' +
+				'&lt;div class="rating_number"&gt;' +
 				RF.rating1 +
+				'&lt;/div&gt;' +
 				'&lt;/div&gt;' +
 				'&lt;/div&gt;';
 			if (point.address) {
@@ -669,9 +680,6 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 				'&lt;/div&gt;';
 			$scope.infoWindow.setContent(content);
 			$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
-			setTimeout(function() {
-				$('.rating').rating();
-			}, 100);
 		});
 	};
 &nbsp;
@@ -686,8 +694,8 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 		// $scope.setMapOn($scope.markers, null);
 		var filtered_ids = PointsService.filterCategories($rootScope.selected_categories);
 		var filtered_markers = [];
-		for(var id in $scope.markers){
-			for(var i in filtered_ids) {
+		for (var id in $scope.markers) {
+			for (var i in filtered_ids) {
 				if (id == filtered_ids[i]) {
 					filtered_markers.push($scope.markers[id]);
 				}
@@ -733,8 +741,8 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 	PointsService.getCategories().then(function(categories) {
 		$scope.categories = categories;
 		// initially all categories are selected
-		for(var i in $scope.categories){
-			<span class="missing-if-branch" title="else path not taken" >E</span>if(typeof($rootScope.selected_categories[$scope.categories[i].category]) === 'undefined'){
+		for (var i in $scope.categories) {
+			<span class="missing-if-branch" title="else path not taken" >E</span>if (typeof($rootScope.selected_categories[$scope.categories[i].category]) === 'undefined') {
 				$rootScope.selected_categories[$scope.categories[i].category] = true;
 			}
 		}
@@ -787,6 +795,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 			createMarker(data);
 			$scope.map.setZoom(zoom);
 			$scope.filter();
+			$scope.map.panTo($scope.markers[point_id].getPosition());
 			$scope.openInfoWindow(point_id);
 			loading = false;
 		}, function(resp) {
@@ -850,7 +859,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'Points
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Apr 03 2016 22:30:07 GMT+0200 (Romance Daylight Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Apr 09 2016 11:52:37 GMT+0200 (Romance Daylight Time)
 </div>
 </div>
 <script src="../prettify.js"></script>

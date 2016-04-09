@@ -80,7 +80,7 @@ describe('Controller: MainCtrl', function() {
 			};
 			mockPointsService.getPoint = function(id) {
 				var defer = $q.defer();
-				var point = data[id];
+				var point = data[id+1];
 				if (point) {
 					defer.resolve(point);
 				} else {
@@ -174,27 +174,31 @@ describe('Controller: MainCtrl', function() {
 
 
 	describe('info window', function() {
+		var header = '<div class="info_window">' +
+			'<div class="row">' +
+			'<div class="col-xs-9">';
+		var header2 = '</div>' +
+			'<div class="col-xs-3">' +
+			'<div class="stars pull-right star_orange">' +
+			'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
+			'</div>' +
+			'<div class="rating_number">' +
+			'1.0' +
+			'</div>' +
+			'</div>' +
+			'</div>';
 
 		describe('when clicking a point', function() {
 
 			it('displays only address, web and schedule if available', function() {
 				scope.openInfoWindow(0);
 				scope.$digest();
-				var point = data[0];
+				var point = data[1];
 				expect(scope.infoWindow.content).to.equal(
-					'<div class="info_window">' +
-					'<div class="row">' +
-					'<div class="col-xs-9">' +
+					header +
 					'<h4>' + point.name + '</h4>' +
 					'<div class="category">' + point.category + '</div>' +
-					'</div>' +
-					'<div class="col-xs-3">' +
-					'<div class="stars star_orange">' +
-					'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
-					'</div>' +
-					'1.0' +
-					'</div>' +
-					'</div>' +
+					header2 +
 					'<b>Address:</b> ' + point.address + '<br>' +
 					'<b>Web:</b> <a href="www.web.com" target="_blank">www.web.com</a><br>' +
 					'<b>Schedule:</b> ' + point.schedule +
@@ -207,23 +211,14 @@ describe('Controller: MainCtrl', function() {
 					'</div>' +
 					'</div>'
 				);
-				scope.openInfoWindow(2);
+				scope.openInfoWindow(1);
 				scope.$digest();
 				point = data[2];
 				expect(scope.infoWindow.content).to.equal(
-					'<div class="info_window">' +
-					'<div class="row">' +
-					'<div class="col-xs-9">' +
+					header +
 					'<h4>' + point.name + '</h4>' +
 					'<div class="category">' + point.category + '</div>' +
-					'</div>' +
-					'<div class="col-xs-3">' +
-					'<div class="stars star_orange">' +
-					'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
-					'</div>' +
-					'1.0' +
-					'</div>' +
-					'</div>' +
+					header2 +
 					'<b>Address:</b> ' + point.address +
 					'<div class="row">' +
 					'<div class="col-xs-9">' +
@@ -239,23 +234,14 @@ describe('Controller: MainCtrl', function() {
 			it('displays in different lines when more than one web link', function() {
 				scope.getPoints(13);
 				scope.$digest();
-				scope.openInfoWindow(3);
+				scope.openInfoWindow(2);
 				scope.$digest();
 				var point = data[3];
 				expect(scope.infoWindow.content).to.equal(
-					'<div class="info_window">' +
-					'<div class="row">' +
-					'<div class="col-xs-9">' +
+					header +
 					'<h4>' + point.name + '</h4>' +
 					'<div class="category">' + point.category + '</div>' +
-					'</div>' +
-					'<div class="col-xs-3">' +
-					'<div class="stars star_orange">' +
-					'<input type="hidden" class="rating" data-fractions="2" value="1.0" data-readonly/>' +
-					'</div>' +
-					'1.0' +
-					'</div>' +
-					'</div>' +
+					header2 +
 					'<b>Web:</b> <a href="www.web.com" target="_blank">www.web.com</a><br>' +
 					'<a href="www.web.com" target="_blank">www.web.com</a>' +
 					'<div class="row">' +
@@ -276,11 +262,11 @@ describe('Controller: MainCtrl', function() {
 			it('opens the info window of the id passed', function() {
 				$location.search({ id: 0, z: 12 });
 				scope.$digest();
-				var point = data[0];
+				var point = data[1];
 				expect(scope.infoWindow.content).to.contain(point.name);
 				$location.search({ id: 3, z: 13 });
 				scope.$digest();
-				point = data[3];
+				point = data[4];
 				expect(scope.infoWindow.content).to.contain(point.name);
 			});
 

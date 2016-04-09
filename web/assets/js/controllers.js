@@ -61,10 +61,12 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 				'<div class="category">' + point.category + '</div>' +
 				'</div>' +
 				'<div class="col-xs-3">' +
-				'<div class="stars ' + RF.star_class + '">' +
+				'<div class="stars pull-right ' + RF.star_class + '">' +
 				'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
 				'</div>' +
+				'<div class="rating_number">' +
 				RF.rating1 +
+				'</div>' +
 				'</div>' +
 				'</div>';
 			if (point.address) {
