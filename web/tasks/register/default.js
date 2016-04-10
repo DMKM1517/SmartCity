@@ -17,5 +17,5 @@
  *
  */
 module.exports = function (grunt) {
-  grunt.registerTask('default', ['bower:install', 'compileAssets', 'linkAssets',  'watch']);
+  grunt.registerTask('default', ['bower:noclean', 'compileAssets', 'linkAssets',  'watch']);
 };

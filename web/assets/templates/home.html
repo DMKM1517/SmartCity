@@ -1,30 +1,4 @@
-<nav class="navbar navbar-inverse" style="margin-bottom:0">
-	<div class="container-fluid">
-		<!-- <div class="navbar-header"> -->
-			<a class="navbar-brand" href="#/">TourisLyon</a>
-			<div id="loader"></div>
-		<!-- </div> -->
-		<div id="toggle" ng-click="toggleMenu()"><span></span></div>
-	</div>
-</nav>
-<div id="menu">
-	<h2>Show me</h2>
-	<div class="checkbox">
-		<label>
-			<input type="checkbox" checked> Only cool stuff that people like most
-		</label>
-	</div>
-	<a class="pointer" ng-click="selectAll(true)">All</a> / 
-	<a class="pointer" ng-click="selectAll(false)">None</a>
-	<div class="categories">
-		<div class="checkbox" ng-repeat="value in categories">
-			<label>
-				<input type="checkbox" ng-model="selected_categories[value.category]" ng-change="filter()"> {{ value.category }} ({{ value.count }})
-			</label>
-		</div>
-	</div>
-	<!-- <button class="btn btn-primary" ng-click="filter()">Guatash!</button> -->
-</div>
-<div style="height: 92vh">
+<menubar></menubar>
+<div class="cont">
 	<div id="map" style="height:100%"></div>
 </div>

@@ -19,7 +19,7 @@
  */
 module.exports = function(grunt) {
   grunt.registerTask('build', [
-  	'bower:install',
+  	'bower:noclean',
     'compileAssets',
     'linkAssetsBuild',
     'clean:build',

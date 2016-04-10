@@ -8,7 +8,10 @@
     "angular-bootstrap": "^1.2.5",
     "bootstrap-rating": "^1.3.2",
     "angular-loading-bar": "^0.9.0",
-    "js-marker-clusterer": "*"
+    "js-marker-clusterer": "*",
+    "angular-translate": "^2.11.0",
+    "angular-translate-loader-static-files": "^2.11.0",
+    "angular-sanitize": "^1.5.3"
   },
   "devDependencies": {
     "angular-mocks": "~1.5.0"
@@ -20,25 +23,22 @@
     "angular": {
       "core": "angular.min.js"
     },
-    "angular-route": {
-      "/": "angular-route.min.js"
+    "angular-mocks": {
+      "dev": "angular-mocks.js"
     },
-    "angular-loading-bar": {
+    "angular-translate": {
+      "important": "angular-translate.min.js"
+    },
+    "angular-*": {
       "/": [
-        "build/loading-bar.min.js",
-        "build/loading-bar.min.css"
+        "**/*.min.js",
+        "**/*.min.css"
       ]
-    },
-    "angular-bootstrap": {
-      "/": "*.min.js"
     },
     "bootstrap": {
       "css": "dist/css/bootstrap.min.css",
       "fonts": "dist/fonts/*",
       "js": "dist/js/bootstrap.min.js"
-    },
-    "angular-mocks": {
-      "dev": "angular-mocks.js"
     },
     "bootstrap-rating": {
       "/": [
@@ -49,5 +49,8 @@
     "js-marker-clusterer": {
       "/": "src/markerclusterer_compiled.js"
     }
+  },
+  "resolutions": {
+    "angular": "1.5.3"
   }
 }

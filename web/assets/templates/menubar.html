@@ -1,0 +1,34 @@
+<nav class="navbar navbar-inverse">
+	<a class="navbar-brand" href="#/">TourisLyon</a>
+	<div id="loader"></div>
+	<div id="toggle" ng-if="showFilter" ng-click="toggleMenu()">
+		<span></span>
+	</div>
+	<ul class="nav nav1 navbar-right">
+		<li class="dropdown" id="dropdown_language">
+			<a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ current_language | uppercase }}</a>
+			<ul class="dropdown-menu">
+				<li ng-class="{active: (lang == current_language)}" ng-repeat="lang in languages">
+					<a class="pointer" ng-click="changeLanguage(lang)">{{ lang | uppercase }}</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</nav>
+<div id="menu" ng-if="showFilter">
+	<h2>{{ 'show_me' | translate }}</h2>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" checked> {{ 'cool_stuff' | translate }}
+		</label>
+	</div>
+	<a class="pointer" ng-click="selectAll(true)">{{ 'all' | translate }}</a> /
+	<a class="pointer" ng-click="selectAll(false)">{{ 'none' | translate }}</a>
+	<div class="categories">
+		<div class="checkbox" ng-repeat="value in categories">
+			<label>
+				<input type="checkbox" ng-model="selected_categories[value.category]" ng-change="filter()"> {{ ''+value.category | translate }} ({{ value.count }})
+			</label>
+		</div>
+	</div>
+</div>

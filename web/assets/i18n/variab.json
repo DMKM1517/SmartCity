@@ -1,0 +1,13 @@
+{
+	"database": [
+		{ "label": "PATRIMOINE_CULTUREL" },
+		{ "label": "DEGUSTATION" },
+		{ "label": "PATRIMOINE_NATUREL" },
+		{ "label": "COMMERCE_ET_SERVICE" },
+		{ "label": "EQUIPEMENT" },
+		{ "label": "RESTAURATION" }
+	],
+	"other": [
+		{ "label": "more_information" }
+	]
+}

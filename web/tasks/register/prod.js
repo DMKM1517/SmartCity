@@ -13,7 +13,7 @@
  */
 module.exports = function(grunt) {
   grunt.registerTask('prod', [
-    'bower:install',
+    'bower:noclean',
     'compileAssets',
     'concat',
     'uglify',

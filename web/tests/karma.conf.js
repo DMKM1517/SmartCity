@@ -16,6 +16,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       {pattern: 'assets/bower/**/core/*.js'},
+      {pattern: 'assets/bower/**/important/*.js'},
       {pattern: 'assets/bower/**/*.js'},
       'tests/google_maps_mock.js',
       {pattern: 'assets/templates/*.html'},

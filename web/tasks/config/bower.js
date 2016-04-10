@@ -4,12 +4,30 @@
  */
 module.exports = function(grunt) {
 	grunt.config.set('bower', {
-		install: {
+		noclean: {
 			options: {
 				targetDir: './assets/bower',
 				layout: 'byComponent',
 				install: false,
 				cleanTargetDir: false,
+				cleanBowerDir: false
+			}
+		},
+		clean: {
+			options: {
+				targetDir: './assets/bower',
+				layout: 'byComponent',
+				install: false,
+				cleanTargetDir: true,
+				cleanBowerDir: false
+			}
+		},
+		install: {
+			options: {
+				targetDir: './assets/bower',
+				layout: 'byComponent',
+				install: true,
+				cleanTargetDir: true,
 				cleanBowerDir: false
 			}
 		}

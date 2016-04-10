@@ -1,0 +1,19 @@
+{
+    "show_me": "Show me",
+    "cool_stuff": "Only cool stuff that people like most",
+    "all": "All",
+    "none": "None",
+    "back_map": "Back to map",
+    "address": "Address",
+    "web": "Web",
+    "email": "Email",
+    "phone": "Phone",
+    "schedule": "Schedule",
+    "PATRIMOINE_CULTUREL": "Cultural Heritage",
+    "DEGUSTATION": "Tasting",
+    "PATRIMOINE_NATUREL": "Natural Heritage",
+    "COMMERCE_ET_SERVICE": "Business and Service",
+    "EQUIPEMENT": "Equipement",
+    "RESTAURATION": "Restaurants",
+    "more_information": "More Information"
+}

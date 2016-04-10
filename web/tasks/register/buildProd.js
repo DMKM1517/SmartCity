@@ -17,7 +17,7 @@
  */
 module.exports = function(grunt) {
   grunt.registerTask('buildProd', [
-  	'bower:install',
+  	'bower:noclean',
     'compileAssets',
     'concat',
     'uglify',

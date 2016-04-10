@@ -1,5 +1,5 @@
 /* MainCtrl */
-SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', function($scope, $rootScope, $location, GoogleMaps, PointsService, colorsCnst, RatingFactory) {
+SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translate', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', 'languagesCnst', function($scope, $rootScope, $location, $translate, GoogleMaps, PointsService, colorsCnst, RatingFactory, languagesCnst) {
 
 	/* Variables */
 
@@ -8,6 +8,9 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 	var loading = true;
 	var latlong = { lat: 45.7591739, lng: 4.8846752 };
 	var current_zoom = initial_zoom;
+	$scope.showFilter = true;
+	$scope.languages = languagesCnst;
+	$scope.current_language = $translate.use();
 	$scope.markers = [];
 	$scope.markers_clusters = null;
 	// initialize google maps
@@ -54,47 +57,47 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 	$scope.openInfoWindow = function(point_id) {
 		PointsService.getPoint(point_id).then(function(point) {
 			var RF = RatingFactory.getRatingsAndClass(point.rating);
-			var content = '<div class="info_window">' +
-				'<div class="row">' +
-				'<div class="col-xs-9">' +
-				'<h4>' + point.name + '</h4>' +
-				'<div class="category">' + point.category + '</div>' +
-				'</div>' +
-				'<div class="col-xs-3">' +
-				'<div class="stars pull-right ' + RF.star_class + '">' +
-				'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
-				'</div>' +
-				'<div class="rating_number">' +
-				RF.rating1 +
-				'</div>' +
-				'</div>' +
-				'</div>';
-			if (point.address) {
-				content += '<b>Address:</b> ' + point.address + '<br>';
-			}
-			if (point.web) {
-				var links = point.web.split(';');
-				content += '<b>Web:</b> ';
-				for (var i in links) {
-					content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
+			$translate(['address', 'web', 'schedule', 'more_information', point.category]).then(function(translations) {
+				var content = '<div class="info_window">' +
+					'<div class="row">' +
+					'<div class="col-xs-9">' +
+					'<h4>' + point.name + '</h4>' +
+					'<div class="category">' + translations[point.category] + '</div>' +
+					'</div>' +
+					'<div class="col-xs-3">' +
+					'<div class="stars pull-right ' + RF.star_class + '">' +
+					'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
+					'</div>' +
+					'<div class="rating_number">' +
+					RF.rating1 +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				if (point.address) {
+					content += '<b>' + translations.address + ':</b> ' + point.address + '<br>';
 				}
-			}
-			if (point.schedule) {
-				content += '<b>Schedule:</b> ' + point.schedule;
-			}
-			if (content.endsWith('<br>')) {
-				content = content.slice(0, -4);
-			}
-			content += '<div class="row">' +
-				'<div class="col-xs-9">' +
-				'</div>' +
-				'<div class="col-xs-3">' +
-				'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">More information</a>' +
-				'</div>' +
-				'</div>' +
-				'</div>';
-			$scope.infoWindow.setContent(content);
-			$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
+				if (point.web) {
+					var links = point.web.split(';');
+					content += '<b>' + translations.web + ':</b> ';
+					for (var i in links) {
+						content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
+					}
+				}
+				if (point.schedule) {
+					content += '<b>' + translations.schedule + ':</b> ' + point.schedule;
+				}
+				if (content.endsWith('<br>')) {
+					content = content.slice(0, -4);
+				}
+				content += '<div class="row">' +
+					'<div class="pull-right">' +
+					'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">' + translations.more_information + '</a>' +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				$scope.infoWindow.setContent(content);
+				$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
+			});
 		});
 	};
 
@@ -141,6 +144,13 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 			$rootScope.selected_categories[i] = value;
 		}
 		$scope.filter();
+	};
+
+	// change language
+	$scope.changeLanguage = function(lang) {
+		$translate.use(lang);
+		$scope.infoWindow.close();
+		$scope.current_language = lang;
 	};
 
 	/* --Functions-- */
@@ -226,7 +236,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', 'GoogleMap
 
 
 /* PointCtrl */
-SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'PointsService', 'RatingFactory', function($scope, $routeParams, $location, PointsService, RatingFactory) {
+SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$translate', 'PointsService', 'RatingFactory', 'languagesCnst', function($scope, $routeParams, $location, $translate, PointsService, RatingFactory, languagesCnst) {
 
 	/* Variables */
 
@@ -234,6 +244,9 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'Points
 	var id = $routeParams.id;
 	var searchParam = $location.search();
 	var param_zoom = searchParam.z;
+	$scope.showFilter = false;
+	$scope.languages = languagesCnst;
+	$scope.current_language = $translate.use();
 
 	/* --Variables-- */
 
@@ -262,6 +275,12 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', 'Points
 
 	$scope.back = function() {
 		$location.path('/').search({ id: id, z: param_zoom });
+	};
+
+	// change language
+	$scope.changeLanguage = function(lang) {
+		$translate.use(lang);
+		$scope.current_language = lang;
 	};
 
 	/* --Functions-- */
