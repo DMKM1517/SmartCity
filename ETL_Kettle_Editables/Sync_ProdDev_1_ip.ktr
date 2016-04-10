@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>ETL_Smart</name>
+    <name>Sync_ProdDev_1_ip</name>
     <description/>
     <extended_description/>
     <trans_version/>
@@ -98,19 +98,63 @@
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
+  <connection>
+    <name>SmartLocal</name>
+    <server>25.145.132.49</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>smart</database>
+    <port>5432</port>
+    <username>dmkm</username>
+    <password>Encrypted 2be98afc86aa7f2e4af14a57d8fc0fc8e</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>N</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute>
+      <attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
   <order>
-  <hop> <from>ip.interest_points</from><to>Diff Interest Points</to><enabled>Y</enabled> </hop>
-  <hop> <from>landing.ip_interest_points</from><to>Diff Interest Points</to><enabled>Y</enabled> </hop>
-  <hop> <from>Diff Interest Points</from><to>Sync Interest Points</to><enabled>N</enabled> </hop>
-  <hop> <from>Diff Yelp</from><to>Sync Yelp</to><enabled>N</enabled> </hop>
-  <hop> <from>ip.yelp</from><to>Diff Yelp</to><enabled>Y</enabled> </hop>
-  <hop> <from>landing.ip_yelp</from><to>Diff Yelp</to><enabled>Y</enabled> </hop>
-  <hop> <from>Diff Foursquare</from><to>Sync Foursquare</to><enabled>Y</enabled> </hop>
-  <hop> <from>ip.foursquare</from><to>Diff Foursquare</to><enabled>Y</enabled> </hop>
-  <hop> <from>landing.ip_foursquare</from><to>Diff Foursquare</to><enabled>Y</enabled> </hop>
+  <hop> <from>DEV ip.interest_points</from><to>Merge ip.interest_points</to><enabled>Y</enabled> </hop>
+  <hop> <from>PROD ip.interest_points</from><to>Merge ip.interest_points</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge ip.interest_points</from><to>Sync into DEV ip.interest_points</to><enabled>Y</enabled> </hop>
   </order>
   <step>
-    <name>Diff Interest Points</name>
+    <name>DEV ip.interest_points</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, sentiment&#xd;&#xa;, in_use&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.interest_points&#xd;&#xa;ORDER BY id&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>48</xloc>
+      <yloc>80</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge ip.interest_points</name>
     <type>MergeRows</type>
     <description/>
     <distribute>Y</distribute>
@@ -147,23 +191,27 @@
       <value>coordinates_long</value>
       <value>source_create_date</value>
       <value>source_last_update</value>
+      <value>sentiment</value>
+      <value>in_use</value>
+      <value>flag</value>
+      <value>last_update_date</value>
     </values>
-<flag_field>new_flag</flag_field>
-<reference>ip.interest_points</reference>
-<compare>landing.ip_interest_points</compare>
+<flag_field>sync_flag</flag_field>
+<reference>DEV ip.interest_points</reference>
+<compare>PROD ip.interest_points</compare>
     <compare>
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>288</xloc>
+      <xloc>224</xloc>
       <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Sync Interest Points</name>
-    <type>SynchronizeAfterMerge</type>
+    <name>PROD ip.interest_points</name>
+    <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
     <custom_distribution/>
@@ -173,15 +221,41 @@
            <schema_name/>
            </partitioning>
     <connection>SmartAWD</connection>
+    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, sentiment&#xd;&#xa;, in_use&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.interest_points&#xd;&#xa;ORDER BY id&#x3b;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>48</xloc>
+      <yloc>16</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sync into DEV ip.interest_points</name>
+    <type>SynchronizeAfterMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
     <commit>100</commit>
     <tablename_in_field>N</tablename_in_field>
     <tablename_field/>
     <use_batch>N</use_batch>
     <perform_lookup>N</perform_lookup>
-    <operation_order_field>new_flag</operation_order_field>
+    <operation_order_field>sync_flag</operation_order_field>
     <order_insert>new</order_insert>
     <order_update>changed</order_update>
-    <order_delete/>
+    <order_delete>deleted</order_delete>
     <lookup>
       <schema>ip</schema>
       <table>interest_points</table>
@@ -194,7 +268,7 @@
       <value>
         <name>id</name>
         <rename>id</rename>
-        <update>N</update>
+        <update>Y</update>
       </value>
       <value>
         <name>type</name>
@@ -318,7 +392,7 @@
       </value>
       <value>
         <name>flag</name>
-        <rename>new_flag</rename>
+        <rename>flag</rename>
         <update>Y</update>
       </value>
       <value>
@@ -329,403 +403,8 @@
     </lookup>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
+      <xloc>400</xloc>
       <yloc>48</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>ip.interest_points</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, sentiment&#xd;&#xa;, in_use&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.interest_points&#xd;&#xa;ORDER BY id&#x3b;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>96</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>landing.ip_interest_points</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, 0 as sentiment&#xd;&#xa;, false as in_use&#xd;&#xa;, &#x27;new&#x27; as flag&#xd;&#xa;, now&#x28;&#x29; as last_update_date&#xd;&#xa;FROM landing.ip_interest_points&#xd;&#xa;--FROM test.landing_ip_interest_points&#xd;&#xa;ORDER BY id</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>16</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Diff Yelp</name>
-    <type>MergeRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <keys>
-      <key>idd</key>
-    </keys>
-    <values>
-      <value>name</value>
-      <value>rating</value>
-      <value>latitude</value>
-      <value>longitude</value>
-      <value>image_url</value>
-      <value>phone</value>
-      <value>review_count</value>
-    </values>
-<flag_field>new_flag</flag_field>
-<reference>ip.yelp</reference>
-<compare>landing.ip_yelp</compare>
-    <compare>
-    </compare>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>288</xloc>
-      <yloc>224</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sync Yelp</name>
-    <type>SynchronizeAfterMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <commit>100</commit>
-    <tablename_in_field>N</tablename_in_field>
-    <tablename_field/>
-    <use_batch>N</use_batch>
-    <perform_lookup>N</perform_lookup>
-    <operation_order_field>new_flag</operation_order_field>
-    <order_insert>new</order_insert>
-    <order_update>changed</order_update>
-    <order_delete/>
-    <lookup>
-      <schema>ip</schema>
-      <table>yelp</table>
-      <key>
-        <name>idd</name>
-        <field>idd</field>
-        <condition>&#x3d;</condition>
-        <name2/>
-      </key>
-      <value>
-        <name>idd</name>
-        <rename>idd</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>name</name>
-        <rename>name</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>rating</name>
-        <rename>rating</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>latitude</name>
-        <rename>latitude</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>longitude</name>
-        <rename>longitude</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>image_url</name>
-        <rename>image_url</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>phone</name>
-        <rename>phone</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>review_count</name>
-        <rename>review_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>flag</name>
-        <rename>new_flag</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>last_update_date</name>
-        <rename>last_update_date</rename>
-        <update>Y</update>
-      </value>
-    </lookup>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
-      <yloc>224</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>ip.yelp</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  idd&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, rating&#xd;&#xa;, latitude&#xd;&#xa;, longitude&#xd;&#xa;, image_url&#xd;&#xa;, phone&#xd;&#xa;, review_count&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.yelp&#xd;&#xa;order by idd&#x3b;&#xd;&#xa;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>272</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>landing.ip_yelp</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  idd&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, rating&#xd;&#xa;, latitude&#xd;&#xa;, longitude&#xd;&#xa;, image_url&#xd;&#xa;, phone&#xd;&#xa;, review_count&#xd;&#xa;, &#x27;new&#x27; as flag&#xd;&#xa;, now&#x28;&#x29; as last_update_date&#xd;&#xa;FROM landing.ip_yelp&#xd;&#xa;order by idd&#x3b;&#xd;&#xa;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>192</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Diff Foursquare</name>
-    <type>MergeRows</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <keys>
-      <key>idd</key>
-    </keys>
-    <values>
-      <value>idd</value>
-      <value>name</value>
-      <value>checkinscount</value>
-      <value>tipcount</value>
-      <value>userscount</value>
-      <value>rating</value>
-    </values>
-<flag_field>new_flag</flag_field>
-<reference>ip.foursquare</reference>
-<compare>landing.ip_foursquare</compare>
-    <compare>
-    </compare>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>288</xloc>
-      <yloc>384</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>Sync Foursquare</name>
-    <type>SynchronizeAfterMerge</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <commit>100</commit>
-    <tablename_in_field>N</tablename_in_field>
-    <tablename_field/>
-    <use_batch>N</use_batch>
-    <perform_lookup>N</perform_lookup>
-    <operation_order_field>new_flag</operation_order_field>
-    <order_insert>new</order_insert>
-    <order_update>changed</order_update>
-    <order_delete/>
-    <lookup>
-      <schema>ip</schema>
-      <table>foursquare</table>
-      <key>
-        <name>idd</name>
-        <field>idd</field>
-        <condition>&#x3d;</condition>
-        <name2/>
-      </key>
-      <value>
-        <name>idd</name>
-        <rename>idd</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>name</name>
-        <rename>name</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>checkinscount</name>
-        <rename>checkinscount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>tipcount</name>
-        <rename>tipcount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>userscount</name>
-        <rename>userscount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>rating</name>
-        <rename>rating</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>flag</name>
-        <rename>new_flag</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>last_update_date</name>
-        <rename>last_update_date</rename>
-        <update>Y</update>
-      </value>
-    </lookup>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>464</xloc>
-      <yloc>384</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>ip.foursquare</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  idd&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, checkinscount&#xd;&#xa;, tipcount&#xd;&#xa;, userscount&#xd;&#xa;, rating&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.foursquare&#xd;&#xa;order by idd&#x3b;&#xd;&#xa;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>432</yloc>
-      <draw>Y</draw>
-      </GUI>
-    </step>
-
-  <step>
-    <name>landing.ip_foursquare</name>
-    <type>TableInput</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-         <partitioning>
-           <method>none</method>
-           <schema_name/>
-           </partitioning>
-    <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  idd&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, checkinscount&#xd;&#xa;, tipcount&#xd;&#xa;, userscount&#xd;&#xa;, rating&#xd;&#xa;, &#x27;new&#x27; as flag&#xd;&#xa;, now&#x28;&#x29; as last_update_date&#xd;&#xa;FROM landing.ip_foursquare&#xd;&#xa;order by idd&#x3b;&#xd;&#xa;</sql>
-    <limit>0</limit>
-    <lookup/>
-    <execute_each_row>N</execute_each_row>
-    <variables_active>N</variables_active>
-    <lazy_conversion_active>N</lazy_conversion_active>
-     <cluster_schema/>
- <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>96</xloc>
-      <yloc>352</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
