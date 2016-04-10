@@ -1,8 +1,8 @@
-install.packages("stringi")
-install.packages("gsubfn")
-install.packages("dplyr")
-install.packages("RPostgreSQL")
-install.packages("SnowballC")
+#install.packages("stringi")
+#install.packages("gsubfn")
+#install.packages("dplyr")
+#install.packages("RPostgreSQL")
+#install.packages("SnowballC")
 require("RPostgreSQL")
 require("stringi")
 library(gsubfn)
@@ -27,9 +27,8 @@ con <- dbConnect(
 
 #query to get tweets
 query_kw <- "SELECT idd::varchar(100), text
-FROM tweets.tweets
-WHERE alch_score != 0 AND lang = 'fr' AND local_score IS NULL
-limit 10
+FROM twitter.tweets
+WHERE lang = 'fr' AND local_score IS NULL and cast(timestamp AS DATE) = '20160325'
 ;"
 
 # Retreives the table from the database
@@ -105,7 +104,7 @@ score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none
 update <- function(i, con, towrite) {
 #  dbGetQuery(con, "BEGIN TRANSACTION")
 #  browser()
-  txt <- paste("UPDATE tweets.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
+  txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
 #  print(towrite$id[i])
   dbGetQuery(con, txt)
 #  dbCommit(con)
@@ -171,8 +170,6 @@ for (i in 1:length(sentiment.score$id)){
 
 
 dbDisconnect(con)
-
-
 
 
 
