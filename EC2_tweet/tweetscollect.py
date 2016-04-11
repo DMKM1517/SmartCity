@@ -10,17 +10,18 @@ from tweepy import Stream
 
 # In[2]:
 
-import io 
+import io
 import json
-with io.open('config_secret.json') as cred:   
+with io.open('config_secret.json') as cred:
     creds = json.load(cred)
-    #Variables that contains the user credentials to access Twitter API 
+    #Variables that contains the user credentials to access Twitter API
     access_token = creds['access_token']
     access_token_secret = creds['access_token_secret']
     consumer_key = creds['consumer_key']
     consumer_secret = creds['consumer_secret']
 
-
+with io.open('../login.json') as log:
+    login = json.load(log)
 # In[3]:
 
 import psycopg2
@@ -37,7 +38,7 @@ import pprint
 class StdOutListener(StreamListener):
 
     def on_data(self, data):
-        conn = psycopg2.connect(database="smart", user="dmkm", password="dmkm1234", host="50.16.139.89", port="5432")
+        conn = psycopg2.connect(database=login["dbname"], user=login["user"], password=login["password"], host=login["host"], port=login["port"])
         cursor = conn.cursor()
         tweet = json.loads(data)
         idd = tweet['id']
@@ -45,13 +46,10 @@ class StdOutListener(StreamListener):
         location = tweet['user']['location']
         text = tweet['text']
         rt = tweet['retweeted']
-        lat = 0
-        long = 0
         lang = tweet['lang']
-        sentiment = 0
         timestamp = tweet['created_at']
-        query = "INSERT INTO tweets.tweets2 (idd, usert, location, text,rt ,lat, long, lang, sentiment, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        data = (idd, user, location, text,rt ,lat, long, lang, sentiment, timestamp)
+        query = "INSERT INTO twitter.tweets (idd, usert, location, text,rt, lang, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        data = (idd, user, location, text,rt , lang,  timestamp)
         cursor.execute(query,data)
         conn.commit()
         conn.close()
@@ -71,10 +69,4 @@ if __name__ == '__main__':
     stream = Stream(auth, l)
 
     #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-    stream.filter(track=['lyon'])
-
-
-# In[ ]:
-
-
-
+    stream.filter(track=['lyon','villeurbanne','bron','priest','bellecour','fourviere','gerland','lyonnais','lyoneon','venissieux'])

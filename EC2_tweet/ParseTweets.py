@@ -7,6 +7,9 @@ import io
 import json
 tweets = io.open('tweet.txt')
 
+with io.open('../login.json') as log:
+    login = json.load(log)
+
 
 # In[2]:
 
@@ -14,7 +17,7 @@ import psycopg2
 import sys
 import pprint
 
-conn = psycopg2.connect(database="smart", user="dmkm", password="dmkm1234", host="50.16.139.89", port="5432")
+conn = psycopg2.connect(database=login["dbname"], user=login["user"], password=login["password"], host=login["host"], port=login["port"])
 cursor = conn.cursor()
 #cursor.execute("SELECT * FROM tweets.tweets")
 #records = cursor.fetchall()
