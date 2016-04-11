@@ -1,0 +1,7 @@
+{
+  "dbname" : "smart",
+  "host" : "50.16.139.89",
+  "port" : 5432,
+  "user" : "dmkm", 
+  "password" : "dmkm1234"
+}

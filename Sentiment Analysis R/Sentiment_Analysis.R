@@ -13,6 +13,7 @@ library(dplyr)
 library(jsonlite)
 
 
+login <- fromJSON("../login.json", flatten=TRUE)
 
 # ######### CONNECTION TO DB ###############
 
