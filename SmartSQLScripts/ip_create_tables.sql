@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 -- interest points tables
 ----------------------------------------------------------------------
-drop table if exists landing.ip_interest_points;
+-- drop table if exists landing.ip_interest_points;
 CREATE TABLE landing.ip_interest_points (
 	id int4 NOT NULL,
 	"type" varchar(250),
@@ -31,7 +31,7 @@ CREATE TABLE landing.ip_interest_points (
 CREATE INDEX landing_interest_points_coordinates_lat_coordinates_long_idx ON landing.ip_interest_points (coordinates_lat,coordinates_long);
 CREATE INDEX landing_interest_points_nom_idx ON landing.ip_interest_points (name);
 
-drop table if exists ip.interest_points_new;
+-- drop table if exists ip.interest_points_new;
 CREATE TABLE ip.interest_points_new (
 	id int4 NOT NULL,
 	"type" varchar(250),
@@ -69,7 +69,7 @@ CREATE INDEX interest_points_nom_idx ON ip.interest_points_new (name);
 ----------------------------------------------------------------------
 -- Foursquare table
 ----------------------------------------------------------------------
-drop table if exists landing.ip_foursquare ;
+-- drop table if exists landing.ip_foursquare ;
 CREATE TABLE landing.ip_foursquare (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -99,7 +99,7 @@ CREATE INDEX foursquare_rating_idx ON ip.foursquare (rating);
 ----------------------------------------------------------------------
 -- Yelp table
 ----------------------------------------------------------------------
-drop table if exists landing.ip_yelp;
+-- drop table if exists landing.ip_yelp;
 CREATE TABLE landing.ip_yelp (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -112,7 +112,7 @@ CREATE TABLE landing.ip_yelp (
 );
 CREATE INDEX yelp_pkey ON landing.ip_yelp (idd);
 
-drop table if exists ip.yelp;
+-- drop table if exists ip.yelp;
 CREATE TABLE ip.yelp (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -134,7 +134,7 @@ CREATE INDEX yelp_rating_idx ON ip.yelp (rating);
 ----------------------------------------------------------------------
 -- Aggregation View
 ----------------------------------------------------------------------
-drop view if exists ip.v_interest_points_agregated;
+-- drop view if exists ip.v_interest_points_agregated;
 CREATE VIEW ip.v_interest_points_agregated AS
 select
 	ip.id,
@@ -185,4 +185,112 @@ from
 	left join ip.yelp y on ip.id = y.idd
 where
 	ip.in_use is true;
+
+select * 
+from ip.interest_points
+limit 500;
+
+
+----------------------------------------------------------------------
+-- Twitter tables
+----------------------------------------------------------------------
+-- drop table if exists twitter.tweets;
+CREATE TABLE twitter.tweets (
+	idd bigint,
+	"timestamp" varchar(100),
+	usert varchar(300),
+	location varchar(300),
+	"text" varchar(1000),
+	rt varchar(100),
+	lat varchar(100),
+	long varchar(100),
+	lang varchar(100),
+	sentiment float8,
+	alch_score float8,
+	alch_type varchar(100),
+	alch_lang varchar(100),
+	local_score float8
+);
+
+CREATE INDEX ON twitter.tweets (idd);
+CREATE INDEX ON twitter.tweets (sentiment);
+CREATE INDEX ON twitter.tweets ("text");
+
+-- drop table if exists twitter.tweet_to_ip;
+CREATE TABLE twitter.tweet_to_ip (
+	ip_id int,	
+	twitter_id bigint);
+CREATE INDEX ON twitter.tweet_to_ip (ip_id);
+CREATE INDEX ON twitter.tweet_to_ip (twitter_id);
+
+
+----------------------------------------------------------------------
+-- Hist tables
+---------------------------------------------------------------------
+
+-- drop table if exists hist.ip_foursquare;
+CREATE TABLE hist.ip_foursquare (
+	hist_date timestamp,
+	hist_action_taken varchar(20),
+	idd int8,
+	"name" varchar(500),
+	checkinscount int8,
+	tipcount int8,
+	userscount int8,
+	rating float8,
+	flag varchar(100),
+	last_update_date timestamp
+);
+
+-- drop table if exists hist.ip_interest_points;
+CREATE TABLE hist.ip_interest_points (
+	hist_date timestamp,
+	hist_action_taken varchar(20),
+	id int4,
+	"type" varchar(250),
+	type_detail text,
+	"name" varchar(500),
+	address text,
+	postal_code varchar(100),
+	commune varchar(100),
+	telephone varchar(250),
+	fax varchar(100),
+	telephone_fax varchar(100),
+	email varchar(250),
+	website varchar(500),
+	facebook varchar(500),
+	ranking varchar(100),
+	open_hours text,
+	price text,
+	price_min varchar(250),
+	price_max varchar(250),
+	producer text,
+	coordinates_lat float8,
+	coordinates_long float8,
+	source_create_date varchar(250),
+	source_last_update varchar(250),
+	sentiment int4,
+	in_use bool,
+	flag varchar(50),
+	last_update_date timestamp
+);
+
+-- drop table if exists hist.ip_yelp;
+CREATE TABLE hist.ip_yelp (
+	hist_date timestamp,
+	hist_action_taken varchar(20),
+	idd int8,
+	"name" varchar(500),
+	rating float4,
+	latitude float8,
+	longitude float8,
+	image_url varchar(500),
+	phone varchar(100),
+	review_count int8,
+	flag varchar(100),
+	last_update_date timestamp
+);
+
+
+
 
