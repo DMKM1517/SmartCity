@@ -3,13 +3,7 @@ library(tm)
 library(e1071)
 # loads the PostgreSQL driver
 drv <- dbDriver("PostgreSQL")
-con <- dbConnect(
-  drv, dbname = "smart",
-  host = "50.16.139.89",
-  port = 5432,
-  user = "dmkm", 
-  password = "dmkm1234"
-)
+
 
 
 #query to get tweets
