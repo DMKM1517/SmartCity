@@ -1,13 +1,13 @@
 
 # coding: utf-8
 
-# In[5]:
+# In[2]:
 
 from yelp.client import Client
 from yelp.oauth1_authenticator import Oauth1Authenticator
 
 
-# In[6]:
+# In[3]:
 
 import io 
 import json
@@ -17,13 +17,15 @@ with io.open('config_secret.json') as cred:
     client = Client(auth)
 
 
-# In[7]:
+# In[4]:
 
 import psycopg2
 import sys
 import pprint
+with io.open('../login.json') as log:
+    login = json.load(log)
 #Define our connection string
-conn_string = "host='50.16.139.89' dbname='smart' user='dmkm' password='dmkm1234'"
+conn_string = "host="+login["host"]+" dbname="+login["dbname"]+" user="+login["user"]+" password="+login["password"]
 # print the connection string we will use to connect
 print("Connecting to database")
  # get a connection, if a connect cannot be made an exception will be raised here
