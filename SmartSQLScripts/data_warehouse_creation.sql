@@ -69,6 +69,9 @@ alter table data_warehouse.dim_location add primary key (location_id);
 create index on data_warehouse.dim_location (commune);
 create index on data_warehouse.dim_location (postal_code);
 
+--select * 
+--from data_warehouse.dim_location
+--limit 500;
 
 -- ========================== Creates the interest points dimension ============================
 
@@ -92,17 +95,17 @@ select
 	d.date_id,
 	l.location_id,
 	--y.rating as yelp_rating,
-	first_value(y.rating) over (partition by y.rating_partition order by y.idd) as yelp_rating,
+	first_value(y.rating) over (partition by y.rating_partition order by  y.idd, d.date_id) as yelp_rating,
 	--y.review_count as yelp_review_count,
-	first_value(y.review_count) over (partition by y.review_count_partition order by y.idd) as yelp_review_count,
+	first_value(y.review_count) over (partition by y.review_count_partition order by y.idd, d.date_id) as yelp_review_count,
 	--fs.rating as fs_rating,
 	first_value(fs.rating) over (partition by fs.rating_partition order by fs.idd) as fs_rating,
 	--fs.checkinscount as fs_checkinscount,
-	first_value(fs.checkinscount) over (partition by fs.checkinscount_partition order by fs.idd) as fs_checkinscount,
+	first_value(fs.checkinscount) over (partition by fs.checkinscount_partition order by fs.idd, d.date_id) as fs_checkinscount,
 	--fs.tipcount as fs_tipcount,
-	first_value(fs.tipcount) over (partition by fs.tipcount_partition order by fs.idd) as fs_tipcount,
+	first_value(fs.tipcount) over (partition by fs.tipcount_partition order by fs.idd, d.date_id) as fs_tipcount,
 	--fs.userscount as fs_userscount,
-	first_value(fs.userscount) over (partition by fs.userscount_partition order by fs.idd) as fs_userscount,
+	first_value(fs.userscount) over (partition by fs.userscount_partition order by fs.idd, d.date_id) as fs_userscount,
 	null as twitter_sentiment
 into data_warehouse.fact_ratings
 from 
@@ -114,29 +117,31 @@ from
 			d2.date_id as hist_date,
 			yall.idd,
 			avg(y2.rating) as rating,
-			sum(case when avg(y2.rating) is null then 0 else 1 end) over (order by d2.date_id, yall.idd) as rating_partition,
+			sum(case when avg(y2.rating) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as rating_partition,
 			avg(y2.review_count) as review_count,
-			sum(case when avg(y2.review_count) is null then 0 else 1 end) over (order by d2.date_id, yall.idd) as review_count_partition
+			sum(case when avg(y2.review_count) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as review_count_partition
 		from
 			data_warehouse.dim_date d2
 			join (select distinct idd from hist.ip_yelp) yall on true
 			left join hist.ip_yelp y2 on y2.hist_date::date = d2.date_id and yall.idd = y2.idd
 		where
 			d2.date_id between now() - '1 month'::interval and now() + '3 days'
+			--and yall.idd = 190022
 		group by d2.date_id, yall.idd
+		order by d2.date_id, yall.idd
 	) y on y.hist_date = d.date_id and  ip.id = y.idd 
 	left join (
 	select 
 		d2.date_id as hist_date,
 		fsall.idd,
 		avg(fs2.rating) as rating,
-		sum(case when avg(fs2.rating) is null then 0 else 1 end) over (order by d2.date_id, fsall.idd) as rating_partition,
+		sum(case when avg(fs2.rating) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as rating_partition,
 		avg(fs2.checkinscount) as checkinscount,
-		sum(case when avg(fs2.checkinscount) is null then 0 else 1 end) over (order by d2.date_id, fsall.idd) as checkinscount_partition,
+		sum(case when avg(fs2.checkinscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as checkinscount_partition,
 		avg(fs2.tipcount) as tipcount,
-		sum(case when avg(fs2.tipcount) is null then 0 else 1 end) over (order by d2.date_id, fsall.idd) as tipcount_partition,
+		sum(case when avg(fs2.tipcount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as tipcount_partition,
 		avg(fs2.userscount) as userscount,
-		sum(case when avg(fs2.userscount) is null then 0 else 1 end) over (order by d2.date_id, fsall.idd) as userscount_partition
+		sum(case when avg(fs2.userscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as userscount_partition
 	from
 		data_warehouse.dim_date d2
 		join (select distinct idd from hist.ip_foursquare) fsall on true
