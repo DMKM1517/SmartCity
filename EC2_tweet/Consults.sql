@@ -37,15 +37,20 @@ select CAST(timestamp AS DATE) AS DATE
 from twitter.tweets
 )A
 GROUP BY DATE
+order by date desc
 ;
 
 select count(*) from twitter.tweets;
 
 select * 
-from tweets.tweets
-where cast(timestamp AS DATE) = '20160408'
+from twitter.tweets
+where cast(timestamp AS DATE) = '20160410'
 order by timestamp desc
 limit 10
+;
+
+select timestamp
+from twitter.tweets
 ;
 
 select lang, count(lang) 
