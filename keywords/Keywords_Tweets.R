@@ -4,24 +4,27 @@ library(plyr)
 library(stringr)
 library(tm)
 library(stringi)
+library(dplyr)
 
 # ######### CONNECTION TO DB ###############
 # loads the PostgreSQL driver
-drv <- dbDriver("PostgreSQL")
+library(jsonlite)
+login <- fromJSON("../login.json", flatten=TRUE)
+
 con <- dbConnect(
-  drv, dbname = "smart",
-  host = "50.16.139.89",
-  port = 5432,
-  user = "dmkm", 
-  password = "dmkm1234"
+  drv, dbname = login$dbname,
+  host = login$host,
+  port = login$port,
+  user = login$user, 
+  password = login$password
 )
 
 
 # Query to retrieve combinations of Tweets - Kewyords
-query_kw <- " select t.idd, t.text, k.id, k.keyword
+query_kw <- " select t.idd::varchar(100), t.text, k.id, k.keyword
               from twitter.tweets t,
-	             twitter.keywords k 
-              limit 20000;"
+	             twitter.keywords k
+                limit 400000;"
 
 # Retreives the table from the database
 df <- dbGetQuery(con, query_kw)
@@ -111,8 +114,17 @@ tweet_to_ip = df %>% filter(count > 0) %>% select(idd, id)
 names(tweet_to_ip) = c("twitter_id","ip_id")
 tweet_to_ip<- tweet_to_ip[,c(2,1)]
 
-dbRemoveTable(con,c("twitter","tweet_to_ip") )
-dbWriteTable(con, c("twitter","ip_to_tweet"), tweet_to_ip) #Meanwhile we find out how to update
+
+update <- function(i, con, tweet_to_ip) {
+  txt <- paste("INSERT tweets.tweets SET ip_id=",tweet_to_ip$ip_id[i],"WHERE twitter_id=",tweet_to_ip$twitter_id[i],"::bigint;")
+  dbGetQuery(con, txt)
+}
+for (i in 1:length(tweet_to_ip$ip_id)){
+  update(i, con, tweet_to_ip)
+}
+
+
+dbWriteTable(con, c("twitter","tweet_to_ip"), tweet_to_ip, overwrite=TRUE) #Meanwhile we find out how to update
 
 #########Close PostgreSQL connection###############
 dbDisconnect(con)

@@ -5,23 +5,23 @@ library(tm)
 require("RPostgreSQL")
 library(stringr)
 ########CONNECTION##########
-#create connection
-#save password
-pw<- {"dmkm1234"}
+library(jsonlite)
+login <- fromJSON("../login.json", flatten=TRUE)
 
-#load the PostgreSQL driver
-drv<- dbDriver("PostgreSQL")
-con<- dbConnect(drv, dbname= "smart",
-                host = "50.16.139.89", port=5432,
-                user = "dmkm", password=pw)
-rm(pw) #removes the password
+con <- dbConnect(
+  drv, dbname = login$dbname,
+  host = login$host,
+  port = login$port,
+  user = login$user, 
+  password = login$password
+)
 ########CONNECTION##########
 dbExistsTable(con, c("ip","interest_points"))
 
 #myTable<- dbReadTable(con, c("ip","interest_points"))
 
 #query to get tweets
-query_kw <- "select id, name 
+query_kw <- "select id::varchar(100), name 
 from ip.interest_points
 where in_use = True
 ;"
@@ -86,7 +86,6 @@ keywords = names.lower[,c(1,4)]
 # names(keywords_string)<-"keywords"
 
 ############ Prepare and Write to Database##########
-keywords$id<-as.integer(keywords$id)
 dbRemoveTable(con,c("twitter","keywords") )
 dbWriteTable(con, c("twitter","keywords"), keywords)
 #dbRemoveTable(con,c("twitter","keywords_string") )
