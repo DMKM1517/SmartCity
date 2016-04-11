@@ -44,13 +44,14 @@ select count(*) from twitter.tweets;
 
 select * 
 from twitter.tweets
-where cast(timestamp AS DATE) = '20160410'
+where cast(timestamp AS DATE) = '20160411'
 order by timestamp desc
 limit 10
 ;
 
-select timestamp
+select substring(timestamp,12,2), count(*)
 from twitter.tweets
+group by substring(timestamp,12,2)
 ;
 
 select lang, count(lang) 
@@ -60,7 +61,7 @@ order by count(lang) desc
 ;
 
 select count(*)
-from tweets.tweets
+from twitter.tweets
 where alch_score != 0
 LIMIT 10;
 
@@ -114,21 +115,20 @@ where 2*alch_score+3 < 2 and local_score < 2
 limit 100
 ;
 
-create table tweets.training as (
+create table tweets.training1 as (
 select idd, text, alch_score, local_score
 from twitter.tweets
-where round(2*alch_score+3) - local_score = 0
+where 2*alch_score+3 - local_score < 1 and 2*alch_score+3 - local_score > - 1
 )
 ;
 
 select count(*)
-from tweets.training
+from tweets.training1
 ;
 
-select /*idd, text, round(2*alch_score+3) as alch_score_norm, local_score*/ count(*)
+select idd, text, round(2*alch_score+3) as alch_score_norm, local_score)
 from twitter.tweets
-where 2*alch_score+3 - local_score < .5 and 2*alch_score+3 - local_score > - .5
-limit 100
+where 2*alch_score+3 - local_score < 1 and 2*alch_score+3 - local_score > - 1
 ;
 
 create table tweets.testing as (
