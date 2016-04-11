@@ -3,11 +3,15 @@ install.packages("gsubfn")
 install.packages("dplyr")
 install.packages("RPostgreSQL")
 install.packages("SnowballC")
+install.packages("jsonlite")
+
 require("RPostgreSQL")
 require("stringi")
 library(gsubfn)
 library(SnowballC)
 library(dplyr)
+library(jsonlite)
+
 
 
 # ######### CONNECTION TO DB ###############
@@ -17,11 +21,11 @@ library(dplyr)
 # loads the PostgreSQL driver
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(
-  drv, dbname = "smart",
-  host = "50.16.139.89",
-  port = 5432,
-  user = "dmkm", 
-  password = "dmkm1234"
+  drv, dbname = login$dbname,
+  host = login$host,
+  port = login$port,
+  user = login$user, 
+  password = login$password
 )
 
 
@@ -103,12 +107,8 @@ score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none
 # Function to update the database
 
 update <- function(i, con, towrite) {
-#  dbGetQuery(con, "BEGIN TRANSACTION")
-#  browser()
   txt <- paste("UPDATE tweets.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
-#  print(towrite$id[i])
   dbGetQuery(con, txt)
-#  dbCommit(con)
 }
 
 ########    FUNCTION    ############
@@ -163,18 +163,10 @@ sentiment.score$sentiment[sentiment.score$score >= 3] <- 5;
 
 towrite <- sentiment.score[,c("id", "sentiment")]
 
+# updating the values
 
 for (i in 1:length(sentiment.score$id)){
   update(i, con, towrite)
 }
 
-
-
 dbDisconnect(con)
-
-
-
-
-
-
-
