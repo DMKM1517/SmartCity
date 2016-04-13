@@ -12,7 +12,7 @@ echo "Starting Retreival from Grand Lyon: $now" >> 1_RetreiveFromSources.log 2>&
 # Retreive all IPs
 python ../SmartSourceETL/GrandLyon.py >> 1_RetreiveFromSources.log 2>&1
 
-../../kettle-data-integration/Pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_1_IP.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
+../../kettle-data-integration/pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_1_IP.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
 
 #End Grand Lyon
 now=$(date)
@@ -28,7 +28,7 @@ echo "Starting Retreival from Yelp: $now" >> 1_RetreiveFromSources.log 2>&1
 # Retreive all IPs
 python ../SmartSourceETL/Yelp.py >> 1_RetreiveFromSources.log 2>&1
 
-../../kettle-data-integration/Pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_2_Yelp.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
+../../kettle-data-integration/pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_2_Yelp.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
 
 #End Yelp
 now=$(date)
@@ -46,7 +46,7 @@ echo "Starting Retreival from Foursquare: $now" >> 1_RetreiveFromSources.log 2>&
 # Retreive all IPs
 python ../SmartSourceETL/Foursquare.py >> 1_RetreiveFromSources.log 2>&1
 
-../../kettle-data-integration/Pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_3_Foursquare.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
+../../kettle-data-integration/pan.sh -file="../SmartCity/ETL_Kettle_Editables/ETL_Smart_3_Foursquare.ktr" -level=Minimal >> 1_RetreiveFromSources.log 2>&1
 
 #End Foursquare
 now=$(date)
