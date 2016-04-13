@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Move to the scripts folder
+cd "${0%/*}"
+
 #Start Grand Lyon
 now=$(date)
 echo "Starting Retreival from Grand Lyon: $now"
