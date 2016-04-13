@@ -7,6 +7,7 @@ import requests
 import json
 
 ## Retreive all the interest points from the open data
+print('Retreiving IPs Information from GrandLyon Open Data')
 
 headers = {
     'Host' : 'download.data.grandlyon.com',
@@ -80,8 +81,10 @@ import io
 import psycopg2
 import sys
 import pprint
-#Define our connection string
 
+print('Connecting to database')
+
+#Define our connection string
 with io.open('../login.json') as log:
     login = json.load(log)
 
@@ -98,6 +101,8 @@ print("Connected!")
 # In[3]:
 
 ## Insert records in Landing Table
+print('Inserting IPs into the database')
+
 try:
     #Truncates the Landing table
     query = "TRUNCATE TABLE landing.ip_interest_points;"
