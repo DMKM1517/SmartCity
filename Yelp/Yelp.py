@@ -1,13 +1,13 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 from yelp.client import Client
 from yelp.oauth1_authenticator import Oauth1Authenticator
 
 
-# In[3]:
+# In[2]:
 
 import io 
 import json
@@ -17,30 +17,33 @@ with io.open('config_secret.json') as cred:
     client = Client(auth)
 
 
-# In[4]:
+# In[3]:
 
 import psycopg2
 import sys
 import pprint
+
+print('Connecting to database')
+
 with io.open('../login.json') as log:
     login = json.load(log)
 #Define our connection string
 conn_string = "host="+login["host"]+" dbname="+login["dbname"]+" user="+login["user"]+" password="+login["password"]
-# print the connection string we will use to connect
-print("Connecting to database")
- # get a connection, if a connect cannot be made an exception will be raised here
+
+# get a connection, if a connect cannot be made an exception will be raised here
 conn = psycopg2.connect(conn_string)
  # conn.cursor will return a cursor object, you can use this cursor to perform queries
 cursor = conn.cursor()
-print("Connected!")
+print('Connected!')
 cursor.execute("SELECT name,id FROM ip.interest_points where in_use = '1'")
 records = cursor.fetchall()
 
 
-# In[8]:
+# In[4]:
 
 import re
 import unicodedata
+
 
 def strip_accents(text):
     """
@@ -79,11 +82,12 @@ def text_to_id(text):
     text = re.sub('[ ]+', '_', text)
     text = re.sub('[^0-9a-zA-Z_-],', '', text)
     return text
-#response.total
-#strip_accents(records[i][0])
 
 
-# In[9]:
+
+# In[5]:
+
+print('Retreiving IPs Information from Yelp')
 
 yelp = []
 for i in range(0,len(records)):
@@ -101,25 +105,58 @@ for i in range(0,len(records)):
         response.businesses[0].phone,
         response.businesses[0].review_count,
         records[i][1]])
+        
+print('{0} IPs Retreived from Yelp.'.format(len(yelp)))
 
 
-# In[10]:
+# In[6]:
 
-for row in yelp:
-    name = row[0]
-    rating = row[1]
-    latitude = row[2]
-    longitude = row[3]
-    image_url = row[4]
-    phone = row[5]
-    review_count = row[6]
-    idd = row[7]
+## Insert records in Landing Table
+print('Inserting IPs into the database')
+
+try:
+    #Truncates the Landing table
+    query = "TRUNCATE TABLE landing.ip_yelp;"
+    cursor.execute(query)
+    conn.commit
+
+    for row in yelp:
+        name = row[0]
+        rating = row[1]
+        latitude = row[2]
+        longitude = row[3]
+        image_url = row[4]
+        phone = row[5]
+        review_count = row[6]
+        idd = row[7]
+
+        query = """
+            INSERT INTO landing.ip_yelp (
+                name, rating, latitude, longitude, image_url, phone, review_count, idd
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s
+            )"""
+        data = (name, rating, latitude, longitude, image_url, phone, review_count, idd)
+
+        cursor.execute(query,data)
+        conn.commit()
     
-    query = "INSERT INTO landing.ip_yelp (name, rating, latitude, longitude, image_url, phone, review_count, idd) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-    data = (name, rating, latitude, longitude, image_url, phone, review_count, idd)
+    #TODO: Log Success in DB
+    print('{0} records inserted in the database.'.format(len(yelp)))
+
+except psycopg2.DatabaseError as e:
     
-    cursor.execute(query,data)
-    conn.commit()
+    if conn:
+        conn.rollback()
+    
+    #TODO: Log Error.
+    print('Error {0}'.format(e))   
+    sys.exit(1)
+    
+    
+finally:
+    if conn:
+        conn.close()
 
 
 # In[ ]:

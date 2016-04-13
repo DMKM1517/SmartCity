@@ -9,13 +9,13 @@ with io.open('config_secret_fs.json') as cred:
     creds = json.load(cred)
 
 
-# In[10]:
+# In[2]:
 
 import psycopg2
 import sys
 import pprint
-#Define our connection string
 
+#Define our connection string
 with io.open('../login.json') as log:
     login = json.load(log)
 
@@ -31,7 +31,7 @@ cursor.execute("SELECT name,id FROM ip.interest_points where in_use = '1'")
 records = cursor.fetchall()
 
 
-# In[8]:
+# In[3]:
 
 import re
 import unicodedata
@@ -77,9 +77,12 @@ def text_to_id(text):
 #strip_accents(records[i][0])
 
 
-# In[13]:
+# In[4]:
 
 import requests
+
+print('Retreiving IPs Information from Foursquare')
+
 foursquare = []
 for i in range(0,len(records)): #len(records)
     payload = {
@@ -101,28 +104,58 @@ for i in range(0,len(records)): #len(records)
                 response['response']['groups'][0]['items'][0]['venue']['rating']
                 ]
         )
+        
+print('{0} IPs Retreived from Foursquare.'.format(len(foursquare)))
 
 
-# In[14]:
+# In[6]:
 
-foursquare[0]
-
-
-# In[15]:
-
-for row in foursquare:
-    idd = row[0]
-    name = row[1]
-    checkinsCount = row[2]
-    tipCount = row[3]
-    usersCount = row[4]
-    rating = row[5]
-    
-    query = "INSERT INTO landing.ip_foursquare (idd, name, checkinsCount, tipCount, usersCount, rating) VALUES (%s, %s, %s, %s, %s, %s)"
-    data = (idd, name, checkinsCount, tipCount, usersCount, rating)
-    
-    cursor.execute(query,data)
+## Insert records in Landing Table
+print('Inserting IPs into the database')
+try:
+    #Truncates the Landing table
+    query = "TRUNCATE TABLE landing.ip_foursquare;"
+    cursor.execute(query)
     conn.commit()
+
+    # insert all the records
+    for row in foursquare:
+        idd = row[0]
+        name = row[1]
+        checkinsCount = row[2]
+        tipCount = row[3]
+        usersCount = row[4]
+        rating = row[5]
+
+        query = """
+            INSERT INTO landing.ip_foursquare (
+                idd, name, checkinsCount, tipCount, usersCount, rating) 
+            VALUES (
+                %s, %s, %s, %s, %s, %s)"""
+
+        data = (idd, name, checkinsCount, tipCount, usersCount, rating)
+
+        cursor.execute(query,data)
+        conn.commit()
+        
+    #TODO: Log Success in DB
+    print('{0} records inserted in the database.'.format(len(foursquare)))
+
+
+except psycopg2.DatabaseError as e:
+    
+    if con:
+        con.rollback()
+    
+    #TODO: Log Error  in DB
+    print('Error {0}'.format(e))
+    sys.exit(1)
+    
+    
+finally:
+    
+    if conn:
+        conn.close()
 
 
 # In[ ]:
