@@ -8,6 +8,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 	var loading = true;
 	var latlong = { lat: 45.7591739, lng: 4.8846752 };
 	var current_zoom = initial_zoom;
+	var original_language = 'fr';
 	$scope.showFilter = true;
 	$scope.languages = languagesCnst;
 	$scope.current_language = $translate.use();
@@ -57,7 +58,7 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 	$scope.openInfoWindow = function(point_id) {
 		PointsService.getPoint(point_id).then(function(point) {
 			var RF = RatingFactory.getRatingsAndClass(point.rating);
-			$translate(['address', 'web', 'schedule', 'more_information', point.category]).then(function(translations) {
+			$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
 				var content = '<div class="info_window">' +
 					'<div class="row">' +
 					'<div class="col-xs-9">' +
@@ -85,6 +86,13 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 				}
 				if (point.schedule) {
 					content += '<b>' + translations.schedule + ':</b> ' + point.schedule;
+					if ($scope.current_language != original_language) {
+						var url_translate = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
+						content += ' [<a href="'+ url_translate + '" target="_blank">' +
+							translations.translate_google + 
+							' <i class="fa fa-external-link"></i>' +
+							'</a>]';
+					}
 				}
 				if (content.endsWith('<br>')) {
 					content = content.slice(0, -4);
@@ -157,6 +165,12 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 
 
 	/* Initialization */
+
+	// preferred language
+	if (!$translate.use()) {
+		$translate.use($translate.preferredLanguage());
+		$scope.current_language = $translate.preferredLanguage();
+	}
 
 	// selected categories
 	if (!$rootScope.selected_categories) {
@@ -244,6 +258,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	var id = $routeParams.id;
 	var searchParam = $location.search();
 	var param_zoom = searchParam.z;
+	var original_language = 'fr';
 	$scope.showFilter = false;
 	$scope.languages = languagesCnst;
 	$scope.current_language = $translate.use();
@@ -253,6 +268,12 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 
 	/* Initialization */
 
+	// preferred language
+	if (!$translate.use()) {
+		$translate.use($translate.preferredLanguage());
+		$scope.current_language = $translate.preferredLanguage();
+	}
+	
 	if (!param_zoom) {
 		param_zoom = initial_zoom;
 	}
@@ -261,6 +282,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	PointsService.getPoint(id).then(function(data) {
 		$scope.point = data;
 		$scope.RF = RatingFactory.getRatingsAndClass($scope.point.rating);
+		externalTranslate();
 		setTimeout(function() {
 			$('.rating').rating();
 		}, 100);
@@ -280,10 +302,24 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	// change language
 	$scope.changeLanguage = function(lang) {
 		$translate.use(lang);
+		$scope.url_translate = null;
 		$scope.current_language = lang;
+		externalTranslate();
 	};
 
 	/* --Functions-- */
+
+
+
+	/* Aux Functions */
+
+	function externalTranslate() {
+		if ($scope.current_language != original_language) {
+			$scope.url_translate = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/' + encodeURI($scope.point.schedule);
+		}
+	}
+
+	/* --Aux Functions-- */
 
 }]);
 /* --PointCtrl-- */

@@ -30,16 +30,28 @@ SmartApp.config(['$translateProvider', 'languagesCnst', function($translateProvi
 	for (var i in languagesCnst) {
 		availables[languagesCnst[i] + '_*'] = languagesCnst[i];
 	}
+	var preferred_language = 'en';
+	if (window.navigator.languages[0]) {
+		preferred_language = window.navigator.languages[0];
+	} else if (window.navigator.language) {
+		preferred_language = window.navigator.language;
+	} else if (window.navigator.browserLanguage) {
+		preferred_language = window.navigator.browserLanguage;
+	} else if (window.navigator.systemLanguage) {
+		preferred_language = window.navigator.systemLanguage;
+	} else if (window.navigator.userLanguage) {
+		preferred_language = window.navigator.userLanguage;
+	}
 	$translateProvider
 		.useSanitizeValueStrategy('sanitizeParameters')
-		.useStaticFilesLoader({
-			prefix: '/i18n/',
-			suffix: '.json'
-		})
+		// .useStaticFilesLoader({
+		// 	prefix: '/i18n/',
+		// 	suffix: '.json'
+		// })
+		.useUrlLoader('/translations/getTranslations')
+		.preferredLanguage(preferred_language.substring(0, 2))
 		.registerAvailableLanguageKeys(languagesCnst, availables)
-		.determinePreferredLanguage()
 		.fallbackLanguage('en');
-	// $translateProvider.preferredLanguage('en');
 }]);
 
 /* --Config-- */
@@ -48,6 +60,6 @@ SmartApp.config(['$translateProvider', 'languagesCnst', function($translateProvi
 /* Constants */
 
 SmartApp.constant('colorsCnst', ['red', 'orange', 'yellow', 'lgreen', 'green']);
-SmartApp.constant('languagesCnst', ['en', 'fr', 'es', 'ru', 'hi']);
+SmartApp.constant('languagesCnst', ['en', 'fr', 'es', 'ru', 'hi', 'zh', 'de']);
 
 /* --Constants-- */

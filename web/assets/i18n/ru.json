@@ -1,4 +1,10 @@
 {
+    "PATRIMOINE_CULTUREL": "Культурное наследие",
+    "DEGUSTATION": "Дегустации",
+    "PATRIMOINE_NATUREL": "Природное наследие",
+    "COMMERCE_ET_SERVICE": "Торговля и услуги",
+    "EQUIPEMENT": "Оборудование",
+    "RESTAURATION": "Рестораны",
     "show_me": "Показать",
     "cool_stuff": "Только клевые места, которые нравятся людям",
     "all": "Все",
@@ -9,11 +15,6 @@
     "email": "Email",
     "phone": "Телефон",
     "schedule": "Режим работы",
-    "PATRIMOINE_CULTUREL": "Культурное наследие",
-    "DEGUSTATION": "Дегустации",
-    "PATRIMOINE_NATUREL": "Природное наследие",
-    "COMMERCE_ET_SERVICE": "Торговля и услуги",
-    "EQUIPEMENT": "Оборудование",
-    "RESTAURATION": "Рестораны",
-    "more_information": "Больше информации"
+    "more_information": "Больше информации",
+    "translate_google": ""
 }

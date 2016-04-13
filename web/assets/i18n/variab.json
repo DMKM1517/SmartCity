@@ -8,6 +8,17 @@
 		{ "label": "RESTAURATION" }
 	],
 	"other": [
-		{ "label": "more_information" }
+		{ "label": "show_me" },
+		{ "label": "cool_stuff" },
+		{ "label": "all" },
+		{ "label": "none" },
+		{ "label": "back_map" },
+		{ "label": "address" },
+		{ "label": "web" },
+		{ "label": "email" },
+		{ "label": "phone" },
+		{ "label": "schedule" },
+		{ "label": "more_information" },
+		{ "label": "translate_google" }
 	]
 }

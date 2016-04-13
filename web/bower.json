@@ -2,7 +2,7 @@
   "name": "TourisLyon",
   "dependencies": {
     "angular-route": "~1.5.0",
-    "angular": "~1.5.0",
+    "angular": "~1.5.3",
     "jquery": "~2.2.1",
     "bootstrap": "~3.3.6",
     "angular-bootstrap": "^1.2.5",
@@ -10,8 +10,9 @@
     "angular-loading-bar": "^0.9.0",
     "js-marker-clusterer": "*",
     "angular-translate": "^2.11.0",
-    "angular-translate-loader-static-files": "^2.11.0",
-    "angular-sanitize": "^1.5.3"
+    "angular-sanitize": "^1.5.3",
+    "font-awesome": "fontawesome#^4.6.1",
+    "angular-translate-loader-url": "^2.11.0"
   },
   "devDependencies": {
     "angular-mocks": "~1.5.0"
@@ -48,9 +49,10 @@
     },
     "js-marker-clusterer": {
       "/": "src/markerclusterer_compiled.js"
+    },
+    "font-awesome": {
+      "css": "css/font-awesome.min.css",
+      "fonts": "fonts/*"
     }
-  },
-  "resolutions": {
-    "angular": "1.5.3"
   }
 }

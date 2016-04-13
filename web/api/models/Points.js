@@ -1,8 +1,7 @@
 /**
  * Points.js
  *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
+ * @description :: Model for interest points. It reads from an aggregated view.
  */
 
 module.exports = {

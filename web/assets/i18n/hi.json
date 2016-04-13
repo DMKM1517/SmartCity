@@ -1,4 +1,10 @@
 {
+    "PATRIMOINE_CULTUREL": "",
+    "DEGUSTATION": "",
+    "PATRIMOINE_NATUREL": "",
+    "COMMERCE_ET_SERVICE": "",
+    "EQUIPEMENT": "",
+    "RESTAURATION": "",
     "show_me": "",
     "cool_stuff": "",
     "all": "",
@@ -9,11 +15,6 @@
     "email": "",
     "phone": "",
     "schedule": "",
-    "PATRIMOINE_CULTUREL": "",
-    "DEGUSTATION": "",
-    "PATRIMOINE_NATUREL": "",
-    "COMMERCE_ET_SERVICE": "",
-    "EQUIPEMENT": "",
-    "RESTAURATION": "",
-    "more_information": "अधिक जानकारी"
+    "more_information": "अधिक जानकारी",
+    "translate_google": ""
 }

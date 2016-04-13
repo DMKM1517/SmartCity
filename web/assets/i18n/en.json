@@ -1,4 +1,10 @@
 {
+    "PATRIMOINE_CULTUREL": "Cultural Heritage",
+    "DEGUSTATION": "Tasting",
+    "PATRIMOINE_NATUREL": "Natural Heritage",
+    "COMMERCE_ET_SERVICE": "Business and Service",
+    "EQUIPEMENT": "Equipement",
+    "RESTAURATION": "Restaurants",
     "show_me": "Show me",
     "cool_stuff": "Only cool stuff that people like most",
     "all": "All",
@@ -9,11 +15,6 @@
     "email": "Email",
     "phone": "Phone",
     "schedule": "Schedule",
-    "PATRIMOINE_CULTUREL": "Cultural Heritage",
-    "DEGUSTATION": "Tasting",
-    "PATRIMOINE_NATUREL": "Natural Heritage",
-    "COMMERCE_ET_SERVICE": "Business and Service",
-    "EQUIPEMENT": "Equipement",
-    "RESTAURATION": "Restaurants",
-    "more_information": "More Information"
+    "more_information": "More Information",
+    "translate_google": "Translate with Google"
 }

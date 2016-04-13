@@ -1,14 +1,16 @@
 <menubar></menubar>
 <div class="col-sm-offset-1 col-sm-10">
-	<h1>
-		<div class="col-xs-10">{{ point.name }}</div>
-		<div class="col-xs-2">
-		<button type="button" id="btnBack" ng-click="back()" class="btn btn-default btn-lg pull-right" aria-label="Close">
-			<span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-			<span class="hidden-xs">{{ 'back_map' | translate }}</span>
-		</button>
-		</div>
-	</h1>
+	<div class="row">
+		<h1>
+			<div class="col-xs-10">{{ point.name }}</div>
+			<div class="col-xs-2">
+			<button type="button" id="btnBack" ng-click="back()" class="btn btn-default btn-lg pull-right" aria-label="Close">
+				<span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+				<span class="hidden-xs">{{ 'back_map' | translate }}</span>
+			</button>
+			</div>
+		</h1>
+	</div>
 	<div class="row">
 		<div class="col-sm-7">
 			<div class="stars {{ RF.star_class }}">
@@ -17,25 +19,28 @@
 			{{ RF.rating1 }}
 			<h4>{{ ''+point.category | translate }}</h4>
 			<div ng-show="point.address">
-				<label>{{ 'address' | translate }}: </label>{{ point.address }}
+				<label>{{ 'address' | translate }}:</label> {{ point.address }}
 			</div>
 			<div ng-show="point.web">
-				<label>{{ 'web' | translate }}: </label>
+				<label>{{ 'web' | translate }}:</label>
 				<span ng-repeat="web in point.web.split(';')">
 					<a href="{{ web }}" target="_blank">{{ web }}</a><br>
 				</span>
 			</div>
 			<div ng-show="point.email">
-				<label>{{ 'email' | translate }}: </label>{{ point.email }}
+				<label>{{ 'email' | translate }}:</label> {{ point.email }}
 			</div>
 			<div ng-show="point.phone">
-				<label>{{ 'phone' | translate }}: </label>{{ point.phone }}
+				<label>{{ 'phone' | translate }}:</label> {{ point.phone }}
 			</div>
 			<div ng-show="point.facebook">
-				<label>Facebook: </label>{{ point.facebook }}
+				<label>Facebook:</label> {{ point.facebook }}
 			</div>
 			<div ng-show="point.schedule">
-				<label>{{ 'schedule' | translate }}: </label>{{ point.schedule }}
+				<label>{{ 'schedule' | translate }}:</label> {{ point.schedule }}
+				<div ng-if="url_translate">
+					[<a ng-href="{{ url_translate }}" target="_blank">{{ 'translate_google' | translate }} <i class="fa fa-external-link"></i></a>]
+				</div>
 			</div>
 		</div>
 		<div class="col-sm-3">
