@@ -1,24 +1,37 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
-import io 
+import os
+from inspect import getsourcefile
+from os.path import abspath
+import io
 import json
-with io.open('config_secret_fs.json') as cred:
+
+#Makes we use the path of the script folder and it is correct
+
+currentPath = abspath(getsourcefile(lambda:0))
+if not currentPath.endswith('SmartSourceETL'):
+    currentPath, garbage =  os.path.split(abspath(getsourcefile(lambda:0)))
+
+cfs_path = '{0}/{1}'.format(currentPath, 'config_secret_fs.json')
+with io.open(cfs_path) as cred:
     creds = json.load(cred)
 
 
-# In[2]:
+# In[ ]:
 
 import psycopg2
 import sys
 import pprint
 
 #Define our connection string
-with io.open('../login.json') as log:
-    login = json.load(log)
 
+cfl_path = '{0}/../{1}'.format(currentPath, 'login.json')
+with io.open(cfl_path) as log:
+    login = json.load(log)
+    
 conn_string = "host="+login["host"]+" dbname="+login["dbname"]+" user="+login["user"]+" password="+login["password"]
 # print the connection string we will use to connect
 print("Connecting to database")
@@ -31,7 +44,7 @@ cursor.execute("SELECT name,id FROM ip.interest_points where in_use = '1'")
 records = cursor.fetchall()
 
 
-# In[3]:
+# In[ ]:
 
 import re
 import unicodedata
@@ -77,7 +90,7 @@ def text_to_id(text):
 #strip_accents(records[i][0])
 
 
-# In[4]:
+# In[ ]:
 
 import requests
 
@@ -108,7 +121,7 @@ for i in range(0,len(records)): #len(records)
 print('{0} IPs Retreived from Foursquare.'.format(len(foursquare)))
 
 
-# In[6]:
+# In[ ]:
 
 ## Insert records in Landing Table
 print('Inserting IPs into the database')

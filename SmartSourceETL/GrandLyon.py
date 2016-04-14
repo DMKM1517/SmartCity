@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[5]:
 
 import requests
 import json
@@ -75,20 +75,31 @@ for i in range(0,len(response['features'])):
 print('{0} Interest Points retreived.'.format(len(interest_points)))
 
 
-# In[2]:
+# In[6]:
 
 import io 
 import psycopg2
 import sys
 import pprint
+import os
+from inspect import getsourcefile
+from os.path import abspath
 
 print('Connecting to database')
 
+#Makes sure we use the path of the script folder and it is correct
+currentPath = abspath(getsourcefile(lambda:0))
+if not currentPath.endswith('SmartSourceETL'):
+    currentPath, garbage =  os.path.split(abspath(getsourcefile(lambda:0)))
+cfl_path = '{0}/../{1}'.format(currentPath, 'login.json')
+
+
 #Define our connection string
-with io.open('../login.json') as log:
+with io.open(cfl_path) as log:
     login = json.load(log)
 
 conn_string = "host="+login["host"]+" dbname="+login["dbname"]+" user="+login["user"]+" password="+login["password"]
+
 # print the connection string we will use to connect
 print("Connecting to database")
  # get a connection, if a connect cannot be made an exception will be raised here
@@ -98,7 +109,7 @@ cursor = conn.cursor()
 print("Connected!")
 
 
-# In[3]:
+# In[7]:
 
 ## Insert records in Landing Table
 print('Inserting IPs into the database')

@@ -7,17 +7,28 @@ from yelp.client import Client
 from yelp.oauth1_authenticator import Oauth1Authenticator
 
 
-# In[2]:
+# In[3]:
 
-import io 
+import os
+from inspect import getsourcefile
+from os.path import abspath
+import io
 import json
-with io.open('config_secret.json') as cred:
+
+#Makes we use the path of the script folder and it is correct
+
+currentPath = abspath(getsourcefile(lambda:0))
+if not currentPath.endswith('SmartSourceETL'):
+    currentPath, garbage =  os.path.split(abspath(getsourcefile(lambda:0)))
+
+cfs_path = '{0}/{1}'.format(currentPath, 'config_secret.json')
+with io.open(cfs_path) as cred:
     creds = json.load(cred)
     auth = Oauth1Authenticator(**creds)
     client = Client(auth)
 
 
-# In[3]:
+# In[5]:
 
 import psycopg2
 import sys
@@ -25,7 +36,8 @@ import pprint
 
 print('Connecting to database')
 
-with io.open('../login.json') as log:
+cfl_path = '{0}/../{1}'.format(currentPath, 'login.json')
+with io.open(cfl_path) as log:
     login = json.load(log)
 #Define our connection string
 conn_string = "host="+login["host"]+" dbname="+login["dbname"]+" user="+login["user"]+" password="+login["password"]
@@ -39,7 +51,7 @@ cursor.execute("SELECT name,id FROM ip.interest_points where in_use = '1'")
 records = cursor.fetchall()
 
 
-# In[4]:
+# In[6]:
 
 import re
 import unicodedata
@@ -85,7 +97,7 @@ def text_to_id(text):
 
 
 
-# In[5]:
+# In[ ]:
 
 print('Retreiving IPs Information from Yelp')
 
@@ -109,7 +121,7 @@ for i in range(0,len(records)):
 print('{0} IPs Retreived from Yelp.'.format(len(yelp)))
 
 
-# In[6]:
+# In[ ]:
 
 ## Insert records in Landing Table
 print('Inserting IPs into the database')
