@@ -50,11 +50,13 @@ create index on data_warehouse.dim_date (Weekend);
 
 
 -- ========================== Creates the location dimension ============================
---Create the sequence
+--drop table and secuence if exists
+drop table if exists data_warehouse.dim_location;
 drop sequence if exists location_seq;
+
+--Create the sequence
 create sequence location_seq;
 
-drop table if exists data_warehouse.dim_location;
 select
 	nextval('location_seq') as location_id,
 	commune,
@@ -63,15 +65,16 @@ select
 	avg(coordinates_long) as coordinates_long
 into data_warehouse.dim_location
 from ip.interest_points
-group by commune, postal_code
-limit 500;
+group by commune, postal_code;
+
+alter table data_warehouse.dim_location alter column location_id set default nextval('location_seq');
 alter table data_warehouse.dim_location add primary key (location_id);
 create index on data_warehouse.dim_location (commune);
 create index on data_warehouse.dim_location (postal_code);
 
---select * 
---from data_warehouse.dim_location
---limit 500;
+select * 
+from data_warehouse.dim_location
+limit 500;
 
 -- ========================== Creates the interest points dimension ============================
 
@@ -90,71 +93,120 @@ create index on data_warehouse.dim_interest_points (name);
 -- ========================== Creates the Fact Table ============================
 
 drop table if exists data_warehouse.fact_ratings;
-select 
-	ip.id as ip_id,
-	d.date_id,
-	l.location_id,
-	--y.rating as yelp_rating,
-	first_value(y.rating) over (partition by y.rating_partition order by  y.idd, d.date_id) as yelp_rating,
-	--y.review_count as yelp_review_count,
-	first_value(y.review_count) over (partition by y.review_count_partition order by y.idd, d.date_id) as yelp_review_count,
-	--fs.rating as fs_rating,
-	first_value(fs.rating) over (partition by fs.rating_partition order by fs.idd) as fs_rating,
-	--fs.checkinscount as fs_checkinscount,
-	first_value(fs.checkinscount) over (partition by fs.checkinscount_partition order by fs.idd, d.date_id) as fs_checkinscount,
-	--fs.tipcount as fs_tipcount,
-	first_value(fs.tipcount) over (partition by fs.tipcount_partition order by fs.idd, d.date_id) as fs_tipcount,
-	--fs.userscount as fs_userscount,
-	first_value(fs.userscount) over (partition by fs.userscount_partition order by fs.idd, d.date_id) as fs_userscount,
-	null as twitter_sentiment
+select * 
 into data_warehouse.fact_ratings
-from 
-	data_warehouse.dim_date d
-	join ip.interest_points ip on true
-	left join data_warehouse.dim_location l on ip.postal_code = l.postal_code and ip.commune = l.commune
-	left join (
-		select 
-			d2.date_id as hist_date,
-			yall.idd,
-			avg(y2.rating) as rating,
-			sum(case when avg(y2.rating) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as rating_partition,
-			avg(y2.review_count) as review_count,
-			sum(case when avg(y2.review_count) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as review_count_partition
-		from
-			data_warehouse.dim_date d2
-			join (select distinct idd from hist.ip_yelp) yall on true
-			left join hist.ip_yelp y2 on y2.hist_date::date = d2.date_id and yall.idd = y2.idd
-		where
-			d2.date_id between now() - '1 month'::interval and now() + '3 days'
-			--and yall.idd = 190022
-		group by d2.date_id, yall.idd
-		order by d2.date_id, yall.idd
-	) y on y.hist_date = d.date_id and  ip.id = y.idd 
-	left join (
+from (
 	select 
-		d2.date_id as hist_date,
-		fsall.idd,
-		avg(fs2.rating) as rating,
-		sum(case when avg(fs2.rating) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as rating_partition,
-		avg(fs2.checkinscount) as checkinscount,
-		sum(case when avg(fs2.checkinscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as checkinscount_partition,
-		avg(fs2.tipcount) as tipcount,
-		sum(case when avg(fs2.tipcount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as tipcount_partition,
-		avg(fs2.userscount) as userscount,
-		sum(case when avg(fs2.userscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as userscount_partition
-	from
-		data_warehouse.dim_date d2
-		join (select distinct idd from hist.ip_foursquare) fsall on true
-		left join hist.ip_foursquare fs2 on fs2.hist_date::date = d2.date_id and fsall.idd = fs2.idd
+		ip.id as ip_id,
+		d.date_id,
+		l.location_id,
+		first_value(y.rating) over (partition by y.rating_partition order by  y.idd, d.date_id) as yelp_rating,
+		first_value(y.review_count) over (partition by y.review_count_partition order by y.idd, d.date_id) as yelp_review_count,
+		first_value(fs.rating) over (partition by fs.rating_partition order by fs.idd) as fs_rating,
+		first_value(fs.checkinscount) over (partition by fs.checkinscount_partition order by fs.idd, d.date_id) as fs_checkinscount,
+		first_value(fs.tipcount) over (partition by fs.tipcount_partition order by fs.idd, d.date_id) as fs_tipcount,
+		first_value(fs.userscount) over (partition by fs.userscount_partition order by fs.idd, d.date_id) as fs_userscount,
+		ts.twitter_sentiment,
+		ts.twitter_count
+	from 
+		data_warehouse.dim_date d
+		join ip.interest_points ip on true
+		left join data_warehouse.dim_location l on ip.postal_code = l.postal_code and ip.commune = l.commune
+		left join ( -- all the measures from Yelp
+			select 
+				d2.date_id as hist_date,
+				yall.idd,
+				avg(y2.rating) as rating,
+				sum(case when avg(y2.rating) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as rating_partition,
+				avg(y2.review_count) as review_count,
+				sum(case when avg(y2.review_count) is null then 0 else 1 end) over (order by yall.idd, d2.date_id) as review_count_partition
+			from
+				data_warehouse.dim_date d2
+				join (select distinct idd from hist.ip_yelp) yall on true
+				left join hist.ip_yelp y2 on y2.hist_date::date = d2.date_id and yall.idd = y2.idd
+			where
+				d2.date_id between now() - '1 month'::interval and now() + '3 days'
+				--and yall.idd = 190022
+			group by d2.date_id, yall.idd
+			order by d2.date_id, yall.idd
+		) y on y.hist_date = d.date_id and  ip.id = y.idd 
+		left join ( -- all the measures from Foursquare
+			select 
+				d2.date_id as hist_date,
+				fsall.idd,
+				avg(fs2.rating) as rating,
+				sum(case when avg(fs2.rating) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as rating_partition,
+				avg(fs2.checkinscount) as checkinscount,
+				sum(case when avg(fs2.checkinscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as checkinscount_partition,
+				avg(fs2.tipcount) as tipcount,
+				sum(case when avg(fs2.tipcount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as tipcount_partition,
+				avg(fs2.userscount) as userscount,
+				sum(case when avg(fs2.userscount) is null then 0 else 1 end) over (order by fsall.idd, d2.date_id) as userscount_partition
+			from
+				data_warehouse.dim_date d2
+				join (select distinct idd from hist.ip_foursquare) fsall on true
+				left join hist.ip_foursquare fs2 on fs2.hist_date::date = d2.date_id and fsall.idd = fs2.idd
+			where
+				d2.date_id between now() - '1 month'::interval and now() + '3 days'
+			group by d2.date_id, fsall.idd
+		) fs on fs.hist_date = d.date_id and ip.id = fs.idd
+		left join ( -- all the measures from twitter
+			SELECT
+				date_ip.date_id as hist_date,
+				date_ip.ip_id,
+				CASE
+					WHEN (avg(t.local_score) IS NULL) --TODO: Replace local_score by sentiment 
+						THEN (0)::double precision
+				        ELSE avg(t.local_score)
+				    END AS twitter_sentiment,
+			    count(distinct t.idd) as twitter_count
+			FROM
+				(
+					select
+						ip2.ip_id,
+						d2.date_id
+					from 
+						data_warehouse.dim_interest_points ip2,
+						data_warehouse.dim_date d2
+					where
+						d2.date_id between now() - '1 month'::interval and now() + '3 days'
+				) date_ip
+				left JOIN (
+					SELECT
+						d3.date_id,
+						tip2.ip_id,
+						max((t2."timestamp")::date) AS max_timestamp
+					FROM
+						data_warehouse.dim_date d3
+						left join twitter.tweets t2 on true
+						left JOIN twitter.tweet_to_ip tip2 ON tip2.twitter_id = t2.idd
+					where
+						d3.date_id between now() - '1 month'::interval and now() + '3 days'
+						and (t2."timestamp")::date <= d3.date_id
+						--and tip2.ip_id  = 190578 -- delete!
+					GROUP BY d3.date_id, tip2.ip_id
+					) lastt ON date_ip.date_id = lastt.date_id and date_ip.ip_id = lastt.ip_id
+				left JOIN twitter.tweet_to_ip tip on tip.ip_id = date_ip.ip_id
+				left JOIN twitter.tweets t ON tip.twitter_id = t.idd --and (t."timestamp")::date between (lastt.max_timestamp - '1 day'::interval) and lastt.max_timestamp
+			WHERE
+				(t."timestamp")::date between (lastt.max_timestamp - '1 day'::interval) and lastt.max_timestamp
+	--			and date_ip.ip_id = 190578
+			GROUP BY date_ip.date_id, date_ip.ip_id
+	--		order by 1, 2 --delete!
+		) ts on ts.hist_date = d.date_id and ip.id = ts.ip_id
 	where
-		d2.date_id between now() - '1 month'::interval and now() + '3 days'
-	group by d2.date_id, fsall.idd
-	) fs on fs.hist_date = d.date_id and ip.id =fs.idd 
+		d.date_id between now() - '1 month'::interval and now()  + '3 days'
+	) full_table
 where
-	d.date_id between now() - '1 month'::interval and now()  + '3 days'
-	--and y.rating is not null --to delete
-	--and ip.id = 190022
-order by d.date_id, ip.id;
+	full_table.yelp_rating is not null 
+	or full_table.yelp_review_count is not null 
+	or full_table.fs_rating is not null 
+	or full_table.fs_checkinscount is not null 
+	or full_table.fs_tipcount is not null 
+	or full_table.fs_userscount is not null 
+	or full_table.twitter_sentiment is not null 
+	or full_table.twitter_count is not null
+order by full_table.date_id, full_table.ip_id, full_table.location_id;
 
 alter table data_warehouse.fact_ratings add primary key (ip_id, date_id, location_id);
 create index on data_warehouse.fact_ratings (yelp_rating);
@@ -163,10 +215,12 @@ create index on data_warehouse.fact_ratings (fs_rating);
 create index on data_warehouse.fact_ratings (fs_checkinscount);
 create index on data_warehouse.fact_ratings (fs_tipcount);
 create index on data_warehouse.fact_ratings (fs_userscount);
-
-
+create index on data_warehouse.fact_ratings (twitter_sentiment);
+create index on data_warehouse.fact_ratings (twitter_count);
 
 --tests
+select count(*)
+from data_warehouse.fact_ratings;
 
 select * 
 from data_warehouse.fact_ratings
@@ -178,8 +232,23 @@ where
 	ip_id = 190022
 order by date_id 
 	
-	
-	
+
+select
+	ip.ip_id, d.date_id,
+	avg(f.twitter_sentiment) as twitter_sentiment, -- change this to bring the measure you need
+	sum(f.twitter_count) as twitter_count
+from
+	data_warehouse.fact_ratings f
+	join data_warehouse.dim_interest_points ip on f.ip_id = ip.ip_id
+	join data_warehouse.dim_date d on f.date_id = d.date_id
+where
+	ip.ip_id in (67140)  --replace this with the ID of the IP
+	and d.date_id between now() - '30 days'::interval and now()
+group by (d.date_id, ip.ip_id)
+order by 1,2;
+
+
+
 select
 	d.date_id,
 	l.commune,
@@ -188,13 +257,8 @@ from
 	data_warehouse.fact_ratings f
 	join data_warehouse.dim_date d on f.date_id = d.date_id
 	join data_warehouse.dim_location l on f.location_id = l.location_id
-where d.date_id > now() - '9 day'::interval and f.yelp_rating is not null
-group by cube(d.date_id, l.commune);
+where d.date_id between  now() - '30 day'::interval and now() and f.yelp_rating is not null and l.commune like 'Lyon%'
+group by (d.date_id, l.commune)
+order by d.date_id, l.commune;
 
 
-
-
-select last_update_date, count(*) 
-from hist.ip_foursquare
-group by last_update_date
-limit 500;
