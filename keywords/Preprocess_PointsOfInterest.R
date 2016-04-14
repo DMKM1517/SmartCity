@@ -1,5 +1,4 @@
-install.packages("RPostgreSQL")
-install.packages("tm")
+
 library(dplyr)
 library(tm)
 require("RPostgreSQL")
@@ -7,7 +6,7 @@ library(stringr)
 ########CONNECTION##########
 library(jsonlite)
 login <- fromJSON("../login.json", flatten=TRUE)
-
+drv = dbDriver("PostgreSQL")
 con <- dbConnect(
   drv, dbname = login$dbname,
   host = login$host,
@@ -57,7 +56,6 @@ for(i in 1:nrow(names.lower)){
   names.lower[i,3:4]<-gsub('[[:punct:]]', " ", names.lower[i,3])
   #Get rid of symbols
   names.lower[i,3:4]<-gsub('[[:cntrl:]]', " ", names.lower[i,3])
-  names.lower[i,3:4]<-gsub(" - ", " ", names.lower[i,3])
   #Get rid of the accents
     names.lower[i,3:4]<-chartr(paste(names(unwanted_array), collapse=''),
                   paste(unwanted_array, collapse=''),
@@ -76,6 +74,12 @@ X<-lapply(names.lower[,4], function(x) {
 #Remove extra spaces
 names.lower[,4]<- sapply(X, paste, collapse=",")
 keywords = names.lower[,c(1,4)]
+
+#Remove extra character
+for(i in 1:nrow(keywords)){
+  keywords[i,2]<-gsub(",-,", ",", keywords[i,2])
+  }
+names(keywords) = c("ip_id","keyword")
 
 #Keywords only 
 # keywords<- paste(names.lower[,4],collapse=",")

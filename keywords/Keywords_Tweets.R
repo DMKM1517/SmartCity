@@ -10,7 +10,7 @@ library(dplyr)
 # loads the PostgreSQL driver
 library(jsonlite)
 login <- fromJSON("../login.json", flatten=TRUE)
-
+drv = dbDriver("PostgreSQL")
 con <- dbConnect(
   drv, dbname = login$dbname,
   host = login$host,
@@ -21,10 +21,24 @@ con <- dbConnect(
 
 
 # Query to retrieve combinations of Tweets - Kewyords
-query_kw <- " select t.idd::varchar(100), t.text, k.id, k.keyword
-              from twitter.tweets t,
-	             twitter.keywords k
-                limit 400000;"
+query_kw <- " 
+  select 
+      t.idd::varchar(100), 
+      t.text, 
+      k.ip_id, 
+      k.keyword
+  from 
+      twitter.tweets t,
+      twitter.keywords k
+  where
+    t.idd not in (
+        select distinct twitter_id
+        from twitter.tweet_to_ip
+    )
+    and t.idd in (select distinct idd
+        from twitter.tweets
+        limit 2000
+    );"
 
 # Retreives the table from the database
 df <- dbGetQuery(con, query_kw)
@@ -115,18 +129,18 @@ names(tweet_to_ip) = c("twitter_id","ip_id")
 tweet_to_ip<- tweet_to_ip[,c(2,1)]
 
 
-update <- function(i, con, tweet_to_ip) {
-  txt <- paste("INSERT tweets.tweets SET ip_id=",tweet_to_ip$ip_id[i],"WHERE twitter_id=",tweet_to_ip$twitter_id[i],"::bigint;")
+insert <- function(i, con, tweet_to_ip) {
+  txt <- paste("INSERT into twitter.tweet_to_ip values (",tweet_to_ip$ip_id[i],", ",tweet_to_ip$twitter_id[i],"::bigint);")
   dbGetQuery(con, txt)
 }
 for (i in 1:length(tweet_to_ip$ip_id)){
-  update(i, con, tweet_to_ip)
+  insert(i, con, tweet_to_ip)
 }
 
-
+test1 = dbReadTable(con, c("twitter","tweet_to_ip"))
 dbWriteTable(con, c("twitter","tweet_to_ip"), tweet_to_ip, overwrite=TRUE) #Meanwhile we find out how to update
 
 #########Close PostgreSQL connection###############
 dbDisconnect(con)
-
+rm(list=ls())
 
