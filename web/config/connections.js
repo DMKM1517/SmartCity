@@ -21,7 +21,7 @@
 
  var fs = require('fs');
  // read the login.json file above the web folder
- var login = JSON.parse(fs.readFileSync(__dirname + './../../login.json'));
+ var login = JSON.parse(fs.readFileSync(__dirname + '/../../login.json'));
 
 module.exports.connections = {
 
