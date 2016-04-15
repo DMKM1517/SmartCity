@@ -10,15 +10,18 @@ from sklearn import grid_search
 from sklearn.externals import joblib
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
+import json
+from pprint import pprint
 
 
+with open('/Users/krishna/MOOC/smart-city/login.json') as data_file:
+    db = json.load(data_file)
 
-conn = psycopg2.connect(database="smart", user="dmkm", password="dmkm1234", host="50.16.139.89", port="5432")
 
-
+conn = psycopg2.connect(database=db['dbname'], user=db['user'], password=db['password'], host=db['host'], port=db['port'])
 
 cursor = conn.cursor()
-dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 2000;", conn)
+dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 1000;", conn)
 
 
 
