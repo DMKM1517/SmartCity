@@ -1,12 +1,11 @@
 module.exports = {
 	getPoints: function(page, limit, next) {
 		Points.find({
-				// where: {
-				// type: 'PATRIMOINE_CULTUREL',
-				// sentiment: {
-				// 	'>=': sentiment_level
-				// }
-				// },
+				where: {
+					rating: {
+						not: null
+					}
+				},
 				sort: 'rating DESC'
 			}).paginate({ page: page, limit: limit })
 			.exec(function(err, points) {

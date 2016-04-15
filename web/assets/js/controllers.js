@@ -6,7 +6,10 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 	var initial_zoom = 12;
 	var limit = 100;
 	var loading = true;
-	var latlong = { lat: 45.7591739, lng: 4.8846752 };
+	var latlong = {
+		lat: 45.7591739,
+		lng: 4.8846752
+	};
 	var current_zoom = initial_zoom;
 	var original_language = 'fr';
 	$scope.showFilter = true;
@@ -88,8 +91,8 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 					content += '<b>' + translations.schedule + ':</b> ' + point.schedule;
 					if ($scope.current_language != original_language) {
 						var url_translate = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
-						content += ' [<a href="'+ url_translate + '" target="_blank">' +
-							translations.translate_google + 
+						content += ' [<a href="' + url_translate + '" target="_blank">' +
+							translations.translate_google +
 							' <i class="fa fa-external-link"></i>' +
 							'</a>]';
 					}
@@ -262,6 +265,41 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	$scope.showFilter = false;
 	$scope.languages = languagesCnst;
 	$scope.current_language = $translate.use();
+	$scope.chart_rating = {
+		"type": "LineChart",
+		"options": {
+			"legend": "none"
+		},
+		"data": {
+			"cols": [{
+				id: "date",
+				label: "Date",
+				type: "date"
+			}, {
+				id: "rating",
+				label: "",
+				type: "number"
+			}]
+		}
+	};
+	$scope.chart_count = {
+		"type": "LineChart",
+		"options": {
+			"title": "Checkins",
+			"legend": "none"
+		},
+		"data": {
+			"cols": [{
+				id: "date",
+				label: "Date",
+				type: "date"
+			}, {
+				id: "count",
+				label: "",
+				type: "number"
+			}]
+		}
+	};
 
 	/* --Variables-- */
 
@@ -273,10 +311,16 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		$translate.use($translate.preferredLanguage());
 		$scope.current_language = $translate.preferredLanguage();
 	}
-	
+
 	if (!param_zoom) {
 		param_zoom = initial_zoom;
 	}
+
+	$translate(['rating', 'count']).then(function(translations) {
+		$scope.chart_rating.options.title = translations.rating;
+		$scope.chart_rating.data.cols[1].label = translations.rating;
+		$scope.chart_count.data.cols[1].label = translations.count;
+	});
 
 	// get the information of the point
 	PointsService.getPoint(id).then(function(data) {
@@ -286,8 +330,89 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		setTimeout(function() {
 			$('.rating').rating();
 		}, 100);
+		PointsService.getHistory(id).then(function(data) {
+			var rows_rating = [],
+				rows_count = [],
+				min_rating = 0,
+				max_rating = 5,
+				min_count = 0,
+				max_count = 1;
+			for (var i in data) {
+				rows_rating.push({
+					"c": [
+						{ "v": new Date(data[i].date) },
+						{ "v": data[i].rating }
+					]
+				});
+				rows_count.push({
+					"c": [
+						{ "v": new Date(data[i].date) },
+						{ "v": data[i].count }
+					]
+				});
+			}
+			$scope.chart_rating.data.rows = rows_rating;
+			$scope.chart_count.data.rows = rows_count;
+			min_rating = data.map(function(elem) {
+				return elem.rating;
+			}).reduce(function(x, y) {
+				if (!x) {
+					return y;
+				}
+				if (!y) {
+					return x;
+				}
+				return Math.min(x, y);
+			}) - 0.5;
+			min_rating = min_rating < 0 ? 0 : min_rating;
+			max_rating = data.map(function(elem) {
+				return elem.rating;
+			}).reduce(function(x, y) {
+				if (!x) {
+					return y;
+				}
+				if (!y) {
+					return x;
+				}
+				return Math.max(x, y);
+			}) + 0.5;
+			max_rating = max_rating > 10 ? 10 : max_rating;
+			min_count = data.map(function(elem) {
+				return elem.count;
+			}).reduce(function(x, y) {
+				if (!x) {
+					return y;
+				}
+				if (!y) {
+					return x;
+				}
+				return Math.min(x, y);
+			}) - 1;
+			min_count = min_count < 0 ? 0 : min_count;
+			max_count = data.map(function(elem) {
+				return elem.count;
+			}).reduce(function(x, y) {
+				if (!x) {
+					return y;
+				}
+				if (!y) {
+					return x;
+				}
+				return Math.max(x, y);
+			}) + 1;
+			$scope.chart_rating.options.vAxis = {
+				"minValue": min_rating,
+				"maxValue": max_rating
+			};
+			$scope.chart_count.options.vAxis = {
+				"minValue": min_count,
+				"maxValue": max_count
+			};
+		});
 	}, function() {
-		$scope.point = { name: 'Point not found' };
+		$scope.point = {
+			name: 'Point not found'
+		};
 	});
 
 	/* --Initialization-- */
@@ -296,13 +421,17 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	/* Functions */
 
 	$scope.back = function() {
-		$location.path('/').search({ id: id, z: param_zoom });
+		$location.path('/').search({
+			id: id,
+			z: param_zoom
+		});
 	};
 
 	// change language
 	$scope.changeLanguage = function(lang) {
 		$translate.use(lang);
-		$scope.url_translate = null;
+		$scope.url_translate_schedule = null;
+		$scope.url_translate_address = null;
 		$scope.current_language = lang;
 		externalTranslate();
 	};
@@ -315,7 +444,9 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 
 	function externalTranslate() {
 		if ($scope.current_language != original_language) {
-			$scope.url_translate = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/' + encodeURI($scope.point.schedule);
+			var url = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/';
+			$scope.url_translate_schedule = url + encodeURI($scope.point.schedule);
+			$scope.url_translate_address = url + encodeURI($scope.point.address);
 		}
 	}
 

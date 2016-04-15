@@ -53,24 +53,35 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	// get all categories
 	this.getCategories = function() {
 		var defer = $q.defer();
-			$http.get('/points/getCategories').success(function(categories) {
-				defer.resolve(categories);
-			}).error(function(err) {
-				defer.reject(err);
-			});
+		$http.get('/points/getCategories').success(function(categories) {
+			defer.resolve(categories);
+		}).error(function(err) {
+			defer.reject(err);
+		});
 		return defer.promise;
 	};
 
 	// filter by category
 	this.filterCategories = function(selected_categories) {
 		var filtered = [];
-		for(var i in points) {
+		for (var i in points) {
 			var point = points[i];
-			if(selected_categories[point.category]){
+			if (selected_categories[point.category]) {
 				filtered.push(point.id);
 			}
 		}
 		return filtered;
+	};
+
+	// history
+	this.getHistory = function(id) {
+		var defer = $q.defer();
+		$http.get('/ratings/getHistory?source=foursquare&ip_id=' + id).success(function(data) {
+			defer.resolve(data);
+		}).error(function(err) {
+			defer.reject(err);
+		});
+		return defer.promise;
 	};
 
 }]);

@@ -72,6 +72,10 @@ module.exports = {
     updatedAt: {
       type: 'date',
       columnName: 'last_update_date'
+    },
+    commune: {
+      type: 'string',
+      columnName: 'commune'
     }
   }
 };
