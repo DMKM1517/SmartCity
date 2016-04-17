@@ -251,55 +251,23 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 }]);
 /* --MainCtrl-- */
 
+/* -------------------------------------------------- */
+
 
 /* PointCtrl */
-SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$translate', 'PointsService', 'RatingFactory', 'languagesCnst', function($scope, $routeParams, $location, $translate, PointsService, RatingFactory, languagesCnst) {
+SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$translate', 'PointsService', 'RatingFactory', 'ChartFactory', 'languagesCnst', function($scope, $routeParams, $location, $translate, PointsService, RatingFactory, ChartFactory, languagesCnst) {
 
 	/* Variables */
 
-	var initial_zoom = 12;
-	var id = $routeParams.id;
-	var searchParam = $location.search();
-	var param_zoom = searchParam.z;
-	var original_language = 'fr';
+	var initial_zoom = 12,
+		id = $routeParams.id,
+		searchParam = $location.search(),
+		param_zoom = searchParam.z,
+		original_language = 'fr',
+		stats_sources = ['foursquare', 'yelp'];
 	$scope.showFilter = false;
 	$scope.languages = languagesCnst;
 	$scope.current_language = $translate.use();
-	$scope.chart_rating = {
-		"type": "LineChart",
-		"options": {
-			"legend": "none"
-		},
-		"data": {
-			"cols": [{
-				id: "date",
-				label: "Date",
-				type: "date"
-			}, {
-				id: "rating",
-				label: "",
-				type: "number"
-			}]
-		}
-	};
-	$scope.chart_count = {
-		"type": "LineChart",
-		"options": {
-			"title": "Checkins",
-			"legend": "none"
-		},
-		"data": {
-			"cols": [{
-				id: "date",
-				label: "Date",
-				type: "date"
-			}, {
-				id: "count",
-				label: "",
-				type: "number"
-			}]
-		}
-	};
 
 	/* --Variables-- */
 
@@ -316,99 +284,19 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		param_zoom = initial_zoom;
 	}
 
-	$translate(['rating', 'count']).then(function(translations) {
-		$scope.chart_rating.options.title = translations.rating;
-		$scope.chart_rating.data.cols[1].label = translations.rating;
-		$scope.chart_count.data.cols[1].label = translations.count;
-	});
-
 	// get the information of the point
 	PointsService.getPoint(id).then(function(data) {
 		$scope.point = data;
 		$scope.RF = RatingFactory.getRatingsAndClass($scope.point.rating);
+		// set links to external translation
 		externalTranslate();
 		setTimeout(function() {
 			$('.rating').rating();
 		}, 100);
-		PointsService.getHistory(id).then(function(data) {
-			var rows_rating = [],
-				rows_count = [],
-				min_rating = 0,
-				max_rating = 5,
-				min_count = 0,
-				max_count = 1;
-			for (var i in data) {
-				rows_rating.push({
-					"c": [
-						{ "v": new Date(data[i].date) },
-						{ "v": data[i].rating }
-					]
-				});
-				rows_count.push({
-					"c": [
-						{ "v": new Date(data[i].date) },
-						{ "v": data[i].count }
-					]
-				});
-			}
-			$scope.chart_rating.data.rows = rows_rating;
-			$scope.chart_count.data.rows = rows_count;
-			min_rating = data.map(function(elem) {
-				return elem.rating;
-			}).reduce(function(x, y) {
-				if (!x) {
-					return y;
-				}
-				if (!y) {
-					return x;
-				}
-				return Math.min(x, y);
-			}) - 0.5;
-			min_rating = min_rating < 0 ? 0 : min_rating;
-			max_rating = data.map(function(elem) {
-				return elem.rating;
-			}).reduce(function(x, y) {
-				if (!x) {
-					return y;
-				}
-				if (!y) {
-					return x;
-				}
-				return Math.max(x, y);
-			}) + 0.5;
-			max_rating = max_rating > 10 ? 10 : max_rating;
-			min_count = data.map(function(elem) {
-				return elem.count;
-			}).reduce(function(x, y) {
-				if (!x) {
-					return y;
-				}
-				if (!y) {
-					return x;
-				}
-				return Math.min(x, y);
-			}) - 1;
-			min_count = min_count < 0 ? 0 : min_count;
-			max_count = data.map(function(elem) {
-				return elem.count;
-			}).reduce(function(x, y) {
-				if (!x) {
-					return y;
-				}
-				if (!y) {
-					return x;
-				}
-				return Math.max(x, y);
-			}) + 1;
-			$scope.chart_rating.options.vAxis = {
-				"minValue": min_rating,
-				"maxValue": max_rating
-			};
-			$scope.chart_count.options.vAxis = {
-				"minValue": min_count,
-				"maxValue": max_count
-			};
-		});
+		// draw charts of all sources
+		for(var i in stats_sources){
+			drawCharts(stats_sources[i]);
+		}
 	}, function() {
 		$scope.point = {
 			name: 'Point not found'
@@ -420,6 +308,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 
 	/* Functions */
 
+	// go back to map with parameters id and zoom
 	$scope.back = function() {
 		$location.path('/').search({
 			id: id,
@@ -434,6 +323,9 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		$scope.url_translate_address = null;
 		$scope.current_language = lang;
 		externalTranslate();
+		for(var i in stats_sources){
+			drawCharts(stats_sources[i]);
+		}
 	};
 
 	/* --Functions-- */
@@ -442,6 +334,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 
 	/* Aux Functions */
 
+	// set url of translate with google for schedule, address
 	function externalTranslate() {
 		if ($scope.current_language != original_language) {
 			var url = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/';
@@ -450,7 +343,93 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		}
 	}
 
+	// get history data and set chart object
+	function drawCharts(source) {
+		switch (source) {
+			case 'foursquare':
+				PointsService.getHistory(id, source).then(function(data) {
+					$translate(['rating', 'count', 'date', 'checkins', 'avg', 'min', 'max']).then(function(translations) {
+						$scope.fs_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+							title: translations.rating,
+							label_date: translations.date,
+							label_property: translations.rating,
+							language: $scope.current_language,
+							step: 0.5,
+							max: 10
+						});
+						$scope.fs_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
+							title: translations.checkins,
+							label_date: translations.date,
+							label_property: translations.count,
+							language: $scope.current_language,
+							step: 2
+						});
+					});
+					$scope.fs_rating_measures = {
+						avg: measureValue(data, 'rating', 'avg').toFixed(1),
+						min: measureValue(data, 'rating', 'min'),
+						max: measureValue(data, 'rating', 'max'),
+					};
+					$scope.fs_count_measures = {
+						avg: Math.round(measureValue(data, 'count', 'avg')),
+					};
+				});
+				break;
+			case 'yelp':
+				PointsService.getHistory(id, source).then(function(data) {
+					$translate(['rating', 'count', 'date', 'reviews']).then(function(translations) {
+						$scope.yelp_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+							title: translations.rating,
+							label_date: translations.date,
+							label_property: translations.rating,
+							language: $scope.current_language,
+							step: 0.5,
+							max: 5
+						});
+						$scope.yelp_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
+							title: translations.reviews,
+							label_date: translations.date,
+							label_property: translations.count,
+							language: $scope.current_language,
+						});
+					});
+					$scope.yelp_rating_measures = {
+						avg: measureValue(data, 'rating', 'avg').toFixed(1),
+						min: measureValue(data, 'rating', 'min'),
+						max: measureValue(data, 'rating', 'max'),
+					};
+					$scope.yelp_count_measures = {
+						avg: Math.round(measureValue(data, 'count', 'avg')),
+					};
+				});
+				break;
+		}
+	}
+
+	function measureValue(data, property, measure) {
+		var mapreduce = data.map(function(elem) {
+			return elem[property];
+		}).reduce(function(x, y) {
+			if (measure == 'avg') {
+				return x+y;
+			}
+			if (!x) {
+				return y;
+			}
+			if (!y) {
+				return x;
+			}
+			return Math[measure](x, y);
+		});
+		if (measure == 'avg') {
+			mapreduce /= Object.keys(data).length;
+		}
+		return mapreduce;
+	}
+
 	/* --Aux Functions-- */
 
 }]);
 /* --PointCtrl-- */
+
+/* -------------------------------------------------- */

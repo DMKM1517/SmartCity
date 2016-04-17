@@ -15,6 +15,10 @@ module.exports = {
 				source_rating = 'fs_rating';
 				source_count = 'fs_checkinscount';
 				break;
+			case 'yelp':
+				source_rating = 'yelp_rating';
+				source_count = 'yelp_review_count';
+				break;
 		}
 		if (ip_id && source_rating && source_count && days) {
 			RatingsService.getCube(ip_id, source_rating, source_count, days, function(history) {

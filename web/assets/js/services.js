@@ -1,7 +1,8 @@
 /* PointsService */
 SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
-	var points = {};
-	var pages_loaded = [];
+	var points = {},
+		pages_loaded = [],
+		history = {};
 
 	// get points by page with limit
 	this.getPoints = function(page, limit) {
@@ -74,18 +75,33 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	};
 
 	// history
-	this.getHistory = function(id) {
+	this.getHistory = function(id, source) {
 		var defer = $q.defer();
-		$http.get('/ratings/getHistory?source=foursquare&ip_id=' + id).success(function(data) {
-			defer.resolve(data);
-		}).error(function(err) {
-			defer.reject(err);
-		});
+		if (!history[id]) {
+			$http.get('/ratings/getHistory?source=' + source + '&ip_id=' + id).success(function(data) {
+				history = {};
+				history[id] = {};
+				history[id][source] = data;
+				defer.resolve(history[id][source]);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		} else if (!history[id][source]) {
+			$http.get('/ratings/getHistory?source=' + source + '&ip_id=' + id).success(function(data) {
+				history[id][source] = data;
+				defer.resolve(history[id][source]);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		} else {
+			defer.resolve(history[id][source]);
+		}
 		return defer.promise;
 	};
 
 }]);
 /* --PointsService-- */
+
 
 
 /* GoogleMaps */
@@ -114,6 +130,7 @@ SmartApp.factory('GoogleMaps', ['colorsCnst', function(colorsCnst) {
 /* --GoogleMaps-- */
 
 
+
 /* RatingFactory */
 SmartApp.factory('RatingFactory', ['colorsCnst', function(colorsCnst) {
 	return {
@@ -136,4 +153,91 @@ SmartApp.factory('RatingFactory', ['colorsCnst', function(colorsCnst) {
 		}
 	};
 }]);
+/* --RatingFactory-- */
+
+
+
+/* ChartFactory */
+SmartApp.factory('ChartFactory', function() {
+	return {
+		newChartDateProperty: function(data, property, options) {
+			var _type = options.type || 'LineChart',
+				_title = options.title || '',
+				_label_date = options.label_date || 'Date',
+				_label_property = options.label_property || '',
+				_language = options.language || 'en',
+				_min = options.min || 0,
+				_step = options.step || 1,
+				_max = options.max,
+				rows = [],
+				min_max = [];
+			if (!data || !property) {
+				throw "Missing arguments: data or property";
+			}
+			for (var i in data) {
+				rows.push({
+					"c": [
+						{ "v": new Date(data[i].date).toLocaleDateString(_language, { day: 'numeric', month: 'short', year: 'numeric' }) },
+						{ "v": data[i][property] }
+					]
+				});
+			}
+			min_max = minMaxValues(data, property, _min, _step, _max);
+			return {
+				"type": _type,
+				"options": {
+					"title": _title,
+					"legend": "none",
+					"vAxis": {
+						"minValue": min_max[0],
+						"maxValue": min_max[1]
+					}
+				},
+				"data": {
+					"cols": [{
+						id: "date",
+						label: _label_date,
+						type: "string"
+					}, {
+						id: property,
+						label: _label_property,
+						type: "number"
+					}],
+					"rows": rows
+				}
+			};
+		}
+	};
+
+	// get min and max values of data according to a property
+	function minMaxValues(data, property, min_range, step, max_range) {
+		var min = data.map(function(elem) {
+			return elem[property];
+		}).reduce(function(x, y) {
+			if (!x) {
+				return y;
+			}
+			if (!y) {
+				return x;
+			}
+			return Math.min(x, y);
+		}) - step;
+		min = min < min_range ? min_range : min;
+		var max = data.map(function(elem) {
+			return elem[property];
+		}).reduce(function(x, y) {
+			if (!x) {
+				return y;
+			}
+			if (!y) {
+				return x;
+			}
+			return Math.max(x, y);
+		}) + step;
+		if (max_range) {
+			max = max > max_range ? max_range : max;
+		}
+		return [min, max];
+	}
+});
 /* --RatingFactory-- */
