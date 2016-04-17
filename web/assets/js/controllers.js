@@ -264,7 +264,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		searchParam = $location.search(),
 		param_zoom = searchParam.z,
 		original_language = 'fr',
-		stats_sources = ['foursquare', 'yelp'];
+		stats_sources = ['twitter', 'foursquare', 'yelp'];
 	$scope.showFilter = false;
 	$scope.languages = languagesCnst;
 	$scope.current_language = $translate.use();
@@ -346,9 +346,38 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 	// get history data and set chart object
 	function drawCharts(source) {
 		switch (source) {
+			case 'twitter':
+				PointsService.getHistory(id, source).then(function(data) {
+					$translate(['sentiment', 'count', 'date', 'tweets']).then(function(translations) {
+						$scope.twitter_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+							title: translations.sentiment,
+							label_date: translations.date,
+							label_property: translations.sentiment,
+							language: $scope.current_language,
+							step: 0.5,
+							max: 5
+						});
+						$scope.twitter_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
+							title: translations.tweets,
+							label_date: translations.date,
+							label_property: translations.count,
+							language: $scope.current_language,
+							step: 2
+						});
+					});
+					$scope.twitter_rating_measures = {
+						avg: measureValue(data, 'rating', 'avg').toFixed(1),
+						min: measureValue(data, 'rating', 'min'),
+						max: measureValue(data, 'rating', 'max'),
+					};
+					$scope.twitter_count_measures = {
+						avg: Math.round(measureValue(data, 'count', 'avg')),
+					};
+				});
+				break;
 			case 'foursquare':
 				PointsService.getHistory(id, source).then(function(data) {
-					$translate(['rating', 'count', 'date', 'checkins', 'avg', 'min', 'max']).then(function(translations) {
+					$translate(['rating', 'count', 'date', 'checkins']).then(function(translations) {
 						$scope.fs_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
 							title: translations.rating,
 							label_date: translations.date,
@@ -406,6 +435,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		}
 	}
 
+	// get value of a measure from data.property
 	function measureValue(data, property, measure) {
 		var mapreduce = data.map(function(elem) {
 			return elem[property];

@@ -16,10 +16,12 @@
  */
 module.exports = function(grunt) {
 
+	var version = JSON.parse(require('fs').readFileSync(__dirname + '/../../package.json')).version;
+
   grunt.config.set('cssmin', {
     dist: {
       src: ['.tmp/public/concat/production.css'],
-      dest: '.tmp/public/min/production.min.css'
+      dest: '.tmp/public/min/production-' + version + '.min.css'
     }
   });
 

@@ -1,7 +1,7 @@
 {
   "name": "TourisLyon",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "TourisLyon",
   "dependencies": {
     "ejs": "2.3.4",

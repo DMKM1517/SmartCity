@@ -11,12 +11,14 @@
  */
 module.exports = function(grunt) {
 
-  grunt.config.set('uglify', {
-    dist: {
-      src: ['.tmp/public/concat/production.js'],
-      dest: '.tmp/public/min/production.min.js'
-    }
-  });
+	var version = JSON.parse(require('fs').readFileSync(__dirname + '/../../package.json')).version;
 
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.config.set('uglify', {
+		dist: {
+			src: ['.tmp/public/concat/production.js'],
+			dest: '.tmp/public/min/production-' + version + '.min.js'
+		}
+	});
+
+	grunt.loadNpmTasks('grunt-contrib-uglify');
 };
