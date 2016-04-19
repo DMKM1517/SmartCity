@@ -75,7 +75,3 @@ conn.close()
 
 print rows_inserted
 
-
-
-
-
