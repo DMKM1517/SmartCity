@@ -12,16 +12,20 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
 import json
 from pprint import pprint
+from time import gmtime, strftime
 
+print("###################")
+timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+print(timeNow)
 
-with open('/Users/krishna/MOOC/smart-city/login.json') as data_file:
+with open('/home/dmkm/SmartCity/login.json') as data_file:
     db = json.load(data_file)
 
 
 conn = psycopg2.connect(database=db['dbname'], user=db['user'], password=db['password'], host=db['host'], port=db['port'])
 
 cursor = conn.cursor()
-dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 1000;", conn)
+dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 70;", conn)
 
 
 
@@ -44,8 +48,8 @@ def processTweet(tweet):
 
 
 
-clf = joblib.load('ModelObjects/svm.pkl') 
-vectorizer = joblib.load('ModelObjects/tfidf.pkl') 
+clf = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/svm.pkl') 
+vectorizer = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/tfidf.pkl') 
 
 
 
@@ -73,5 +77,4 @@ conn.close()
 
 
 
-print rows_inserted
-
+print "Inserted Records ",rows_inserted
