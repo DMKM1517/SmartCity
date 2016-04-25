@@ -26,8 +26,12 @@ module.exports = {
 		}
 		if (ip_id && source_rating && source_count && days) {
 			RatingsService.getCube(ip_id, source_rating, source_count, days, function(history) {
-				for(var i in history){
-					history[i].rating = parseFloat(+history[i].rating.toFixed(2));
+				for (var i in history) {
+					if (history[i].rating) {
+						history[i].rating = parseFloat(+history[i].rating.toFixed(2));
+					} else {
+						history[i].rating = 0;
+					}
 					history[i].count = parseInt(history[i].count);
 				}
 				res.json(history);
