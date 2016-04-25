@@ -3,8 +3,9 @@ Stack:
 
  - Node js
  - Sails js (server side)
- - Angular js (client side)
  - PostgreSQL
+ - Redis
+ - Angular js (client side)
 
 To run:
 
@@ -15,22 +16,29 @@ To run:
  - Go to the project's folder
  - Run `npm install`
  - Run `bower install`
- - Create or edit the file `config/local.js`:
-	```javascript
-	module.exports = {
-		connections: {
-		    smartPostgresql: {
-		      adapter: 'sails-postgresql',
-		      host: '<localhost_or_IP>',
-		      user: '<user>',
-		      password: '<password>',
-		      database: 'smart',
-		      port: 5432
-		    }
-		}
-	}
+ - Create the file (above this web folder) `../login.json`:
+ ```javascript
+    {
+	  "dbname": "",
+	  "host" : "",
+      "port" : ,
+      "user" : "",
+      "password" : ""
+}
   ```
-
+  
+ - For using Redis as sessions and sockets store, create the file `config/local.js`:
+ ```javascript
+    module.exports = {
+      session: {
+       adapter: 'redis'
+      },
+      sockets: {
+       adapter: 'socket.io-redis'
+      }
+};
+  ```
+ 
  - Start the server `sails lift`
  - Check on the browser [http://localhost:1337](http://localhost:1337)
 
