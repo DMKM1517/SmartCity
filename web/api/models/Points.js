@@ -63,7 +63,7 @@ module.exports = {
     },
     rating: {
       type: 'float',
-      columnName: 'averagerating'
+      columnName: 'average_rating'
     },
     createdAt: {
       type: 'date',
