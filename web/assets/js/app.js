@@ -20,8 +20,9 @@ SmartApp.config(['$routeProvider',
 
 // loading bar
 SmartApp.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
-	cfpLoadingBarProvider.parentSelector = '#loader';
-	cfpLoadingBarProvider.spinnerTemplate = '<div>loading...</div>';
+	cfpLoadingBarProvider.includeSpinner = false;
+	// cfpLoadingBarProvider.parentSelector = '#loader';
+	// cfpLoadingBarProvider.spinnerTemplate = '<div>loading...</div>';
 }]);
 
 // translation

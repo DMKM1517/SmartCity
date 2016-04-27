@@ -1,7 +1,7 @@
 {
   "name": "TourisLyon",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "TourisLyon",
   "dependencies": {
     "connect-redis": "^3.0.2",

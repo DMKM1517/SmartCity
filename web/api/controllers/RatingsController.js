@@ -4,6 +4,8 @@
  * @description :: Server-side logic for managing Ratings
  */
 
+ /*jshint esversion: 6 */
+
 module.exports = {
 	getHistory: function(req, res) {
 		var ip_id = req.query.ip_id;
@@ -33,6 +35,38 @@ module.exports = {
 						history[i].rating = 0;
 					}
 					history[i].count = parseInt(history[i].count);
+				}
+				res.json(history);
+			});
+		} else {
+			res.badRequest();
+		}
+	},
+	getAllHistory: function(req, res) {
+		"use strict";
+		var ip_id = req.query.ip_id;
+		var days = req.query.days || 7;
+		if (ip_id && days) {
+			RatingsService.getAllCube(ip_id, days, function(history) {
+				for (let h of history) {
+					if (h.twitter_rating) {
+						h.twitter_rating = parseFloat(+h.twitter_rating.toFixed(2));
+					} else {
+						h.twitter_rating = 0;
+					}
+					h.twitter_count = parseInt(h.twitter_count);
+					if (h.foursquare_rating) {
+						h.foursquare_rating = parseFloat(+h.foursquare_rating.toFixed(2));
+					} else {
+						h.foursquare_rating = 0;
+					}
+					h.foursquare_count = parseInt(h.foursquare_count);
+					if (h.yelp_rating) {
+						h.yelp_rating = parseFloat(+h.yelp_rating.toFixed(2));
+					} else {
+						h.yelp_rating = 0;
+					}
+					h.yelp_count = parseInt(h.yelp_count);
 				}
 				res.json(history);
 			});

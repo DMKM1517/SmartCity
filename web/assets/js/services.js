@@ -2,7 +2,8 @@
 SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	var points = {},
 		pages_loaded = [],
-		history = {};
+		history = {},
+		all_history = {};
 
 	// get points by page with limit
 	this.getPoints = function(page, limit) {
@@ -77,8 +78,9 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	// history
 	this.getHistory = function(id, source) {
 		var defer = $q.defer();
+		var url = '/ratings/getHistory?source=' + source + '&days=30&ip_id=' + id;
 		if (!history[id]) {
-			$http.get('/ratings/getHistory?source=' + source + '&ip_id=' + id).success(function(data) {
+			$http.get(url).success(function(data) {
 				history = {};
 				history[id] = {};
 				history[id][source] = data;
@@ -87,7 +89,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 				defer.reject(err);
 			});
 		} else if (!history[id][source]) {
-			$http.get('/ratings/getHistory?source=' + source + '&ip_id=' + id).success(function(data) {
+			$http.get(url).success(function(data) {
 				history[id][source] = data;
 				defer.resolve(history[id][source]);
 			}).error(function(err) {
@@ -95,6 +97,23 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 			});
 		} else {
 			defer.resolve(history[id][source]);
+		}
+		return defer.promise;
+	};
+
+
+	this.getAllHistory = function(id, days) {
+		var defer = $q.defer(),
+			url = '/ratings/getAllHistory?ip_id=' + id + '&days=' + days;
+		if (!all_history[id]) {
+			$http.get(url).success(function(data) {
+				all_history[id] = data;
+				defer.resolve(all_history[id]);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		} else {
+			defer.resolve(all_history[id]);
 		}
 		return defer.promise;
 	};

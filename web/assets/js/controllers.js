@@ -209,6 +209,15 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 		}
 	}, true);
 
+	// open menu if the window is big enough and initialize twitter widget
+	setTimeout(function() {
+		if ($(document).width() > 700) {
+			$scope.toggleMenu();
+		}
+		if ($(document).height() > 600) {
+			twttr.widgets.load(document.getElementById("twitter"));
+		}
+	}, 1000);
 
 	/* --Initialization-- */
 
@@ -294,9 +303,10 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 			$('.rating').rating();
 		}, 100);
 		// draw charts of all sources
-		for(var i in stats_sources){
-			drawCharts(stats_sources[i]);
-		}
+		// for (var i in stats_sources) {
+		// 	drawCharts(stats_sources[i]);
+		// }
+		drawChart();
 	}, function() {
 		$scope.point = {
 			name: 'Point not found'
@@ -323,9 +333,9 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		$scope.url_translate_address = null;
 		$scope.current_language = lang;
 		externalTranslate();
-		for(var i in stats_sources){
-			drawCharts(stats_sources[i]);
-		}
+		// for (var i in stats_sources) {
+		// 	drawCharts(stats_sources[i]);
+		// }
 	};
 
 	/* --Functions-- */
@@ -343,9 +353,223 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 		}
 	}
 
+	function drawChart() {
+		PointsService.getAllHistory(id, 30).then(function(all_data) {
+			$translate(['rating', 'count', 'date']).then(function(translations) {
+				var data = [];
+				for (var i in all_data) {
+					data[i] = {};
+					data[i].date = all_data[i].date;
+					var weights = 0,
+						total = 0;
+					if (all_data[i].twitter_rating !== 0) {
+						total += 4 * all_data[i].twitter_rating;
+						weights += 4;
+					}
+					if (all_data[i].foursquare_rating !== 0) {
+						total += 3 * (all_data[i].foursquare_rating / 2);
+						weights += 3;
+					}
+					if (all_data[i].yelp_rating !== 0) {
+						total += 3 * all_data[i].yelp_rating;
+						weights += 3;
+					}
+					if (weights > 0) {
+						data[i].rating = Math.round((total / weights) * 100) / 100;
+					}
+					/* else {
+											data[i].rating = 0;
+										}*/
+					data[i].count = all_data[i].twitter_count + all_data[i].foursquare_count + all_data[i].yelp_count;
+
+				}
+				$scope.all_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+					title: translations.rating,
+					label_date: translations.date,
+					label_property: translations.rating,
+					language: $scope.current_language,
+					step: 0.4,
+					max: 5
+				});
+				$scope.all_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
+					title: translations.count,
+					label_date: translations.date,
+					label_property: translations.count,
+					language: $scope.current_language,
+					step: 2
+				});
+				$scope.all_rating_measures = {
+					avg: measureValue(data, 'rating', 'avg').toFixed(1),
+					min: measureValue(data, 'rating', 'min'),
+					max: measureValue(data, 'rating', 'max'),
+				};
+				$scope.all_count_measures = {
+					avg: Math.round(measureValue(data, 'count', 'avg')),
+				};
+			});
+		});
+	}
+
 	// get history data and set chart object
 	function drawCharts(source) {
 		switch (source) {
+			case 'all1':
+				PointsService.getHistory(id, 'twitter').then(function(data_twitter) {
+					PointsService.getHistory(id, 'foursquare').then(function(data_foursquare) {
+						PointsService.getHistory(id, 'yelp').then(function(data_yelp) {
+							$translate(['rating', 'count', 'date']).then(function(translations) {
+								var data = [];
+								for (var i in data_twitter) {
+									data[i] = {};
+									data[i].date = data_twitter[i].date;
+									var num_sources = 0,
+										total = 0;
+									if (data_twitter[i].rating !== 0) {
+										total += data_twitter[i].rating;
+										num_sources++;
+									}
+									if (data_foursquare[i].rating !== 0) {
+										total += data_foursquare[i].rating / 2;
+										num_sources++;
+									}
+									if (data_yelp[i].rating !== 0) {
+										total += data_yelp[i].rating;
+										num_sources++;
+									}
+									if (num_sources > 0) {
+										data[i].rating = Math.round((total / num_sources) * 100) / 100;
+									} else {
+										data[i].rating = 0;
+									}
+									data[i].count = data_twitter[i].count + data_foursquare[i].count + data_yelp[i].count;
+
+								}
+								$scope.all_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+									title: translations.rating,
+									label_date: translations.date,
+									label_property: translations.rating,
+									language: $scope.current_language,
+									step: 0.4,
+									max: 5
+								});
+								$scope.all_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
+									title: translations.count,
+									label_date: translations.date,
+									label_property: translations.count,
+									language: $scope.current_language,
+									step: 2
+								});
+								$scope.all_rating_measures = {
+									avg: measureValue(data, 'rating', 'avg').toFixed(1),
+									min: measureValue(data, 'rating', 'min'),
+									max: measureValue(data, 'rating', 'max'),
+								};
+								$scope.all_count_measures = {
+									avg: Math.round(measureValue(data, 'count', 'avg')),
+								};
+							});
+						});
+					});
+				});
+				break;
+			case 'all2':
+				PointsService.getHistory(id, 'twitter').then(function(data_twitter) {
+					PointsService.getHistory(id, 'foursquare').then(function(data_foursquare) {
+						PointsService.getHistory(id, 'yelp').then(function(data_yelp) {
+							$translate(['rating', 'count', 'date']).then(function(translations) {
+								var data = [];
+								for (var i in data_twitter) {
+									data[i] = {};
+									data[i].date = data_twitter[i].date;
+									var num_sources = 0,
+										total = 1;
+									if (data_twitter[i].rating !== 0) {
+										total *= data_twitter[i].rating;
+										num_sources++;
+									}
+									if (data_foursquare[i].rating !== 0) {
+										total *= data_foursquare[i].rating / 2;
+										num_sources++;
+									}
+									if (data_yelp[i].rating !== 0) {
+										total *= data_yelp[i].rating;
+										num_sources++;
+									}
+									if (num_sources > 0) {
+										data[i].rating = Math.round((Math.pow(total, 1 / num_sources)) * 100) / 100;
+									} else {
+										data[i].rating = 0;
+									}
+									data[i].count = data_twitter[i].count + data_foursquare[i].count + data_yelp[i].count;
+
+								}
+								$scope.all2_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+									title: translations.rating,
+									label_date: translations.date,
+									label_property: translations.rating,
+									language: $scope.current_language,
+									step: 0.4,
+									max: 5
+								});
+								$scope.all2_rating_measures = {
+									avg: measureValue(data, 'rating', 'avg').toFixed(1),
+									min: measureValue(data, 'rating', 'min'),
+									max: measureValue(data, 'rating', 'max'),
+								};
+							});
+						});
+					});
+				});
+				break;
+			case 'all3':
+				PointsService.getHistory(id, 'twitter').then(function(data_twitter) {
+					PointsService.getHistory(id, 'foursquare').then(function(data_foursquare) {
+						PointsService.getHistory(id, 'yelp').then(function(data_yelp) {
+							$translate(['rating', 'count', 'date']).then(function(translations) {
+								var data = [];
+								for (var i in data_twitter) {
+									data[i] = {};
+									data[i].date = data_twitter[i].date;
+									var num_sources = 0,
+										total = 0;
+									if (data_twitter[i].rating !== 0) {
+										total += 4 * data_twitter[i].rating;
+										num_sources += 4;
+									}
+									if (data_foursquare[i].rating !== 0) {
+										total += 3 * data_foursquare[i].rating / 2;
+										num_sources += 3;
+									}
+									if (data_yelp[i].rating !== 0) {
+										total += 3 * data_yelp[i].rating;
+										num_sources += 3;
+									}
+									if (num_sources > 0) {
+										data[i].rating = Math.round((total / num_sources) * 100) / 100;
+									} else {
+										data[i].rating = 0;
+									}
+									data[i].count = data_twitter[i].count + data_foursquare[i].count + data_yelp[i].count;
+
+								}
+								$scope.all3_chart_rating = ChartFactory.newChartDateProperty(data, 'rating', {
+									title: translations.rating,
+									label_date: translations.date,
+									label_property: translations.rating,
+									language: $scope.current_language,
+									step: 0.4,
+									max: 5
+								});
+								$scope.all3_rating_measures = {
+									avg: measureValue(data, 'rating', 'avg').toFixed(1),
+									min: measureValue(data, 'rating', 'min'),
+									max: measureValue(data, 'rating', 'max'),
+								};
+							});
+						});
+					});
+				});
+				break;
 			case 'twitter':
 				PointsService.getHistory(id, source).then(function(data) {
 					$translate(['sentiment', 'count', 'date', 'tweets']).then(function(translations) {
@@ -437,11 +661,21 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 
 	// get value of a measure from data.property
 	function measureValue(data, property, measure) {
+		var values = 1;
 		var mapreduce = data.map(function(elem) {
 			return elem[property];
 		}).reduce(function(x, y) {
 			if (measure == 'avg') {
-				return x+y;
+				if (!x) {
+					x = 0;
+				}
+				if (!y) {
+					y = 0;
+				}
+				if (x !==0 && y !==0) {
+					values++;
+				}
+				return x + y;
 			}
 			if (!x) {
 				return y;
@@ -452,7 +686,7 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 			return Math[measure](x, y);
 		});
 		if (measure == 'avg') {
-			mapreduce /= Object.keys(data).length;
+			mapreduce /= values;
 		}
 		return mapreduce;
 	}
