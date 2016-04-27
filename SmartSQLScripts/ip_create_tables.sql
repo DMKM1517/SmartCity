@@ -131,6 +131,82 @@ CREATE INDEX yelp_latitude_longitude_idx ON ip.yelp (latitude,longitude);
 CREATE INDEX yelp_rating_idx ON ip.yelp (rating);
 
 
+
+
+----------------------------------------------------------------------
+-- Twitter tables
+----------------------------------------------------------------------
+-- drop table if exists twitter.tweets;
+CREATE TABLE twitter.tweets (
+	idd bigint,
+	"timestamp" varchar(100),
+	usert varchar(300),
+	location varchar(300),
+	"text" varchar(1000),
+	rt varchar(100),
+	lat varchar(100),
+	long varchar(100),
+	lang varchar(100),
+	sentiment float8,
+	alch_score float8,
+	alch_type varchar(100),
+	alch_lang varchar(100),
+	local_score float8
+);
+
+CREATE INDEX ON twitter.tweets (idd);
+CREATE INDEX ON twitter.tweets (sentiment);
+CREATE INDEX ON twitter.tweets ("text");
+
+-- drop table if exists twitter.tweet_to_ip;
+CREATE TABLE twitter.tweet_to_ip (
+	ip_id int,	
+	twitter_id bigint);
+CREATE INDEX ON twitter.tweet_to_ip (ip_id);
+CREATE INDEX ON twitter.tweet_to_ip (twitter_id);
+
+-- drop table if exists twitter.processed_tweets;
+CREATE TABLE twitter.processed_tweets (
+	tweet_id bigint,
+	processed_date timestamp
+);
+CREATE INDEX ON twitter.processed_tweets (tweet_id);
+
+-- drop table if exists twitter.keywords;
+CREATE TABLE twitter.keywords (
+	ip_id int,
+	keyword text
+);
+CREATE INDEX ON twitter.keywords (ip_id);
+
+
+----------------------------------------------------------------------
+-- View with twitter sentiment of each point
+----------------------------------------------------------------------
+
+-- drop view if exists twitter.ip_tweets_sentiment;
+CREATE VIEW twitter.ip_tweets_sentiment AS
+SELECT
+	tip.ip_id,
+	avg(t.sentiment) as sentiment
+FROM
+	twitter.tweet_to_ip tip
+	JOIN twitter.tweets t ON tip.twitter_id = t.idd
+	JOIN (
+		SELECT
+			tip2.ip_id,
+			max((t2."timestamp")::timestamp without time zone) AS max_timestamp
+		FROM 
+			twitter.tweets t2
+			JOIN twitter.tweet_to_ip tip2 ON tip2.twitter_id = t2.idd
+		GROUP BY tip2.ip_id
+		) lastt ON tip.ip_id = lastt.ip_id
+WHERE 
+	(t."timestamp")::timestamp > (lastt.max_timestamp - '1 day'::interval)
+GROUP BY tip.ip_id
+--having avg(t.sentiment) is not null;
+  
+
 ----------------------------------------------------------------------
 -- Aggregation View
 ----------------------------------------------------------------------
@@ -168,129 +244,32 @@ select
 	ip.flag,
 	ip.last_update_date,
 	y.image_url,
-	ip.sentiment,
+	ts.sentiment, 
 	fs.rating as fs_rating,
 	fs.checkinscount as fs_checkinscount,
 	fs.tipcount as fs_tipcount,
 	fs.userscount as fs_userscount,
 	y.rating as y_rating,
 	y.review_count as y_reviewcount,
-	(SELECT AVG(rating)
-        FROM   (VALUES(abs(ip.sentiment)),
-                      (fs.rating / 2),
-                      (y.rating)) T (rating)) AS averagerating
+	(
+		case when ts.sentiment is null and fs.rating is null and y.rating is null then null
+		else (
+			(
+				case when ts.sentiment is null then 0 else ts.sentiment * 4 end
+				+ case when fs.rating is null then 0 else (fs.rating / 2) * 3 end
+				+ case when y.rating is null then 0 else y.rating * 3 end)
+			/ (
+				case when ts.sentiment is null then 0 else 4 end
+				+ case when fs.rating is null then 0 else 3 end
+				+ case when y.rating is null then 0 else 3 end)
+		) end
+    ) AS average_rating
 from
 	ip.interest_points ip
 	left join ip.foursquare fs on ip.id = fs.idd
 	left join ip.yelp y on ip.id = y.idd
+	left join twitter.ip_tweets_sentiment ts on ip.id = ts.ip_id
 where
 	ip.in_use is true;
-
-select * 
-from ip.interest_points
-limit 500;
-
-
-----------------------------------------------------------------------
--- Twitter tables
-----------------------------------------------------------------------
--- drop table if exists twitter.tweets;
-CREATE TABLE twitter.tweets (
-	idd bigint,
-	"timestamp" varchar(100),
-	usert varchar(300),
-	location varchar(300),
-	"text" varchar(1000),
-	rt varchar(100),
-	lat varchar(100),
-	long varchar(100),
-	lang varchar(100),
-	sentiment float8,
-	alch_score float8,
-	alch_type varchar(100),
-	alch_lang varchar(100),
-	local_score float8
-);
-
-CREATE INDEX ON twitter.tweets (idd);
-CREATE INDEX ON twitter.tweets (sentiment);
-CREATE INDEX ON twitter.tweets ("text");
-
--- drop table if exists twitter.tweet_to_ip;
-CREATE TABLE twitter.tweet_to_ip (
-	ip_id int,	
-	twitter_id bigint);
-CREATE INDEX ON twitter.tweet_to_ip (ip_id);
-CREATE INDEX ON twitter.tweet_to_ip (twitter_id);
-
-
-----------------------------------------------------------------------
--- Hist tables
----------------------------------------------------------------------
-
--- drop table if exists hist.ip_foursquare;
-CREATE TABLE hist.ip_foursquare (
-	hist_date timestamp,
-	hist_action_taken varchar(20),
-	idd int8,
-	"name" varchar(500),
-	checkinscount int8,
-	tipcount int8,
-	userscount int8,
-	rating float8,
-	flag varchar(100),
-	last_update_date timestamp
-);
-
--- drop table if exists hist.ip_interest_points;
-CREATE TABLE hist.ip_interest_points (
-	hist_date timestamp,
-	hist_action_taken varchar(20),
-	id int4,
-	"type" varchar(250),
-	type_detail text,
-	"name" varchar(500),
-	address text,
-	postal_code varchar(100),
-	commune varchar(100),
-	telephone varchar(250),
-	fax varchar(100),
-	telephone_fax varchar(100),
-	email varchar(250),
-	website varchar(500),
-	facebook varchar(500),
-	ranking varchar(100),
-	open_hours text,
-	price text,
-	price_min varchar(250),
-	price_max varchar(250),
-	producer text,
-	coordinates_lat float8,
-	coordinates_long float8,
-	source_create_date varchar(250),
-	source_last_update varchar(250),
-	sentiment int4,
-	in_use bool,
-	flag varchar(50),
-	last_update_date timestamp
-);
-
--- drop table if exists hist.ip_yelp;
-CREATE TABLE hist.ip_yelp (
-	hist_date timestamp,
-	hist_action_taken varchar(20),
-	idd int8,
-	"name" varchar(500),
-	rating float4,
-	latitude float8,
-	longitude float8,
-	image_url varchar(500),
-	phone varchar(100),
-	review_count int8,
-	flag varchar(100),
-	last_update_date timestamp
-);
-
-
-
-
+	
+	

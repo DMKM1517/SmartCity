@@ -93,7 +93,21 @@ create index on data_warehouse.dim_interest_points (name);
 -- ========================== Creates the Fact Table ============================
 
 drop table if exists data_warehouse.fact_ratings;
-select * 
+select 
+	*,
+	(
+		case when twitter_sentiment is null and fs_rating is null and yelp_rating is null then null
+		else (
+			(
+				case when twitter_sentiment is null then 0 else twitter_sentiment * 4 end
+				+ case when fs_rating is null then 0 else (fs_rating / 2) * 3 end
+				+ case when yelp_rating is null then 0 else yelp_rating * 3 end)
+			/ (
+				case when twitter_sentiment is null then 0 else 4 end
+				+ case when fs_rating is null then 0 else 3 end
+				+ case when yelp_rating is null then 0 else 3 end)
+		) end
+    ) AS average_rating
 into data_warehouse.fact_ratings
 from (
 	select 
@@ -154,11 +168,7 @@ from (
 			SELECT
 				date_ip.date_id as hist_date,
 				date_ip.ip_id,
-				CASE
-					WHEN (avg(t.local_score) IS NULL) --TODO: Replace local_score by sentiment 
-						THEN (0)::double precision
-				        ELSE avg(t.local_score)
-				    END AS twitter_sentiment,
+				avg(t.sentiment) AS twitter_sentiment,
 			    count(distinct t.idd) as twitter_count
 			FROM
 				(
@@ -219,8 +229,12 @@ create index on data_warehouse.fact_ratings (twitter_sentiment);
 create index on data_warehouse.fact_ratings (twitter_count);
 
 --tests
-select count(*)
-from data_warehouse.fact_ratings;
+select *
+from data_warehouse.fact_ratings
+where twitter_sentiment is not null
+and ip_id > 81850
+order by 1
+limit 2000;
 
 select * 
 from data_warehouse.fact_ratings
@@ -229,7 +243,7 @@ where
 --	or yelp_review_count is not null
 --	or fs_rating is not null
 --	or fs_checkinscount is not null
-	ip_id = 190022
+	ip_id = 81851
 order by date_id 
 	
 
