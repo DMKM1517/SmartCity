@@ -14,7 +14,7 @@ def processTweet(tweet):
 def SmartModel(text):
     import pandas as pd
     from sklearn.externals import joblib
-    clf = joblib.load('ModelObjects/svm.pkl') 
+    clf = joblib.load('ModelObjects/modelrf2804.pkl') 
     vectorizer = joblib.load('ModelObjects/tfidf.pkl') 
     dataframe =  pd.Series([text])
     dataframe['text']= dataframe.apply(lambda x : processTweet(x))
