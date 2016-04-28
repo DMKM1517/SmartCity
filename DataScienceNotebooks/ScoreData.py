@@ -25,7 +25,7 @@ with open('/home/dmkm/SmartCity/login.json') as data_file:
 conn = psycopg2.connect(database=db['dbname'], user=db['user'], password=db['password'], host=db['host'], port=db['port'])
 
 cursor = conn.cursor()
-dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 70;", conn)
+dataframe = psql.read_sql("select * from twitter.tweets where sentiment is null order by timestamp::timestamp desc limit 700;", conn)
 
 
 
