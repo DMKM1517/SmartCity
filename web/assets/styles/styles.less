@@ -1,6 +1,7 @@
 /* Variables */
 
 @height_view: 92vh;
+@height_subview: 79vh;
 @color_blue: #6CBBFF;
 @screen-sm: 768px;
 @screen-xs: 480px;
@@ -9,6 +10,14 @@
 
 .cont {
 	height: @height_view;
+}
+
+.subcont {
+	overflow: auto;
+	height: @height_subview;
+	.row {
+		margin: 0;
+	}
 }
 
 .pointer {
@@ -33,7 +42,7 @@
 
 .info_window {
 	max-width: 470px;
-	min-width: 210px;
+	min-width: 245px;
 	h4 {
 		margin-bottom: 2px;
 	}
@@ -165,6 +174,7 @@
 #twitter {
 	position: absolute;
 	bottom: 0;
+	max-width: 340px;
 }
 
 

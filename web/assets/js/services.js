@@ -138,7 +138,12 @@ SmartApp.factory('GoogleMaps', ['colorsCnst', function(colorsCnst) {
 			if (sent > 4) {
 				sent = 4;
 			}
-			marker.setIcon('/images/map_marker_colors/' + colorsCnst[sent] + '.png');
+			marker.setIcon({
+				url: '/images/map_markers/' + colorsCnst[sent] + '.png',
+				scaledSize: new google.maps.Size(27,27),
+				origin: new google.maps.Point(-2,0),
+				anchor: new google.maps.Point(13,13)
+			});
 			return marker;
 		},
 		createInfoWindow: function() {

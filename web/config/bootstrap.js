@@ -9,8 +9,11 @@
  * http://sailsjs.org/#!/documentation/reference/sails.config/sails.config.bootstrap.html
  */
 
+ // read the login.json file above the web folder
+ var package = JSON.parse(require('fs').readFileSync(__dirname + '/../package.json'));
+
 module.exports.bootstrap = function(cb) {
-	sails.config.appName = "TourisLyon";
+	sails.config.appName = package.name;
   // It's very important to trigger this callback method when you are finished
   // with the bootstrap!  (otherwise your server will never lift, since it's waiting on the bootstrap)
   cb();

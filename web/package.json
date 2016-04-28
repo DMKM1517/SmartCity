@@ -1,8 +1,8 @@
 {
-  "name": "TourisLyon",
+  "name": "LyonEye",
   "private": true,
-  "version": "0.0.4",
-  "description": "TourisLyon",
+  "version": "0.0.5",
+  "description": "Interest points of Lyon",
   "dependencies": {
     "connect-redis": "^3.0.2",
     "ejs": "2.3.4",

@@ -134,10 +134,29 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 			$scope.markers_clusters.clearMarkers();
 		}
 		$scope.markers_clusters = new MarkerClusterer($scope.map, filtered_markers, {
-			gridSize: 40,
-			minimumClusterSize: 3,
+			gridSize: 41,
+			minimumClusterSize: 2,
 			maxZoom: 16,
-			zoomOnClick: false
+			zoomOnClick: true,
+			styles: [
+			{
+				url: '/images/map_markers/multiple_small.png',
+				height: 47,
+				width: 47,
+				textColor: '#ddffff'
+			},
+			{
+				url: '/images/map_markers/multiple_medium.png',
+				height: 52,
+				width: 52,
+				textColor: '#ddffff'
+			},
+			{
+				url: '/images/map_markers/multiple_large.png',
+				height: 57,
+				width: 57,
+				textColor: '#ddffff'
+			}]
 		});
 		// $scope.setMapOn(filtered_markers, $scope.map);
 	};
@@ -214,8 +233,11 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 		if ($(document).width() > 700) {
 			$scope.toggleMenu();
 		}
-		if ($(document).height() > 600) {
+		if ($(document).height() > 640) {
 			twttr.widgets.load(document.getElementById("twitter"));
+		}
+		else{
+			$('#twitter').hide();
 		}
 	}, 1000);
 
