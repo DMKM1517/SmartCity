@@ -13,12 +13,15 @@ def processTweet(tweet):
 
 def SmartModel(text):
     import pandas as pd
+    import os
     from sklearn.externals import joblib
-    clf = joblib.load('ModelObjects/svm.pkl') 
-    vectorizer = joblib.load('ModelObjects/tfidf.pkl') 
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ModelObjects')
+    clf = joblib.load(os.path.join(path, 'svm.pkl')) 
+    vectorizer = joblib.load(os.path.join(path, 'tfidf.pkl')) 
     dataframe =  pd.Series([text])
     dataframe['text']= dataframe.apply(lambda x : processTweet(x))
     test_vectors = vectorizer.transform(dataframe['text'])
     predict = clf.predict(test_vectors)
     return predict
-print SmartModel(sys.argv[1])
+
+print SmartModel(sys.argv[1])[0]
