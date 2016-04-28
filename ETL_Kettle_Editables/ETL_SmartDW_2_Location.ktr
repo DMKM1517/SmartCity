@@ -162,20 +162,26 @@
       <schema>data_warehouse</schema>
       <table>dim_location</table>
       <key>
-        <name>id</name>
-        <field>id</field>
+        <name>commune</name>
+        <field>commune</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <key>
+        <name>postal_code</name>
+        <field>postal_code</field>
         <condition>&#x3d;</condition>
         <name2/>
       </key>
       <value>
         <name>commune</name>
         <rename>commune</rename>
-        <update>Y</update>
+        <update>N</update>
       </value>
       <value>
         <name>postal_code</name>
         <rename>postal_code</rename>
-        <update>Y</update>
+        <update>N</update>
       </value>
       <value>
         <name>coordinates_lat</name>

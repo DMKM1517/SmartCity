@@ -170,8 +170,20 @@
       <schema>data_warehouse</schema>
       <table>fact_ratings</table>
       <key>
-        <name>id</name>
-        <field>id</field>
+        <name>ip_id</name>
+        <field>ip_id</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <key>
+        <name>date_id</name>
+        <field>date_id</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <key>
+        <name>location_id</name>
+        <field>location_id</field>
         <condition>&#x3d;</condition>
         <name2/>
       </key>
