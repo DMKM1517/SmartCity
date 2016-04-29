@@ -1,0 +1,9 @@
+extends layout
+
+block content
+	h1= title
+	form(action="/", method="post")
+		.form-group
+			textarea(class="form-control", placeholder="Text...", name="text") #{text}
+		button(id="score_it", class="btn btn-default") Score it
+	h3(id="msg") #{msg}
