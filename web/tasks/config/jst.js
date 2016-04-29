@@ -21,6 +21,11 @@
 
 module.exports = function(grunt) {
 
+  var version = JSON.parse(require('fs').readFileSync(__dirname + '/../../package.json')).version;
+  var path_jst = '.tmp/public/jst-'+version+'.js';
+  var files = {};
+  files[path_jst] = require('../pipeline').templateFilesToInject;
+
   grunt.config.set('jst', {
     dev: {
 
@@ -35,12 +40,13 @@ module.exports = function(grunt) {
       // default interpolation. If you want to parse templates with the default _.template behavior
       // (i.e. using <div></div>), there's no need to overwrite `templateSettings.interpolate`.
 
+      files: files
 
-      files: {
-        // e.g.
-        // 'relative/path/from/gruntfile/to/compiled/template/destination'  : ['relative/path/to/sourcefiles/**/*.html']
-        '.tmp/public/jst.js': require('../pipeline').templateFilesToInject
-      }
+      // files: {
+      //   // e.g.
+      //   // 'relative/path/from/gruntfile/to/compiled/template/destination'  : ['relative/path/to/sourcefiles/**/*.html']
+      //   path_jst: require('../pipeline').templateFilesToInject
+      // }
     }
   });
 

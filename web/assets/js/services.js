@@ -140,9 +140,9 @@ SmartApp.factory('GoogleMaps', ['colorsCnst', function(colorsCnst) {
 			}
 			marker.setIcon({
 				url: '/images/map_markers/' + colorsCnst[sent] + '.png',
-				scaledSize: new google.maps.Size(27,27),
-				origin: new google.maps.Point(-2,0),
-				anchor: new google.maps.Point(13,13)
+				scaledSize: new google.maps.Size(23, 23),
+				origin: new google.maps.Point(-2, 0),
+				anchor: new google.maps.Point(11, 11)
 			});
 			return marker;
 		},
@@ -227,6 +227,72 @@ SmartApp.factory('ChartFactory', function() {
 						label: _label_property,
 						type: "number"
 					}],
+					"rows": rows
+				}
+			};
+		},
+		newChartDatePropertyMultiple: function(all_data, property, options) {
+			var _type = options.type || 'LineChart',
+				_title = options.title || '',
+				_label_date = options.label_date || 'Date',
+				_label_property = options.label_property || '',
+				_language = options.language || 'en',
+				_min = options.min || 0,
+				_step = options.step || 1,
+				_max = options.max,
+				cols = [{
+					id: "date",
+					label: _label_date,
+					type: "string"
+				}],
+				rows = [],
+				min_max = [],
+				series = {
+					0: {
+						lineWidth: 4,
+						color: 'green'
+					}
+				};
+			if (!all_data || !property) {
+				throw "Missing arguments: data or property";
+			}
+			for (var i in all_data) {
+				cols.push({
+					id: all_data[i].label + ' ' + property,
+					label: all_data[i].label,
+					type: "number"
+				});
+			}
+			for (var j in all_data[0].data) {
+				rows.push({
+					"c": [
+						{ "v": new Date(all_data[i].data[j].date).toLocaleDateString(_language, { day: 'numeric', month: 'short', year: 'numeric' }) },
+						{ "v": all_data[0].data[j][property] }
+					]
+				});
+			}
+			for (i = 1; i < all_data.length; i++) {
+				series[i.toString()] = {
+					lineWidth: 1,
+					color: all_data[i].color
+				};
+				for(j in all_data[i].data){
+					rows[j].c.push({ "v": all_data[i].data[j][property] });
+				}
+			}
+			// min_max = minMaxValues(data, property, _min, _step, _max);
+			return {
+				"type": _type,
+				"options": {
+					"title": _title,
+					"series": series,
+					/*"vAxis": {
+						"minValue": min_max[0],
+						"maxValue": min_max[1]
+					}*/
+				},
+				"data": {
+					"cols": cols,
 					"rows": rows
 				}
 			};
