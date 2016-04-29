@@ -1,0 +1,9 @@
+@{title('Score Text')}
+
+<form action="/" method="post">
+  <div class="form-group">
+    <textarea class="form-control" placeholder="Text..." name="text">@{self.body.text}</textarea>
+  </div>
+  <button id="score_it" class="btn btn-default">Score it</button>
+</form>
+<h3 id="msg">@{self.msg}</h3>
