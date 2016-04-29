@@ -48,7 +48,7 @@ def processTweet(tweet):
 
 
 
-clf = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/modelrf2804.pkl') 
+clf = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/svm.pkl') 
 vectorizer = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/tfidf.pkl') 
 
 
