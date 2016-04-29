@@ -16,7 +16,7 @@ def SmartModel(text):
     import os
     from sklearn.externals import joblib
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ModelObjects')
-    clf = joblib.load(os.path.join(path, 'svm.pkl')) 
+    clf = joblib.load(os.path.join(path, 'modelrf2804.pkl')) 
     vectorizer = joblib.load(os.path.join(path, 'tfidf.pkl')) 
     dataframe =  pd.Series([text])
     dataframe['text']= dataframe.apply(lambda x : processTweet(x))
