@@ -65,7 +65,11 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 				var content = '<div class="info_window">' +
 					'<div class="row">' +
 					'<div class="col-xs-9">' +
-					'<h4>' + point.name + '</h4>' +
+					'<h4>'+
+					'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">' + 
+					point.name + 
+					'</a>' +
+					'</h4>' +
 					'<div class="category">' + translations[point.category] + '</div>' +
 					'</div>' +
 					'<div class="col-xs-3">' +
@@ -78,7 +82,15 @@ SmartApp.controller('MainCtrl', ['$scope', '$rootScope', '$location', '$translat
 					'</div>' +
 					'</div>';
 				if (point.address) {
-					content += '<b>' + translations.address + ':</b> ' + point.address + '<br>';
+					content += '<b>' + translations.address + ':</b> ' + point.address;
+					if ($scope.current_language != original_language) {
+						var url_translate = 'https://translate.google.com/#' + original_language + '/' + $scope.current_language + '/' + encodeURI(point.address);
+						content += ' [<a href="' + url_translate + '" target="_blank">' +
+							translations.translate_google +
+							' <i class="fa fa-external-link"></i>' +
+							'</a>]';
+					}
+					content += '<br>';
 				}
 				if (point.web) {
 					var links = point.web.split(';');
@@ -594,21 +606,28 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 				PointsService.getHistory(id, 'twitter').then(function(data_twitter) {
 					PointsService.getHistory(id, 'foursquare').then(function(data_foursquare) {
 						PointsService.getHistory(id, 'yelp').then(function(data_yelp) {
-							$translate(['rating', 'count', 'date']).then(function(translations) {
+							$translate(['rating', 'count', 'date', 'twitter', 'foursquare', 'yelp', 'overall']).then(function(translations) {
 								var data = [],
-									all_data = [];
-								for (var i in data_foursquare) {
+									all_data = [],
+									data_fs = [],
+									i;
+								for (i in data_foursquare){
+									data_fs[i]={};
+									data_fs[i].count = data_foursquare[i].count;
+									data_fs[i].date = data_foursquare[i].date;
+									data_fs[i].rating = data_foursquare[i].rating/2;
+								}
+								for (i in data_fs) {
 									data[i] = {};
-									data[i].date = data_foursquare[i].date;
-									data_foursquare[i].rating /= 2;
+									data[i].date = data_fs[i].date;
 									var weights = 0,
 										total = 0;
 									if (data_twitter[i].rating !== 0) {
 										total += 4 * data_twitter[i].rating;
 										weights += 4;
 									}
-									if (data_foursquare[i].rating !== 0) {
-										total += 3 * data_foursquare[i].rating;
+									if (data_fs[i].rating !== 0) {
+										total += 3 * data_fs[i].rating;
 										weights += 3;
 									}
 									if (data_yelp[i].rating !== 0) {
@@ -621,25 +640,25 @@ SmartApp.controller('PointCtrl', ['$scope', '$routeParams', '$location', '$trans
 									/* else {
 																			data[i].rating = 0;
 																		}*/
-									data[i].count = data_twitter[i].count + data_foursquare[i].count + data_yelp[i].count;
+									data[i].count = data_twitter[i].count + data_fs[i].count + data_yelp[i].count;
 								}
 								all_data.push({
-									label: 'Overall',
+									label: translations.overall,
 									color: 'green',
 									data: data
 								});
 								all_data.push({
-									label: 'Twitter',
+									label: translations.twitter,
 									color: '#1DA1F2',
 									data: data_twitter
 								});
 								all_data.push({
-									label: 'Foursquare',
+									label: translations.foursquare,
 									color: '#2D5BE3',
-									data: data_foursquare
+									data: data_fs
 								});
 								all_data.push({
-									label: 'Yelp',
+									label: translations.yelp,
 									color: '#C41200',
 									data: data_yelp
 								});
