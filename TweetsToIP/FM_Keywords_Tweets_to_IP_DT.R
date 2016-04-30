@@ -8,7 +8,8 @@ library(stringdist)
 library(plyr)
 library(tm)
 library(stringi)
-library(dplyr)
+library(data.table)
+
 ############    Libraries      ##############
 ############################################
 
@@ -73,7 +74,7 @@ count_substring = function(text,keywords) {
 # ########## ######### CONNECTION TO DB ###############
 # loads the PostgreSQL driver
 library(jsonlite)
-login <- fromJSON("../login.json", flatten=TRUE)
+login <- fromJSON("/Users/saulgarcia/Desktop/Github/SmartCity/login.json", flatten=TRUE)
 drv = dbDriver("PostgreSQL")
 con <- dbConnect(
   drv, dbname = login$dbname,
@@ -166,55 +167,65 @@ rm(query_kw)
 
 #####################################################
 ############# MODEL TWEETS_TO_IP   ##################
-# Query to retrieve combinations of Tweets - Kewyords
+
+# Queries to retrieve combinations of Tweets - Kewyords
+#Keywords
 query_kw <- " 
   select 
-  t.idd::varchar(100), 
-  t.text, 
   k.ip_id, 
   k.keyword
 from 
-  twitter.tweets t,
-  twitter.keywords k
-WHERE 
-t.idd in 
-  (select distinct idd
-  from twitter.tweets
-  where
-  idd not in (
-    select distinct tweet_id
-    from twitter.processed_tweets
-  )
-  limit 2000);"
+  twitter.keywords k;"
 
-# Retreives the table from the database
-df <- dbGetQuery(con, query_kw)
-processed_tweets = df %>% select(idd) %>% distinct(idd)
-trigger = processed_tweets %>% summarise(count = n_distinct(idd))
-trigger = trigger[[1]]
-#processed_tweets$processed_date= date()
+#Tweets
+query_t <- "
+select 
+  t.idd::varchar(100), 
+  t.text
+from 
+  twitter.tweets t;"
+
+#Processed
+query_p <-"
+select distinct tweet_id::varchar(100)
+from twitter.processed_tweets"
+
+#Get data and turn it to data table
+df1 <- data.table(dbGetQuery(con, query_kw))
+df2 <- data.table(dbGetQuery(con, query_t))
+df3 <- data.table(dbGetQuery(con, query_p))
+
+setkey(df1,c(ip_id,keyword))
+setkey(df2, idd)
+setkey(df3, tweet_id)
+
+#Subset the not processed tweets
+df <- df2[-df2[df3, which=TRUE],][1:2000]
+
+
+#Prepare to update the processed tweets
+processed_tweets = as.data.frame(unique(df$idd))
+names(processed_tweets) = "idd"
+processed_tweets$idd = as.character(processed_tweets$idd)
+
+trigger = nrow(processed_tweets)
 
 #Clean Text
 df$text_clean = clean_text(df$text)
+
+#Combinations for Tweets to IP
+df <- merge(as.data.frame(df),as.data.frame(df1), all.x = TRUE, all.y = TRUE) 
+
+
+
 #Count how many keywords appear in text
 df$count = count_substring(df$text_clean, df$keyword)
 
-#Record Processed Tweets
-if(trigger[[1]]>0){ #Run if there are tweets
-  insert <- function(i, con, processed_tweets) {
-    txt <- paste("INSERT into twitter.processed_tweets (tweet_id, processed_date) VALUES (",processed_tweets$idd[i],",  now() );")  
-    dbGetQuery(con, txt)
-  }
-  
-  for (i in 1:length(processed_tweets$idd)){
-    insert(i, con, processed_tweets)
-  }
-}
 
-
-#Only update if there
+#Only tweets to ip if there are relations
 if(sum(df$count)>0){
-  tweet_to_ip = df %>% filter(count > 0) %>% select(idd, ip_id)
+  #tweet_to_ip = df %>% filter(count > 0) %>% select(idd, ip_id)
+  tweet_to_ip = subset(df,count>0)[,c(1,4)]
   names(tweet_to_ip) = c("twitter_id","ip_id")
   tweet_to_ip<- tweet_to_ip[,c(2,1)]
 
@@ -229,7 +240,18 @@ if(sum(df$count)>0){
   }
 }
 
+#Record Processed Tweets
+if(trigger[[1]]>0){ #Run if there are tweets
+  insert <- function(i, con, processed_tweets) {
+    txt <- paste("INSERT into twitter.processed_tweets (tweet_id, processed_date) VALUES (",processed_tweets$idd[i],",  now() );")  
+    dbGetQuery(con, txt)
+  }
+  
+  for (i in 1:length(processed_tweets$idd)){
+    insert(i, con, processed_tweets)
+  }
+}
 #########Close PostgreSQL connection###############
 dbDisconnect(con)
 rm(list=ls())
-
+#KeywordsTweets_to_IP
