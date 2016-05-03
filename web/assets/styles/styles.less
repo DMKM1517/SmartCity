@@ -1,20 +1,13 @@
 /* Variables */
 
-@height_view: 92vh;
-@height_subview: 78vh;
 @color_blue: #6CBBFF;
 @screen-sm: 768px;
 @screen-xs: 480px;
 
 /* General */
 
-.cont {
-	height: @height_view;
-}
-
 .subcont {
 	overflow: auto;
-	height: @height_subview;
 	.row {
 		margin: 0;
 	}
@@ -134,7 +127,10 @@
 		height: 4px;
 		background-color: #888;
 		transition: all 0.3s;
+		-webkit-transition: all 0.3s;
+		-moz-transition: all 0.3s;
 		backface-visibility: hidden;
+		-web-backface-visibility: hidden;
 		border-radius: 2px;
 	}
 }
@@ -143,9 +139,13 @@
 	background-color: transparent;
 	&:before {
 		transform: rotate(45deg) translate(5px, 5px);
+		-webkit-transform: rotate(45deg) translate(5px, 5px);
+		-ms-transform: rotate(45deg) translate(5px, 5px);
 	}
 	&:after {
 		transform: rotate(-45deg) translate(7px, -8px);
+		-webkit-transform: rotate(-45deg) translate(7px, -8px);
+		-ms-transform: rotate(-45deg) translate(7px, -8px);
 	}
 }
 
@@ -155,7 +155,6 @@
 	z-index: 1;
 	min-width: 250px;
 	max-width: 350px;
-	height: @height_view;
 	padding: 10px;
 	margin: auto;
 	border-radius: 4px;
@@ -252,4 +251,17 @@
 .measures {
 	height: 16px;
 	font-size: 0.86em;
+}
+
+
+/* map blur */
+
+.map_blur {
+	background-size: 100% 100%;
+}
+.map_blur_right {
+	background-image: url('../images/map_right_blur.jpg')
+}
+.map_blur_left {
+	background-image: url('../images/map_left_blur.jpg')
 }

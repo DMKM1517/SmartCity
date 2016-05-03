@@ -141,8 +141,8 @@ SmartApp.factory('GoogleMaps', ['colorsCnst', function(colorsCnst) {
 			marker.setIcon({
 				url: '/images/map_markers/' + colorsCnst[sent] + '.png',
 				scaledSize: new google.maps.Size(23, 23),
-				origin: new google.maps.Point(-2, 0),
-				anchor: new google.maps.Point(11, 11)
+				origin: new google.maps.Point(0, 0),
+				anchor: new google.maps.Point(9, 11)
 			});
 			return marker;
 		},

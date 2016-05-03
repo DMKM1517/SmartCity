@@ -8,7 +8,7 @@ SmartApp.config(['$routeProvider',
 	function($routeProvider) {
 		$routeProvider.when('/', {
 			templateUrl: '/templates/home.html',
-			controller: 'MainCtrl'
+			controller: 'HomeCtrl'
 		}).when('/point/:id', {
 			templateUrl: '/templates/point.html',
 			controller: 'PointCtrl'
@@ -26,13 +26,13 @@ SmartApp.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
 }]);
 
 // translation
-SmartApp.config(['$translateProvider', 'languagesCnst', function($translateProvider, languagesCnst) {
+SmartApp.config(['$translateProvider', 'paramsCnst', function($translateProvider, paramsCnst) {
 	var availables = {};
-	for (var i in languagesCnst) {
-		availables[languagesCnst[i] + '_*'] = languagesCnst[i];
+	for (var i in paramsCnst.languages) {
+		availables[paramsCnst.languages[i] + '_*'] = paramsCnst.languages[i];
 	}
 	var preferred_language = 'en';
-	if (window.navigator.languages[0]) {
+	if (window.navigator.languages && window.navigator.languages[0]) {
 		preferred_language = window.navigator.languages[0];
 	} else if (window.navigator.language) {
 		preferred_language = window.navigator.language;
@@ -51,7 +51,7 @@ SmartApp.config(['$translateProvider', 'languagesCnst', function($translateProvi
 		// })
 		.useUrlLoader('/translations/getTranslations')
 		.preferredLanguage(preferred_language.substring(0, 2))
-		.registerAvailableLanguageKeys(languagesCnst, availables)
+		.registerAvailableLanguageKeys(paramsCnst.languages, availables)
 		.fallbackLanguage('en');
 }]);
 
@@ -61,6 +61,11 @@ SmartApp.config(['$translateProvider', 'languagesCnst', function($translateProvi
 /* Constants */
 
 SmartApp.constant('colorsCnst', ['red', 'orange', 'yellow', 'lgreen', 'green']);
-SmartApp.constant('languagesCnst', ['en', 'fr', 'es', 'ru', 'hi', 'zh', 'de']);
+SmartApp.constant('paramsCnst', {
+	initial_zoom: 12,
+	limit_points: 100,
+	original_language: 'fr',
+	languages: ['en', 'fr', 'es', 'ru', 'hi', 'zh', 'de'],
+});
 
 /* --Constants-- */
