@@ -1,0 +1,56 @@
+<div>
+	<div class="info_window">
+		<div class="row">
+			<div class="col-xs-9">
+				<h4>
+				<a ng-href="#/point/{{point.id}}?z={{point.zoom}}">
+					{{point.name}}
+				</a>
+			</h4>
+				<div class="category">
+					{{point.translations[point.category]}}
+				</div>
+			</div>
+			<div class="col-xs-3">
+				<div ng-class="['stars', 'pull-right', point.RF.star_class]">
+					<input type="hidden" class="rating" data-fractions="2" ng-value="point.RF.rating2" data-readonly/>
+				</div>
+				<div class="rating_number">
+					{{point.RF.rating1}}
+				</div>
+			</div>
+		</div>
+		<div ng-if="point.address">
+			<b>{{point.translations.address}}:</b> {{point.address}}
+			<span ng-if="point.url_translate_address">
+			[<a ng-href="{{point.url_translate_address}}" target="_blank">
+				{{point.translations.translate_google}}
+				<i class="fa fa-external-link"></i>
+			</a>]
+		</span>
+		</div>
+		<div ng-if="point.web_links">
+			<b>{{point.translations.web}}:</b>
+			<span ng-repeat="link in point.web_links">
+				<a ng-href="{{link}}" target="_blank">{{link}}</a>
+				<br ng-if="!$last" />
+			</span>
+		</div>
+		<div ng-if="point.schedule">
+			<b>{{point.translations.schedule}}:</b> {{point.schedule}}
+			<span ng-if="point.url_translate_schedule">
+			[<a ng-href="{{point.url_translate_schedule}}" target="_blank">
+				{{point.translations.translate_google}}
+				<i class="fa fa-external-link"></i>
+			</a>]
+		</span>
+		</div>
+		<div class="row">
+			<div class="pull-right">
+				<a ng-href="#/point/{{point.id}}?z={{point.zoom}}">
+					{{point.translations.more_information}}
+					</a>
+			</div>
+		</div>
+	</div>
+</div>

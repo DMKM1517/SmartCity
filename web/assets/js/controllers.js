@@ -1,5 +1,5 @@
 /* HomeCtrl */
-SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translate', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', 'paramsCnst', function($scope, $rootScope, $location, $translate, GoogleMaps, PointsService, colorsCnst, RatingFactory, paramsCnst) {
+SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$compile', '$templateRequest', '$timeout', '$translate', 'GoogleMaps', 'PointsService', 'colorsCnst', 'RatingFactory', 'paramsCnst', function($scope, $rootScope, $location, $compile, $templateRequest, $timeout, $translate, GoogleMaps, PointsService, colorsCnst, RatingFactory, paramsCnst) {
 
 	/* Variables */
 
@@ -7,13 +7,38 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 		latlong_lyon = {
 			lat: 45.7591739,
 			lng: 4.8846752
+		},
+		opt_markers_clusters = {
+			gridSize: 43,
+			minimumClusterSize: 2,
+			maxZoom: 16,
+			zoomOnClick: false,
+			styles: [{
+				url: '/images/map_markers/multiple_small.png',
+				height: 47,
+				width: 47,
+				textColor: '#ddffff'
+			}, {
+				url: '/images/map_markers/multiple_medium.png',
+				height: 52,
+				width: 52,
+				textColor: '#ddffff'
+			}, {
+				url: '/images/map_markers/multiple_large.png',
+				height: 57,
+				width: 57,
+				textColor: '#ddffff'
+			}]
 		};
 	$scope.showFilter = true;
 	$scope.languages = paramsCnst.languages;
-	$scope.current_language = $translate.use();
+	$scope.current_zoom =
+		$scope.current_language = $translate.use();
 	$scope.markers = [];
+	$scope.group_markers = [];
 	$scope.markers_clusters = null;
 	$scope.infoWindow = GoogleMaps.createInfoWindow();
+	$scope.infoWindow2 = GoogleMaps.createInfoWindow();
 	$scope.categories = [];
 
 	/* --Variables-- */
@@ -41,71 +66,43 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 	};
 
 	// open the info window
-	$scope.openInfoWindow = function(point_id) {
-		PointsService.getPoint(point_id).then(function(point) {
-			var RF = RatingFactory.getRatingsAndClass(point.rating);
-			$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
-				var url_translate = '';
-				var content = '<div class="info_window">' +
-					'<div class="row">' +
-					'<div class="col-xs-9">' +
-					'<h4>' +
-					'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">' +
-					point.name +
-					'</a>' +
-					'</h4>' +
-					'<div class="category">' + translations[point.category] + '</div>' +
-					'</div>' +
-					'<div class="col-xs-3">' +
-					'<div class="stars pull-right ' + RF.star_class + '">' +
-					'<input type="hidden" class="rating" data-fractions="2" value="' + RF.rating2 + '" data-readonly/>' +
-					'</div>' +
-					'<div class="rating_number">' +
-					RF.rating1 +
-					'</div>' +
-					'</div>' +
-					'</div>';
-				if (point.address) {
-					content += '<b>' + translations.address + ':</b> ' + point.address;
-					if ($scope.current_language != paramsCnst.original_language) {
-						url_translate = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.address);
-						content += ' [<a href="' + url_translate + '" target="_blank">' +
-							translations.translate_google +
-							' <i class="fa fa-external-link"></i>' +
-							'</a>]';
+	$scope.openInfoWindow = function(point_id, options) {
+		$scope.point = {};
+		$scope.cluster = {};
+		$scope.infoWindow.close();
+		$scope.infoWindow2.close();
+		if (point_id) {
+			PointsService.getPoint(point_id).then(function(point) {
+				var RF = RatingFactory.getRatingsAndClass(point.rating);
+				$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
+					point.translations = translations;
+					point.RF = RF;
+					point.zoom = $scope.map.getZoom();
+					if (point.address && $scope.current_language != paramsCnst.original_language) {
+						point.url_translate_address = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.address);
 					}
-					content += '<br>';
-				}
-				if (point.web) {
-					var links = point.web.split(';');
-					content += '<b>' + translations.web + ':</b> ';
-					for (var i in links) {
-						content += '<a href="' + links[i] + '" target="_blank">' + links[i] + '</a><br>';
+					if (point.schedule && $scope.current_language != paramsCnst.original_language) {
+						point.url_translate_schedule = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
 					}
-				}
-				if (point.schedule) {
-					content += '<b>' + translations.schedule + ':</b> ' + point.schedule;
-					if ($scope.current_language != paramsCnst.original_language) {
-						url_translate = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
-						content += ' [<a href="' + url_translate + '" target="_blank">' +
-							translations.translate_google +
-							' <i class="fa fa-external-link"></i>' +
-							'</a>]';
+					if (point.web) {
+						point.web_links = point.web.split(';');
 					}
-				}
-				if (content.substr(content.length - 4) == '<br>') {
-					content = content.slice(0, -4);
-				}
-				content += '<div class="row">' +
-					'<div class="pull-right">' +
-					'<a href="#/point/' + point.id + '?z=' + $scope.map.getZoom() + '">' + translations.more_information + '</a>' +
-					'</div>' +
-					'</div>' +
-					'</div>';
-				$scope.infoWindow.setContent(content);
-				$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
+					$scope.point = point;
+					$templateRequest('/templates/infowindow.html').then(function(template) {
+						var content = $compile(template)($scope);
+						$timeout(function() {
+							$scope.infoWindow.setContent(content.html());
+							$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
+						});
+					});
+				});
 			});
-		});
+		} else {
+			var content = '<div>' + options.count + ' points here. Avg rating: ' + options.rating + '</div>';
+			$scope.infoWindow2.setContent(content);
+			$scope.infoWindow2.setPosition(options.center);
+			$scope.infoWindow2.open($scope.map);
+		}
 	};
 
 	// toggle menu
@@ -126,38 +123,17 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 				}
 			}
 		}
-		if ($scope.markers_clusters) {
-			$scope.markers_clusters.clearMarkers();
-		}
-		$scope.markers_clusters = new MarkerClusterer($scope.map, filtered_markers, {
-			gridSize: 41,
-			minimumClusterSize: 2,
-			maxZoom: 16,
-			zoomOnClick: true,
-			styles: [{
-				url: '/images/map_markers/multiple_small.png',
-				height: 47,
-				width: 47,
-				textColor: '#ddffff'
-			}, {
-				url: '/images/map_markers/multiple_medium.png',
-				height: 52,
-				width: 52,
-				textColor: '#ddffff'
-			}, {
-				url: '/images/map_markers/multiple_large.png',
-				height: 57,
-				width: 57,
-				textColor: '#ddffff'
-			}]
-		});
+		// if ($scope.markers_clusters) {
+		$scope.markers_clusters.clearMarkers();
+		// }
+		$scope.markers_clusters.addMarkers(filtered_markers);
 		// $scope.setMapOn(filtered_markers, $scope.map);
 	};
 
 	// set map on markers
-	$scope.setMapOn = function(markers_map, new_map) {
-		for (var i in markers_map) {
-			markers_map[i].setMap(new_map);
+	$scope.setMapOn = function(markers_to_map, new_map) {
+		for (var i in markers_to_map) {
+			markers_to_map[i].setMap(new_map);
 		}
 	};
 
@@ -203,6 +179,12 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 		}
 	});
 
+	/*PointsService.getCommunes().then(function(communes) {
+		for (var i in communes) {
+			createGroupMarker(communes[i]);
+		}
+	});*/
+
 	// watch for changes in location search
 	$scope.$watch(function() {
 		return $location.search();
@@ -219,21 +201,45 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 		}
 	}, true);
 
-	setTimeout(function() {
+	// wait for dom ready
+	$timeout(function() {
 		// open menu if the window is big enough
 		if ($(document).width() > 700) {
 			$scope.toggleMenu();
 		}
 		// initialize twitter widget
-		if ($(document).height() > 640) {
+		if ($(document).height() > 650) {
 			twttr.widgets.load(document.getElementById("twitter"));
 		} else {
 			$('#twitter').hide();
 		}
-		// initialize google maps
+		// initialize google map
 		$scope.map = GoogleMaps.createMap(document.getElementById('map'), {
 			center: latlong_lyon,
 			zoom: paramsCnst.initial_zoom
+		});
+		// initialize markers clusterer
+		$scope.markers_clusters = new MarkerClusterer($scope.map, null, opt_markers_clusters);
+		// set calculator for cluster icon
+		$scope.markers_clusters.setCalculator(function(markers, numStyles) {
+			var index = 0;
+			var count = markers.length;
+			var dv = count;
+			var avg_rating = markers.map(function(el) {
+				return el.rating;
+			}).reduce(function(x, y) {
+				return x + y;
+			}) / count;
+			while (dv !== 0) {
+				dv = parseInt(dv / 10, 10);
+				index++;
+			}
+
+			index = Math.min(index, numStyles);
+			return {
+				text: count,
+				index: index
+			};
 		});
 		// listeners
 		$scope.map.addListener('zoom_changed', function() {
@@ -242,9 +248,32 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 		$scope.infoWindow.addListener('domready', function() {
 			$('.rating').rating();
 		});
+		$scope.markers_clusters.addListener('mouseover', function(cluster) {
+			var markers = cluster.getMarkers();
+			var count = markers.length;
+			var avg_rating = markers.map(function(el) {
+				return el.rating;
+			}).reduce(function(x, y) {
+				return x + y;
+			}) / count;
+			var options = {
+				center: cluster.getCenter(),
+				rating: avg_rating.toFixed(1),
+				count: count,
+			};
+			$scope.openInfoWindow(null, options);
+		});
+		$scope.markers_clusters.addListener('mouseout', function(cluster) {
+			$scope.infoWindow2.close();
+		});
+		$scope.markers_clusters.addListener('click', function(cluster) {
+			$scope.infoWindow2.close();
+			$scope.map.fitBounds(cluster.getBounds());
+			$scope.map.setZoom($scope.map.getZoom() - 1);
+		});
 		// get initial points
 		$scope.getPoints(paramsCnst.initial_zoom);
-	}, 1000);
+	}, 500);
 
 	/* --Initialization-- */
 
@@ -267,6 +296,22 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 		}
 	}
 
+	function createGroupMarker(group) {
+		if (!$scope.group_markers[group.name]) {
+			var marker = GoogleMaps.createMarker({
+				position: {
+					lat: parseFloat(group.latitude),
+					lng: parseFloat(group.longitude)
+				},
+				title: group.name
+			}, 0, true);
+			$scope.group_markers[group.name] = marker;
+			// $scope.markers[point.id].addListener('click', function() {
+			// 	$scope.openInfoWindow(point.id);
+			// });
+		}
+	}
+
 	function openPreviousInfoWindow(point_id, zoom) {
 		loading = true;
 		if (!$scope.map) {
@@ -286,6 +331,34 @@ SmartApp.controller('HomeCtrl', ['$scope', '$rootScope', '$location', '$translat
 				loading = false;
 			});
 		}
+	}
+
+	function getBoundsZoomLevel(bounds, mapDim) {
+		var WORLD_DIM = { height: 256, width: 256 };
+		var ZOOM_MAX = 21;
+
+		function latRad(lat) {
+			var sin = Math.sin(lat * Math.PI / 180);
+			var radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
+			return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+		}
+
+		function zoom(mapPx, worldPx, fraction) {
+			return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+		}
+
+		var ne = bounds.getNorthEast();
+		var sw = bounds.getSouthWest();
+
+		var latFraction = (latRad(ne.lat()) - latRad(sw.lat())) / Math.PI;
+
+		var lngDiff = ne.lng() - sw.lng();
+		var lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+
+		var latZoom = zoom(mapDim.height, WORLD_DIM.height, latFraction);
+		var lngZoom = zoom(mapDim.width, WORLD_DIM.width, lngFraction);
+
+		return Math.min(latZoom, lngZoom, ZOOM_MAX);
 	}
 
 	/* --Aux Functions-- */

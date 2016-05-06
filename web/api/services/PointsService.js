@@ -18,5 +18,11 @@ module.exports = {
 			if (err) throw err;
 			next(results.rows);
 		});
+	},
+	getCommunes: function(next) {
+		Points.query('SELECT commune AS name, coordinates_lat AS latitude, coordinates_long AS longitude FROM data_warehouse.dim_location;', function(err, results) {
+			if (err) throw err;
+			next(results.rows);
+		});
 	}
 };

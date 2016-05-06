@@ -6,7 +6,6 @@
 
 module.exports = {
   tableName: 'v_interest_points_agregated',
-  // tableName: 'interest_points',
   meta: {
     schemaName: 'ip'
   },

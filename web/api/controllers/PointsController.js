@@ -16,5 +16,10 @@ module.exports = {
 		PointsService.getCategories(function(categories) {
 			res.json(categories);
 		});
-	}
+	},
+	getCommunes: function(req, res) {
+		PointsService.getCommunes(function(communes) {
+			res.json(communes);
+		});
+	},
 };
