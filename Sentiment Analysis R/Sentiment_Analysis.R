@@ -9,6 +9,7 @@ require("RPostgreSQL")
 require("stringi")
 library(gsubfn)
 library(SnowballC)
+library(plyr)
 library(dplyr)
 library(jsonlite)
 
@@ -38,6 +39,8 @@ limit 2000
 # Retreives the table from the database
 df_tweets <-
   dbGetQuery(con, query_kw)
+  
+print(paste(length(df_tweets[,1]), " tweets retrieved"))
 
 tweets_en <- df_tweets[df_tweets$lang == "en", 1:2]
 tweets_fr <- df_tweets[df_tweets$lang == "fr", 1:2]
@@ -202,7 +205,12 @@ neg.words.en <- as.character(neg.words.en)
 
 # different functions due to different stemming in 2 languages
 
+print("Scoring french tweets")
+
 sentiment.score.french <- score.sentiment.fr(tweets_fr$idd,tweets_fr$text,pos.words.fr,neg.words.fr)
+
+print("Scoring english tweets")
+
 sentiment.score.english <- score.sentiment.en(tweets_en$idd,tweets_en$text,pos.words.en,neg.words.en)
 
 sentiment.score <- rbind(sentiment.score.french,sentiment.score.english)
@@ -218,9 +226,12 @@ sentiment.score$sentiment[sentiment.score$score >= 3] <- 5;
 
 towrite <- sentiment.score[,c("id", "sentiment")]
 
+print("Updating tweet scores in DB")
 
 for (i in 1:length(sentiment.score$id)){
   update(i, con, towrite)
 }
+
+print(paste(length(towrite[,1]), " tweets updated"))
 
 dbDisconnect(con)
