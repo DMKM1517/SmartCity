@@ -235,3 +235,5 @@ for (i in 1:length(sentiment.score$id)){
 print(paste(length(towrite[,1]), " tweets updated"))
 
 dbDisconnect(con)
+dbUnloadDriver(drv)
+rm(list=ls())
