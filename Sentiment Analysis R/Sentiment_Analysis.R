@@ -3,7 +3,7 @@
 #install.packages("dplyr")
 #install.packages("RPostgreSQL")
 #install.packages("SnowballC")
-install.packages("jsonlite")
+#install.packages("jsonlite")
 
 require("RPostgreSQL")
 require("stringi")
@@ -31,7 +31,8 @@ con <- dbConnect(
 #query to get tweets
 query_kw <- "SELECT idd::varchar(100), text
 FROM twitter.tweets
-WHERE lang = 'fr' AND local_score IS NULL and cast(timestamp AS DATE) = '20160325'
+WHERE local_score IS NULL
+limit 2000
 ;"
 
 # Retreives the table from the database
