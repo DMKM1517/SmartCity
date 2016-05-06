@@ -170,14 +170,14 @@ score.sentiment.en = function(idd, sentences, pos.words, neg.words, .progress='n
 
 # Function to update the database
 
-update <- function(i, con, towrite) {
-  #  dbGetQuery(con, "BEGIN TRANSACTION")
-  #  browser()
-  txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
-  #  print(towrite$id[i])
-  dbGetQuery(con, txt)
-  #  dbCommit(con)
-}
+#update <- function(i, con, towrite) {
+#  #  dbGetQuery(con, "BEGIN TRANSACTION")
+#  #  browser()
+#  txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
+#  #  print(towrite$id[i])
+#  dbGetQuery(con, txt)
+#  #  dbCommit(con)
+#}
 
 ########    FUNCTION    ############
 ###########################################
@@ -228,9 +228,18 @@ towrite <- sentiment.score[,c("id", "sentiment")]
 
 print("Updating tweet scores in DB")
 
-for (i in 1:length(sentiment.score$id)){
-  update(i, con, towrite)
-}
+
+dbSendQuery(con, "DROP TABLE IF EXISTS twitter.temp_local_score")
+dbWriteTable(con,  c("twitter", "temp_local_score"), value = towrite, row.names = FALSE)
+dbSendQuery(con, "CREATE index ON twitter.temp_local_score (id)")
+
+dbSendQuery(con, "UPDATE twitter.tweets t
+                  SET local_score = ls.sentiment
+                  FROM twitter.temp_local_score ls
+                  WHERE ls.id::bigint = t.idd
+                  ;")
+
+dbSendQuery(con, "DROP TABLE IF EXISTS twitter.temp_local_score")
 
 print(paste(length(towrite[,1]), " tweets updated"))
 
