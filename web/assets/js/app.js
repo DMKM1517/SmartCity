@@ -8,10 +8,10 @@ SmartApp.config(['$routeProvider',
 	function($routeProvider) {
 		$routeProvider.when('/', {
 			templateUrl: '/templates/home.html',
-			controller: 'HomeCtrl'
+			controller: 'HomeController'
 		}).when('/point/:id', {
 			templateUrl: '/templates/point.html',
-			controller: 'PointCtrl'
+			controller: 'PointController'
 		}).otherwise({
 			redirectTo: '/'
 		});

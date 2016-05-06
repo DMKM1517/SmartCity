@@ -25,18 +25,3 @@ SmartApp.directive('cont', function() {
 		changeHeight();
 	};
 });
-
-SmartApp.directive('infowindow', function($templateRequest, $compile) {
-	return {
-		restrict: 'E',
-		template: '<div>T</div>',
-		link: function($scope, element) {
-			console.log('link');
-			$templateRequest('/templates/infowindow_cluster.html').then(function(template) {
-				var content = $compile(template)($scope);
-				console.log(content.html());
-				element.append(content.html());
-			});
-		}
-	};
-});
