@@ -184,7 +184,11 @@ update <- function(i, con, towrite) {
 ########    Read Dictionary    ############
 
 pos.words.fr <- read.csv('french_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
+pos.words.fr <- pos.words.fr[,2]
+pos.words.fr <- as.character(pos.words.fr)
 neg.words.fr <- read.csv('french_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
+neg.words.fr <- neg.words.fr[,2]
+neg.words.fr <- as.character(neg.words.fr)
 
 pos.words.en <-read.csv('english_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
 pos.words.en <- pos.words.en[,2]
@@ -196,10 +200,12 @@ neg.words.en <- as.character(neg.words.en)
 ########    Read Dictionary    ############
 ###########################################
 
-sentiment.score.fr <- score.sentiment(tweets_fr$idd,tweets_fr$text,pos.words,neg.words)
-sentiment.score.en <- score.sentiment(tweets_en$idd,tweets_en$text,pos.words.en,neg.words.en)
+# different functions due to different stemming in 2 languages
 
-sentiment.score <- rbind(sentiment.score.fr,sentiment.score.en)
+sentiment.score.french <- score.sentiment.fr(tweets_fr$idd,tweets_fr$text,pos.words.fr,neg.words.fr)
+sentiment.score.english <- score.sentiment.en(tweets_en$idd,tweets_en$text,pos.words.en,neg.words.en)
+
+sentiment.score <- rbind(sentiment.score.french,sentiment.score.english)
 
 
 sentiment.score$sentiment[sentiment.score$score <= -3] <- 1;
