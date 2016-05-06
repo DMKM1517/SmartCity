@@ -21,23 +21,26 @@ login <- fromJSON("../login.json", flatten=TRUE)
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(
   drv, dbname = login$dbname,
-   host = login$host,
-   port = login$port,
-   user = login$user,
-   password = login$password
-  )
+  host = login$host,
+  port = login$port,
+  user = login$user,
+  password = login$password
+)
 
 
-#query to get tweets
-query_kw <- "SELECT idd::varchar(100), text
+# query to get tweets
+query_kw <- "SELECT idd::varchar(100), text, lang
 FROM twitter.tweets
-WHERE local_score IS NULL
+WHERE local_score IS NULL 
 limit 2000
 ;"
 
 # Retreives the table from the database
 df_tweets <-
   dbGetQuery(con, query_kw)
+
+tweets_en <- df_tweets[df_tweets$lang == "en", 1:2]
+tweets_fr <- df_tweets[df_tweets$lang == "fr", 1:2]
 
 # df_tweets <- unlist(df_tweets)
 # names(df_tweets) = NULL
@@ -48,15 +51,17 @@ df_tweets <-
 
 
 ########    FUNCTION    ############
-score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none')
+
+# for french tweets
+score.sentiment.fr = function(idd, sentences, pos.words, neg.words, .progress='none')
 {
   require(plyr)
   require(stringr)
-
+  
   # we got a vector of sentences. plyr will handle a list or a vector as an "l" for us
   # we want a simple array of scores back, so we use "l" + "a" + "ply" = laply:
   scores = laply(sentences, function(sentence, pos.words, neg.words) {
-
+    
     Encoding(sentence) <- "UTF-8"
     # clean up sentences with R's regex-driven global substitute, gsub():
     sentence = gsub('http\\S+\\s*', '', sentence)
@@ -65,53 +70,110 @@ score.sentiment = function(idd, sentences, pos.words, neg.words, .progress='none
     sentence = gsub('[[:cntrl:]]', '', sentence)
     sentence = gsub('\\d+', '', sentence)
     sentence = stri_trans_general(sentence ,"Latin-ASCII")
-
+    
     #Clean emojis
     sentence <- sapply(sentence, function(row) iconv(row, "latin1", "ASCII", sub=""))
     names(sentence) <- NULL
-
+    
     # replace al \n
     sentence <- gsub("[\n]", " ", sentence)
-
+    
     # convert to lower case:
     sentence = tolower(sentence)
-
+    
     # split into words. str_split is in the stringr package
     word.list = str_split(sentence, '\\s+')
     # sometimes a list() is one level of hierarchy too much
     words = unlist(word.list)
-
+    
     #Stemming
     words = wordStem(words, language = "french")
-
+    
     # compare our words to the dictionaries of positive & negative terms
     pos.matches = match(words, pos.words)
     neg.matches = match(words, neg.words)
-
+    
     # match() returns the position of the matched term or NA
     # we just want a TRUE/FALSE:
     pos.matches = !is.na(pos.matches)
     neg.matches = !is.na(neg.matches)
-
+    
     # and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
     score = sum(pos.matches) - sum(neg.matches)
-
+    
     return(score)
   }, pos.words, neg.words, .progress=.progress )
-
+  
   scores.df = data.frame(id=idd, score=scores, text=sentences)
   return(scores.df)
 }
 
+# for english tweets
+
+score.sentiment.en = function(idd, sentences, pos.words, neg.words, .progress='none')
+{
+  require(plyr)
+  require(stringr)
+  
+  # we got a vector of sentences. plyr will handle a list or a vector as an "l" for us
+  # we want a simple array of scores back, so we use "l" + "a" + "ply" = laply:
+  scores = laply(sentences, function(sentence, pos.words, neg.words) {
+    Encoding(sentence) <- "UTF-8"
+    # clean up sentences with R's regex-driven global substitute, gsub():
+    sentence = gsub('http\\S+\\s*', '', sentence)
+    sentence = gsub("[\']", " ", sentence)
+    sentence = gsub('[[:punct:]]', '', sentence)
+    sentence = gsub('[[:cntrl:]]', '', sentence)
+    sentence = gsub('\\d+', '', sentence)
+    sentence = stri_trans_general(sentence ,"Latin-ASCII")
+    
+    #Clean emojis
+    sentence <- sapply(sentence, function(row) iconv(row, "latin1", "ASCII", sub=""))
+    names(sentence) <- NULL
+    
+    # replace al \n
+    sentence <- gsub("[\n]", " ", sentence)
+    
+    # convert to lower case:
+    sentence = tolower(sentence)
+    
+    # split into words. str_split is in the stringr package
+    word.list = str_split(sentence, '\\s+')
+    # sometimes a list() is one level of hierarchy too much
+    words = unlist(word.list)
+    
+    #Stemming
+    words = wordStem(words, language = "english")
+    
+    # compare our words to the dictionaries of positive & negative terms
+    pos.matches = match(words, pos.words.en)
+    neg.matches = match(words, neg.words.en)
+    
+    # match() returns the position of the matched term or NA
+    # we just want a TRUE/FALSE:
+    pos.matches = !is.na(pos.matches)
+    neg.matches = !is.na(neg.matches)
+    
+    # and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+    score = sum(pos.matches) - sum(neg.matches)
+    
+    return(score)
+  }, pos.words, neg.words, .progress=.progress )
+  
+  scores.df = data.frame(id=idd, score=scores, text=sentences)
+  return(scores.df)
+}
+
+
 # Function to update the database
 
 update <- function(i, con, towrite) {
-#  dbGetQuery(con, "BEGIN TRANSACTION")
-#  browser()
+  #  dbGetQuery(con, "BEGIN TRANSACTION")
+  #  browser()
   txt <- paste("UPDATE twitter.tweets SET local_score=",towrite$sentiment[i],"WHERE idd=",towrite$id[i],"::bigint;")
-#  print(towrite$id[i])
+  #  print(towrite$id[i])
   dbGetQuery(con, txt)
-#  dbCommit(con)
+  #  dbCommit(con)
 }
 
 ########    FUNCTION    ############
@@ -120,40 +182,24 @@ update <- function(i, con, towrite) {
 
 ###########################################
 ########    Read Dictionary    ############
-french <-read.csv('french_sentiment.csv',header=TRUE,sep=",",encoding='UTF-8')
-head(french)
-french <- french[, c(1,2,3)]
 
-#Remove accents
-french$ADJECTIVE <- stri_trans_general(french$ADJECTIVE,"Latin-ASCII")
+pos.words.fr <- read.csv('french_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
+neg.words.fr <- read.csv('french_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
 
-#Stemming
-french$ADJECTIVE = wordStem(french$ADJECTIVE, language = "french")
-
-#Unique
-french = french %>% select(ADJECTIVE, POS.FREQ, NEG.FREQ) %>% distinct(ADJECTIVE)
-
-
-
-french$pos <- french$POS.FREQ >= .5
-
-
-pos.words <- rep(NA,583)
-neg.words <- rep(NA,583)
-
-pos.words <- french[french$pos == "TRUE", 1:2]
-neg.words <- french[french$pos == "FALSE", 1:2]
-
-pos.words <-pos.words[,1]
-neg.words <- neg.words[,1]
+pos.words.en <-read.csv('english_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
+pos.words.en <- pos.words.en[,2]
+pos.words.en <- as.character(pos.words.en)
+neg.words.en <- read.csv('english_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
+neg.words.en <- neg.words.en[,2]
+neg.words.en <- as.character(neg.words.en)
 
 ########    Read Dictionary    ############
 ###########################################
 
+sentiment.score.fr <- score.sentiment(tweets_fr$idd,tweets_fr$text,pos.words,neg.words)
+sentiment.score.en <- score.sentiment(tweets_en$idd,tweets_en$text,pos.words.en,neg.words.en)
 
-
-sentiment.score <- score.sentiment(df_tweets$idd,df_tweets$text,pos.words,neg.words)
-sentiment.score
+sentiment.score <- rbind(sentiment.score.fr,sentiment.score.en)
 
 
 sentiment.score$sentiment[sentiment.score$score <= -3] <- 1;
@@ -170,7 +216,5 @@ towrite <- sentiment.score[,c("id", "sentiment")]
 for (i in 1:length(sentiment.score$id)){
   update(i, con, towrite)
 }
-
-
 
 dbDisconnect(con)
