@@ -1,4 +1,4 @@
-SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$compile', '$templateRequest', '$timeout', '$translate', 'GoogleMapsFactory', 'PointsService', 'colorsCnst', 'RatingFactory', 'paramsCnst', function($scope, $rootScope, $location, $compile, $templateRequest, $timeout, $translate, GoogleMapsFactory, PointsService, colorsCnst, RatingFactory, paramsCnst) {
+SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$compile', '$templateRequest', '$timeout', '$translate', 'GoogleMapsFactory', 'PointsService', 'RatingFactory', 'colorsCnst', 'colorsTextCnst', 'paramsCnst', function($scope, $rootScope, $location, $compile, $templateRequest, $timeout, $translate, GoogleMapsFactory, PointsService, RatingFactory, colorsCnst, colorsTextCnst, paramsCnst) {
 
 	/* Variables */
 
@@ -12,22 +12,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			minimumClusterSize: 2,
 			maxZoom: 16,
 			zoomOnClick: false,
-			styles: [{
-				url: '/images/map_markers/multiple_small.png',
-				height: 47,
-				width: 47,
-				textColor: '#ddffff'
-			}, {
-				url: '/images/map_markers/multiple_medium.png',
-				height: 52,
-				width: 52,
-				textColor: '#ddffff'
-			}, {
-				url: '/images/map_markers/multiple_large.png',
-				height: 57,
-				width: 57,
-				textColor: '#ddffff'
-			}]
+			styles: []
 		}; // options for marker clusterer
 	$scope.showFilter = true; // show the menu
 	$scope.languages = paramsCnst.languages; // available languages
@@ -123,7 +108,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}
 		}
 		// if ($scope.markers_clusters && $scope.markers_clusters.getTotalClusters() > 0) {
-		// 	$scope.markers_clusters.clearMarkers();
+		$scope.markers_clusters.clearMarkers();
 		// }
 		$scope.markers_clusters.addMarkers(filtered_markers);
 		// $scope.setMapOn(filtered_markers, $scope.map);
@@ -184,6 +169,28 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	});*/
 
+	// setup the styles for markers clusterer
+	for (var i in colorsCnst) {
+		opt_markers_clusters.styles.push({
+			url: '/images/map_markers/m_small_' + colorsCnst[i] + '.png',
+			height: 49,
+			width: 48,
+			textColor: colorsTextCnst[i]
+		});
+		opt_markers_clusters.styles.push({
+			url: '/images/map_markers/m_medium_' + colorsCnst[i] + '.png',
+			height: 54,
+			width: 53,
+			textColor: colorsTextCnst[i]
+		});
+		opt_markers_clusters.styles.push({
+			url: '/images/map_markers/m_large_' + colorsCnst[i] + '.png',
+			height: 66,
+			width: 65,
+			textColor: colorsTextCnst[i]
+		});
+	}
+
 	// watch for changes in location search
 	$scope.$watch($location.search(), function() {
 		var param_id = $location.search().id;
@@ -219,7 +226,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$scope.markers_clusters = new MarkerClusterer($scope.map, null, opt_markers_clusters);
 		// set calculator for cluster icon
 		$scope.markers_clusters.setCalculator(function(markers, numStyles) {
-			var index = 0;
+			var size = 0;
 			var count = markers.length;
 			var dv = count;
 			var avg_rating = markers.map(function(el) {
@@ -229,13 +236,13 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}) / count;
 			while (dv !== 0) {
 				dv = parseInt(dv / 10, 10);
-				index++;
+				size++;
 			}
-
-			index = Math.min(index, numStyles);
+			var tmp_rating = Math.min(Math.max(Math.floor(avg_rating), 0), 4);
+			size = Math.min(size, numStyles / colorsCnst.length);
 			return {
 				text: count,
-				index: index
+				index: tmp_rating * 3 + size
 			};
 		});
 		// listeners
