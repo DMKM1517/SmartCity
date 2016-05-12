@@ -22,4 +22,11 @@ module.exports = {
 			res.json(communes);
 		});
 	},
+	search: function(req, res) {
+		var q = req.query.q;
+		var limit = req.query.limit || 20;
+		PointsService.search(q, limit, function(results) {
+			res.json(results);
+		});
+	},
 };

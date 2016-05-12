@@ -9,6 +9,8 @@ module.exports = {
   meta: {
     schemaName: 'ip'
   },
+  autoCreatedAt: false,
+  autoUpdatedAt: false,
   attributes: {
     id: {
       type: 'integer',
@@ -64,11 +66,11 @@ module.exports = {
       type: 'float',
       columnName: 'average_rating'
     },
-    createdAt: {
+    create_date: {
       type: 'date',
       columnName: 'source_create_date'
     },
-    updatedAt: {
+    update_date: {
       type: 'date',
       columnName: 'last_update_date'
     },

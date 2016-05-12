@@ -44,6 +44,8 @@ module.exports = {
 		    open_hours as schedule,
 		    image_url as image,
 		    average_rating as rating,
+		    source_create_date as create_date,
+		    last_update_date as update_date,
 		    commune
 			FROM ip.v_interest_points_agregated 
 			WHERE lower(unaccent(ip.v_interest_points_agregated.name)) like '%${q}%'
