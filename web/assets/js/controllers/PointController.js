@@ -29,6 +29,9 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	// get the information of the point
 	PointsService.getPoint(id).then(function(data) {
 		$scope.point = data;
+		if (!$scope.point.rating) {
+			$scope.point.rating = 0;
+		}
 		$scope.RF = RatingFactory.getRatingsAndClass($scope.point.rating);
 		// set links to external translation
 		externalTranslate();

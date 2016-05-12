@@ -31,9 +31,21 @@
 	</div>
 </div>
 <div id="menu" cont>
-	<!-- <h2>{{ 'search_for' | translate }}</h2>
-	<input class="form-control"></input>
-	<hr> -->
+	<h2>{{ 'search_for' | translate }}</h2>
+	<input type="text" id="search_input" ng-model="search_query" placeholder="{{ 'something_interesting' | translate }}" uib-typeahead="point for point in typeaheadSearch($viewValue)" typeahead-loading="loading_results" typeahead-focus-first="false" typeahead-no-results="no_results" typeahead-select-on-exact="true" typeahead-wait-ms="300" typeahead-template-url="templates/typeahead.html" typeahead-on-select="typeaheadSelected($item, $model, $label, $event)" class="form-control" ng-keypress="typing($event)">
+	<i ng-show="loading_results" class="glyphicon glyphicon-refresh"></i>
+	<div ng-show="no_results">
+		<i class="glyphicon glyphicon-search"></i> {{ 'press_enter_to_search' | translate }}
+	</div>
+	<div id="results" class="table-responsive">
+		<span>{{ searching }}</span>
+		<table class="table table-hover">
+			<tr ng-repeat="point in results">
+				<td><a ng-href="#/point/{{point.id}}">{{ point.name }}</a></td>
+			</tr>
+		</table>
+	</div>
+	<hr>
 	<h2>{{ 'show_me' | translate }}</h2>
 	<div class="checkbox">
 		<label>
@@ -49,5 +61,4 @@
 			</label>
 		</div>
 	</div>
-	<hr>
 </div>

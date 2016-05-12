@@ -1,12 +1,12 @@
 SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	var points = {},
+		keys_sorted = [],
 		pages_loaded = [],
 		history = {},
 		all_history = {};
 
 	// get points by page with limit
 	this.getPoints = function(page, limit) {
-		var ini = page * limit;
 		var defer = $q.defer();
 		if (pages_loaded.indexOf(page) == -1) {
 			$http.get('/points/getPoints?page=' + (page + 1) + '&limit=' + limit).success(function(data) {
@@ -17,9 +17,9 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 							points[point.id] = point;
 						}
 					}
+					sortPoints();
 					pages_loaded.push(page);
 					defer.resolve(points);
-					// defer.resolve(points.slice(ini, ini + limit));
 				} else {
 					defer.reject('no data');
 				}
@@ -28,7 +28,6 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 			});
 		} else {
 			defer.resolve(points);
-			// defer.resolve(points.slice(ini, ini + limit));
 		}
 		return defer.promise;
 	};
@@ -40,6 +39,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 			$http.get('/points/' + id).success(function(point) {
 				if (!points[point.id]) {
 					points[point.id] = point;
+					sortPoints();
 				}
 				defer.resolve(point);
 			}).error(function(err) {
@@ -75,9 +75,10 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 
 	// filter by category
 	this.filterCategories = function(selected_categories, show_only_top) {
-		var filtered = [];
+		var filtered = [],
+			point;
 		for (var i in points) {
-			var point = points[i];
+			point = points[i];
 			if (selected_categories[point.category]) {
 				if (!show_only_top || point.rating >= 4) {
 					filtered.push(point.id);
@@ -89,8 +90,8 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 
 	// history
 	this.getHistory = function(id, source) {
-		var defer = $q.defer();
-		var url = '/ratings/getHistory?source=' + source + '&days=30&ip_id=' + id;
+		var defer = $q.defer(),
+			url = '/ratings/getHistory?source=' + source + '&days=30&ip_id=' + id;
 		if (!history[id]) {
 			$http.get(url).success(function(data) {
 				history = {};
@@ -129,5 +130,59 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		}
 		return defer.promise;
 	};
+
+	this.search = function(query, local) {
+		var defer = $q.defer(),
+			results = [],
+			count = 0,
+			max_length = 29,
+			point_name,
+			index,
+			start,
+			result;
+		query = removeDiacritics(query.trim().toLowerCase());
+		if (local) {
+			for (var i = 0; i < keys_sorted.length && count <= 10; i++) {
+				point_name = points[keys_sorted[i]].name;
+				index = removeDiacritics(point_name.toLowerCase()).indexOf(query);
+				if (index != -1) {
+					count++;
+					result = point_name;
+					if (point_name.length > max_length) {
+						result = '';
+						start = Math.max(0, index - Math.round((max_length - query.length) / 2));
+						if (start > 0) {
+							result += '...';
+						}
+						result += point_name.substr(start, max_length);
+						if (point_name.length > start + max_length) {
+							result += '...';
+						}
+					}
+					results.push({ label: result, name: point_name });
+				}
+			}
+			defer.resolve(results);
+		} else {
+			$http.get('/points/search?q=' + query).success(function(data) {
+				for (var i in data) {
+					point = data[i];
+					results.push({ id: point.id, name: point.name });
+					if (!points[point.id]) {
+						points[point.id] = point;
+					}
+				}
+				sortPoints();
+				defer.resolve(results);
+			});
+		}
+		return defer.promise;
+	};
+
+	function sortPoints() {
+		keys_sorted = Object.keys(points).sort(function(x, y) {
+			return points[x].rating < points[y].rating ? 1 : -1;
+		});
+	}
 
 }]);

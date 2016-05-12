@@ -27,6 +27,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	$scope.infoWindow = GoogleMapsFactory.createInfoWindow(); // infowindow for points
 	$scope.infoWindow2 = GoogleMapsFactory.createInfoWindow(); // infowindow for clusters
 	$scope.categories = []; // array of categories
+	$scope.searching = '';
 
 	/* --Variables-- */
 
@@ -137,13 +138,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$scope.markers_clusters.addMarkers(filtered_markers);
 	};
 
-	// set map on markers
-	/*$scope.setMapOn = function(markers_to_map, new_map) {
-		for (var i in markers_to_map) {
-			markers_to_map[i].setMap(new_map);
-		}
-	};*/
-
 	// set all values of selected categories
 	$scope.selectAll = function(value) {
 		for (var i in $rootScope.selected_categories) {
@@ -157,6 +151,39 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$scope.infoWindow.close();
 		$translate.use(lang).then(function() {
 			$scope.current_language = lang;
+		});
+	};
+
+	$scope.typeaheadSearch = function(query) {
+		return PointsService.search(query, true).then(function(results) {
+			return results;
+		});
+	};
+
+	$scope.typeaheadSelected = function(item, model, label, event) {
+		$scope.search_query = model.name;
+		$('#search_input').blur();
+		$scope.search($scope.search_query);
+	};
+
+	$scope.typing = function(event) {
+		if (event.which === 13) {
+			$('#search_input').blur();
+			$scope.search($scope.search_query);
+		}
+	};
+
+	$scope.search = function(query) {
+		$scope.results = [];
+		$translate(['searching', 'results_for']).then(function(translations) {
+			$scope.searching = translations.searching;
+			PointsService.search(query, false).then(function(results) {
+				if (query.length > 15) {
+					query = query.substr(0, 15) + '...';
+				}
+				$scope.searching = results.length + ' ' + translations.results_for + ': \'' + query + '\'';
+				$scope.results = results;
+			});
 		});
 	};
 
@@ -322,7 +349,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		// get initial points
 		$scope.getPoints(paramsCnst.initial_zoom);
 
-	}, 250);
+	}, 300);
 
 	/* --Initialization-- */
 
