@@ -3,18 +3,22 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	/* Variables */
 
 	var loading = true,
-		latlong_lyon = {
+		twitter_loaded = false, // if twitter widget is already loaded
+		min_width_menu = 700, // min width to open the menu at initialization
+		min_width_twitter = 800, // min width to open twitter
+		min_width_both = 1080, // min width to open twitter and menu at the same time
+		latlong_lyon = { // initial lat long
 			lat: 45.7591739,
 			lng: 4.8846752
-		}, // initial lat long
-		opt_markers_clusters = {
+		},
+		opt_markers_clusters = { // options for marker clusterer
 			gridSize: 43,
 			minimumClusterSize: 2,
 			maxZoom: 16,
 			zoomOnClick: false,
 			styles: []
-		}; // options for marker clusterer
-	$scope.showFilter = true; // show the menu
+		};
+	$scope.show_filter = true; // show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
 	$scope.markers = []; // array of markers
@@ -43,7 +47,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			$scope.filter();
 			loading = false;
 		}, function(response) {
-			console.log(response);
 			loading = false;
 		});
 	};
@@ -91,14 +94,37 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// toggle menu
 	$scope.toggleMenu = function() {
-		$('#menu').fadeToggle();
+		$rootScope.menu_opened = !$rootScope.menu_opened;
 		$('#toggle').toggleClass('on');
+		$('#menu').fadeToggle(320, function() {
+			resizeMap();
+		});
+		var offset_width_menu = $('#menu').outerWidth(true),
+			sign = $rootScope.menu_opened ? '+=' : '-=';
+		$('#menu_twitter').animate({ right: sign + offset_width_menu + 'px' }, 350);
+		$('#cont_twitter').animate({ right: sign + offset_width_menu + 'px' }, 350);
+		if ($rootScope.menu_opened && window.innerWidth < min_width_both && $rootScope.twitter_opened) {
+			$scope.toggleTwitter();
+		}
+	};
+
+	// toggle twitter
+	$scope.toggleTwitter = function() {
+		$rootScope.twitter_opened = !$rootScope.twitter_opened;
+		$('#cont_twitter').show();
+		$('.btn_hide').toggleClass('fa-angle-double-up');
+		$('.btn_hide').toggleClass('fa-angle-double-down');
+		$('#twitter').slideToggle('fast', function() {
+			resizeMap();
+		});
+		if ($rootScope.twitter_opened && window.innerWidth < min_width_both && $rootScope.menu_opened) {
+			$scope.toggleMenu();
+		}
 	};
 
 	// remove all markers and place only the filtered ones
 	$scope.filter = function() {
-		// $scope.setMapOn($scope.markers, null);
-		var filtered_ids = PointsService.filterCategories($rootScope.selected_categories);
+		var filtered_ids = PointsService.filterCategories($rootScope.selected_categories, $rootScope.show.only_top);
 		var filtered_markers = [];
 		for (var id in $scope.markers) {
 			for (var i in filtered_ids) {
@@ -107,19 +133,16 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				}
 			}
 		}
-		// if ($scope.markers_clusters && $scope.markers_clusters.getTotalClusters() > 0) {
 		$scope.markers_clusters.clearMarkers();
-		// }
 		$scope.markers_clusters.addMarkers(filtered_markers);
-		// $scope.setMapOn(filtered_markers, $scope.map);
 	};
 
 	// set map on markers
-	$scope.setMapOn = function(markers_to_map, new_map) {
+	/*$scope.setMapOn = function(markers_to_map, new_map) {
 		for (var i in markers_to_map) {
 			markers_to_map[i].setMap(new_map);
 		}
-	};
+	};*/
 
 	// set all values of selected categories
 	$scope.selectAll = function(value) {
@@ -146,6 +169,11 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	if (!$translate.use()) {
 		$translate.use($translate.preferredLanguage());
 		$scope.current_language = $translate.preferredLanguage();
+	}
+
+	// if not set, show all
+	if (typeof $rootScope.show === 'undefined') {
+		$rootScope.show = { only_top: false };
 	}
 
 	// selected categories
@@ -205,18 +233,13 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	}, true);
 
+	// on resize show/hide twitter widget
+	$(window).resize(function() {
+		showTwitter();
+	});
+
 	// wait for dom ready
 	$timeout(function() {
-		// open menu if the window is big enough
-		if ($(document).width() > 700) {
-			$scope.toggleMenu();
-		}
-		// initialize twitter widget
-		if ($(document).height() > 650) {
-			twttr.widgets.load(document.getElementById("twitter"));
-		} else {
-			$('#twitter').hide();
-		}
 		// initialize google map
 		$scope.map = GoogleMapsFactory.createMap(document.getElementById('map'), {
 			center: latlong_lyon,
@@ -245,9 +268,13 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				index: tmp_rating * 3 + size
 			};
 		});
+
 		// listeners
 		$scope.map.addListener('zoom_changed', function() {
 			$scope.getPoints($scope.map.getZoom());
+		});
+		$scope.map.addListener('click', function() {
+			$scope.infoWindow.close();
 		});
 		$scope.infoWindow.addListener('domready', function() {
 			$('.rating').rating();
@@ -276,15 +303,34 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			$scope.map.setZoom($scope.map.getZoom() - 1);
 		});
 
+		// show twitter widget
+		showTwitter();
+
+		// open menu if the window is big enough
+		if (typeof $rootScope.menu_opened === 'undefined') {
+			if (window.innerWidth > min_width_menu) {
+				$rootScope.menu_opened = true;
+			} else {
+				$rootScope.menu_opened = false;
+			}
+		}
+		if ($rootScope.menu_opened) {
+			$rootScope.menu_opened = false; // it will be toggled to true
+			$scope.toggleMenu();
+		}
+
 		// get initial points
 		$scope.getPoints(paramsCnst.initial_zoom);
-	}, 100);
+
+	}, 250);
 
 	/* --Initialization-- */
 
 
 	/* Aux Functions */
 
+	// create a marker with the data of point, add it to the markers array
+	//and add listener to open the info window
 	function createMarker(point) {
 		if (!$scope.markers[point.id]) {
 			var marker = GoogleMapsFactory.createMarker({
@@ -293,7 +339,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 					lng: parseFloat(point.longitude)
 				},
 				title: point.name
-			}, Math.floor(point.rating));
+			}, point.rating);
 			$scope.markers[point.id] = marker;
 			$scope.markers[point.id].addListener('click', function() {
 				$scope.openInfoWindow(point.id);
@@ -301,22 +347,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	}
 
-	function createGroupMarker(group) {
-		if (!$scope.group_markers[group.name]) {
-			var marker = GoogleMapsFactory.createMarker({
-				position: {
-					lat: parseFloat(group.latitude),
-					lng: parseFloat(group.longitude)
-				},
-				title: group.name
-			}, 0, true);
-			$scope.group_markers[group.name] = marker;
-			// $scope.markers[point.id].addListener('click', function() {
-			// 	$scope.openInfoWindow(point.id);
-			// });
-		}
-	}
-
+	// open the info window of the point and pan to it
 	function openPreviousInfoWindow(point_id, zoom) {
 		loading = true;
 		if (!$scope.map) {
@@ -338,32 +369,46 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	}
 
-	function getBoundsZoomLevel(bounds, mapDim) {
-		var WORLD_DIM = { height: 256, width: 256 };
-		var ZOOM_MAX = 21;
-
-		function latRad(lat) {
-			var sin = Math.sin(lat * Math.PI / 180);
-			var radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
-			return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
+	// resize the map when the menu or twitter widget are opened or closed
+	function resizeMap() {
+		var offset_width_twitter = $('#cont_twitter').outerWidth(true),
+			offset_width_menu = $('#menu').outerWidth(true);
+		if (!$rootScope.twitter_opened || !$('#cont_twitter').is(':visible')) {
+			offset_width_twitter = 0;
 		}
-
-		function zoom(mapPx, worldPx, fraction) {
-			return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
+		if (!$rootScope.menu_opened) {
+			offset_width_menu = 0;
 		}
+		$('#cont_map').width((window.innerWidth - offset_width_twitter - offset_width_menu));
+		GoogleMapsFactory.resize($scope.map);
+	}
 
-		var ne = bounds.getNorthEast();
-		var sw = bounds.getSouthWest();
-
-		var latFraction = (latRad(ne.lat()) - latRad(sw.lat())) / Math.PI;
-
-		var lngDiff = ne.lng() - sw.lng();
-		var lngFraction = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
-
-		var latZoom = zoom(mapDim.height, WORLD_DIM.height, latFraction);
-		var lngZoom = zoom(mapDim.width, WORLD_DIM.width, lngFraction);
-
-		return Math.min(latZoom, lngZoom, ZOOM_MAX);
+	// show/hide twitter widget
+	function showTwitter() {
+		if (window.innerWidth > min_width_twitter) {
+			if (!twitter_loaded) {
+				try {
+					twttr.widgets.load(document.getElementById("twitter"));
+					twitter_loaded = true;
+					if (typeof $rootScope.twitter_opened === 'undefined') {
+						$rootScope.twitter_opened = true;
+					}
+				} catch (e) {
+					console.log(e);
+					$rootScope.twitter_opened = false;
+				}
+			}
+			if (twitter_loaded) {
+				$('#menu_twitter').show();
+				if ($rootScope.twitter_opened) {
+					$('#cont_twitter').show();
+				}
+			}
+		} else {
+			$('#cont_twitter').hide();
+			$('#menu_twitter').hide();
+		}
+		resizeMap();
 	}
 
 	/* --Aux Functions-- */

@@ -6,7 +6,7 @@ SmartApp.factory('GoogleMapsFactory', ['colorsCnst', function(colorsCnst) {
 		createMarker: function(options, rating) {
 			var marker = new google.maps.Marker(options),
 				url = '/images/map_markers/',
-				r = rating;
+				r = Math.floor(rating);
 			if (r < 0) {
 				r = 0;
 			}
@@ -25,5 +25,8 @@ SmartApp.factory('GoogleMapsFactory', ['colorsCnst', function(colorsCnst) {
 		createInfoWindow: function() {
 			return new google.maps.InfoWindow();
 		},
+		resize: function(map) {
+			google.maps.event.trigger(map, "resize");
+		}
 	};
 }]);

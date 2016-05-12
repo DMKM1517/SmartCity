@@ -2,9 +2,11 @@
 	<a class="navbar-brand" href="#/">
 		<img src="images/logo.png" height="21">
 	</a>
-	<div id="loader"></div>
-	<div id="toggle" ng-if="showFilter" ng-click="toggleMenu()">
-		<span></span>
+	<div id="btn_toggle_menu" ng-if="show_filter" ng-click="toggleMenu()">
+		<div id="toggle">
+			<span></span>
+		</div>
+		<div id="toggle_label" class="hidden-xs">{{ 'filter' | translate }}</div>
 	</div>
 	<ul class="nav nav1">
 		<li class="dropdown" id="dropdown_language">
@@ -17,14 +19,25 @@
 		</li>
 	</ul>
 </nav>
-<div id="menu" ng-if="showFilter" cont>
-	<!-- <h2>Search for</h2>
+<div id="menu_twitter" ng-if="show_filter">
+	<h4>
+		<a href="https://twitter.com/search?q=%23Lyon" target="_blank">#Lyon</a>
+		<i class="btn_hide fa fa-angle-double-up" ng-click="toggleTwitter()"></i>
+	</h4>
+</div>
+<div id="cont_twitter" ng-if="show_filter" cont>
+	<div id="twitter">
+		<a class="twitter-timeline" href="https://twitter.com/hashtag/Lyon" data-widget-id="725054469944270855" data-chrome="nofooter noheader">#Lyon Tweets</a>
+	</div>
+</div>
+<div id="menu" cont>
+	<!-- <h2>{{ 'search_for' | translate }}</h2>
 	<input class="form-control"></input>
 	<hr> -->
 	<h2>{{ 'show_me' | translate }}</h2>
 	<div class="checkbox">
 		<label>
-			<input type="checkbox" checked> {{ 'cool_stuff' | translate }}
+			<input type="checkbox" ng-model="show.only_top" ng-click="filter()"> {{ 'cool_stuff' | translate }}
 		</label>
 	</div>
 	<a class="pointer" ng-click="selectAll(true)">{{ 'all' | translate }}</a> /
@@ -37,10 +50,4 @@
 		</div>
 	</div>
 	<hr>
-	<div id="twitter">
-		<h4>
-			<a href="https://twitter.com/search?q=%23Lyon" target="_blank">#Lyon</a>
-		</h4>
-		<a class="twitter-timeline" href="https://twitter.com/hashtag/Lyon" data-widget-id="725054469944270855" data-chrome="nofooter noheader" height="280">#Lyon Tweets</a>
-	</div>
 </div>

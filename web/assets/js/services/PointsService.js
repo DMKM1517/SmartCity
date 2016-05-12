@@ -74,12 +74,14 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	};
 
 	// filter by category
-	this.filterCategories = function(selected_categories) {
+	this.filterCategories = function(selected_categories, show_only_top) {
 		var filtered = [];
 		for (var i in points) {
 			var point = points[i];
 			if (selected_categories[point.category]) {
-				filtered.push(point.id);
+				if (!show_only_top || point.rating >= 4) {
+					filtered.push(point.id);
+				}
 			}
 		}
 		return filtered;

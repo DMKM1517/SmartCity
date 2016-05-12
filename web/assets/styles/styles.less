@@ -3,10 +3,11 @@
 @color_blue: #6CBBFF;
 @screen-sm: 768px;
 @screen-xs: 480px;
+@width_menu: 280px;
 
 /* General */
 
-.subcont {
+#subcont {
 	overflow: auto;
 	.row {
 		margin: 0;
@@ -149,12 +150,25 @@
 	}
 }
 
+#toggle_label {
+	float: right;
+	color: #A2A2A2;
+	padding-top: 9px;
+	padding-left: 10px;
+	font-size: 20px;
+}
+
+#btn_toggle_menu {
+	float: right;
+	width: auto;
+	cursor: pointer;
+}
+
 #menu {
 	position: absolute;
 	right: 0;
-	z-index: 1;
-	min-width: 250px;
-	max-width: 350px;
+	z-index: 2;
+	width: @width_menu;
 	padding: 10px;
 	margin: auto;
 	border-radius: 4px;
@@ -173,26 +187,56 @@
 	}
 }
 
-#twitter {
+
+/* twitter */
+
+#menu_twitter {
 	position: absolute;
-	bottom: 0;
-	max-width: 340px;
+	right: 0;
+	width: @width_menu;
+	background-color: white;
+	border-style: solid;
+	border-color: #888888;
+	border-width: 0 0 1px 0;
+	z-index: 1;
+	display: none;
 	h4 {
-		margin-bottom: 0;
+		padding-left: 5px;
 	}
+	.btn_hide {
+		float: right;
+		margin-right: 13px;
+		font-size: 1.8em;
+		margin-top: -7px;
+		cursor: pointer;
+	}
+}
+
+#cont_twitter {
+	position: absolute;
+	right: 0;
+	background: white;
+	z-index: 1;
+	width: @width_menu;
+	margin-top: 40px;
+	display: none;
 }
 
 
 /* Language */
 
 #dropdown_language {
-	margin-right: 15px;
+	border-right: 1px solid gray;
+	font-size: 19px;
 	ul {
 		min-width: 20px;
 	}
-	@media (max-width: @screen-sm) {
-		margin-right: 0;
+	a {
+		padding: 7px 13px;
 	}
+	/*@media (max-width: @screen-sm) {
+		margin-right: 0;
+	}*/
 }
 
 .dropdown-menu > .active > a {

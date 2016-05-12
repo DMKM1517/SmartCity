@@ -6,7 +6,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		param_zoom = $location.search().z, // param zoom
 		// stats_sources = ['all', 'twitter', 'foursquare', 'yelp'];
 		stats_sources = ['all']; // sources to plot
-	$scope.showFilter = false; // don't show the menu
+	$scope.show_filter = false; // don't show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
 

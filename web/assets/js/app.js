@@ -61,7 +61,7 @@ SmartApp.config(['$translateProvider', 'paramsCnst', function($translateProvider
 /* Constants */
 
 SmartApp.constant('colorsCnst', ['red', 'orange', 'yellow', 'lgreen', 'green']);
-SmartApp.constant('colorsTextCnst', ['#540101', '#543c01', '#515401', '#095401', '#ddffff']);
+SmartApp.constant('colorsTextCnst', ['#015154', '#061761', '#5D0A40', '#310572', '#ddffff']);
 SmartApp.constant('paramsCnst', {
 	initial_zoom: 12,
 	limit_points: 150,
