@@ -104,6 +104,7 @@ query_kw <- "
 names <- dbGetQuery(con, query_kw)
 
 if(nrow(names)!=0){
+    print(paste("Creating keywords for ", nrow(names), " IPs that had no keywords."))
     unwanted_array = list(    'Š'='S', 'š'='s', 'Ž'='Z', 'ž'='z', 'À'='A', 'Á'='A', 'Â'='A', 'Ã'='A', 'Ä'='A', 'Å'='A', 'Æ'='A', 'Ç'='C', 'È'='E', 'É'='E',
                               'Ê'='E', 'Ë'='E', 'Ì'='I', 'Í'='I', 'Î'='I', 'Ï'='I', 'Ñ'='N', 'Ò'='O', 'Ó'='O', 'Ô'='O', 'Õ'='O', 'Ö'='O', 'Ø'='O', 'Ù'='U',
                               'Ú'='U', 'Û'='U', 'Ü'='U', 'Ý'='Y', 'Þ'='B', 'ß'='Ss', 'à'='a', 'á'='a', 'â'='a', 'ã'='a', 'ä'='a', 'å'='a', 'æ'='a', 'ç'='c',
@@ -149,15 +150,17 @@ if(nrow(names)!=0){
     names(keywords) = c("ip_id","keywords")
     
     ###Insert to DB
-    
-    
-    insert <- function(i, con, keywords) {
-      txt <- paste("INSERT into twitter.keywords values (",keywords$ip_id[i],", '",keywords$keywords[i],"');")
-      dbGetQuery(con, txt)
-    }
-    for (i in 1:length(keywords$ip_id)){
-      insert(i, con, keywords)
-    }
+
+    # insert <- function(i, con, keywords) {
+    #   txt <- paste("INSERT into twitter.keywords values (",keywords$ip_id[i],", '",keywords$keywords[i],"');")
+    #   dbGetQuery(con, txt)
+    # }
+    # for (i in 1:length(keywords$ip_id)){
+    #   insert(i, con, keywords)
+    # }
+    dbWriteTable(
+        con, c("twitter","keywords"), value = keywords, append = TRUE, row.names = FALSE
+    )
 }
 rm(query_kw)
 ############    KEYWORDS   #################
@@ -167,6 +170,9 @@ rm(query_kw)
 
 #####################################################
 ############# MODEL TWEETS_TO_IP   ##################
+
+# Max number of tweets to process
+maxTweets <- "50000"
 
 # Queries to retrieve combinations of Tweets - Kewyords
 #Keywords
@@ -183,23 +189,32 @@ select
   t.idd::varchar(100), 
   t.text
 from 
-  twitter.tweets t;"
+    twitter.tweets t
+    left join twitter.processed_tweets pt on t.idd = pt.tweet_id
+where pt.tweet_id is null
+limit :MAX:;"
 
-#Processed
-query_p <-"
-select distinct tweet_id::varchar(100)
-from twitter.processed_tweets"
+query_t <- str_replace_all(query_t, ":MAX:", maxTweets)
+
+print(paste("Retreiving tweets from the DB. Max:", maxTweets))
+
+
+# #Processed
+# query_p <-"
+# select distinct tweet_id::varchar(100)
+# from twitter.processed_tweets"
 
 #Get data and turn it to data table
 df1 <- data.table(dbGetQuery(con, query_kw))
-df2 <- data.table(dbGetQuery(con, query_t))
-df3 <- data.table(dbGetQuery(con, query_p))
+df <- data.table(dbGetQuery(con, query_t))
+# df3 <- data.table(dbGetQuery(con, query_p))
 
-setkey(df2, idd)
-setkey(df3, tweet_id)
+print(paste(nrow(df), "Tweets retreived from the DB."))
 
-#Subset the not processed tweets
-df <- df2[-df2[df3, which=TRUE],][1:2000]
+setkey(df, idd)
+# setkey(df3, tweet_id)
+# # Subset the not processed tweets
+# df <- df2[-df2[df3, which=TRUE],][1:2000]
 
 
 #Prepare to update the processed tweets
@@ -228,27 +243,41 @@ if(sum(df$count)>0){
   names(tweet_to_ip) = c("twitter_id","ip_id")
   tweet_to_ip<- tweet_to_ip[,c(2,1)]
 
-
-  insert <- function(i, con, tweet_to_ip) {
-    txt <- paste("INSERT into twitter.tweet_to_ip values (",tweet_to_ip$ip_id[i],", ",tweet_to_ip$twitter_id[i],"::bigint);")
-    dbGetQuery(con, txt)
-  }
-
-  for (i in 1:length(tweet_to_ip$ip_id)){
-    insert(i, con, tweet_to_ip)
-  }
+  print(paste(nrow(tweet_to_ip), "relations tweet to IP found. Writing into the DB"))
+  
+  dbWriteTable(
+      con, c("twitter","tweet_to_ip"), value = tweet_to_ip, append = TRUE, row.names = FALSE
+  )
+  print("Writing tweets to IP successful")
+  # insert <- function(i, con, tweet_to_ip) {
+  #   txt <- paste("INSERT into twitter.tweet_to_ip values (",tweet_to_ip$ip_id[i],", ",tweet_to_ip$twitter_id[i],"::bigint);")
+  #   dbGetQuery(con, txt)
+  # }
+  # 
+  # for (i in 1:length(tweet_to_ip$ip_id)){
+  #   insert(i, con, tweet_to_ip)
+  # }
+} else {
+    print("No relations tweet to ip found.")
 }
 
 #Record Processed Tweets
 if(trigger[[1]]>0){ #Run if there are tweets
-  insert <- function(i, con, processed_tweets) {
-    txt <- paste("INSERT into twitter.processed_tweets (tweet_id, processed_date) VALUES (",processed_tweets$idd[i],",  now() );")  
-    dbGetQuery(con, txt)
-  }
-  
-  for (i in 1:length(processed_tweets$idd)){
-    insert(i, con, processed_tweets)
-  }
+    print(paste("Writing", nrow(processed_tweets), "procesed tweets."))
+    processed_tweets$processed_date <- Sys.time()
+    dbWriteTable(
+        con, c("twitter","processed_tweets"), value = processed_tweets, append = TRUE, row.names = FALSE
+    )
+    print("Writing processed tweets successful")
+    
+  # insert <- function(i, con, processed_tweets) {
+  #   txt <- paste("INSERT into twitter.processed_tweets (tweet_id, processed_date) VALUES (",processed_tweets$idd[i],",  now() );")  
+  #   dbGetQuery(con, txt)
+  # }
+  # 
+  # for (i in 1:length(processed_tweets$idd)){
+  #   insert(i, con, processed_tweets)
+  # }
 }
 #########Close PostgreSQL connection###############
 dbDisconnect(con)
