@@ -15,7 +15,7 @@ library(data.table)
 
 ############################################
 ############# FUNCTIONS   ##################
-
+date()
 #Clean the tweets before searching for keyword matching
 clean_text<- function(text)
 {
@@ -74,7 +74,7 @@ count_substring = function(text,keywords) {
 # ########## ######### CONNECTION TO DB ###############
 # loads the PostgreSQL driver
 library(jsonlite)
-login <- fromJSON("/Users/saulgarcia/Desktop/Github/SmartCity/login.json", flatten=TRUE)
+login <- fromJSON("../login.json", flatten=TRUE)
 drv = dbDriver("PostgreSQL")
 con <- dbConnect(
   drv, dbname = login$dbname,
@@ -195,7 +195,6 @@ df1 <- data.table(dbGetQuery(con, query_kw))
 df2 <- data.table(dbGetQuery(con, query_t))
 df3 <- data.table(dbGetQuery(con, query_p))
 
-setkey(df1,c(ip_id,keyword))
 setkey(df2, idd)
 setkey(df3, tweet_id)
 
@@ -254,4 +253,5 @@ if(trigger[[1]]>0){ #Run if there are tweets
 #########Close PostgreSQL connection###############
 dbDisconnect(con)
 rm(list=ls())
+date()
 #KeywordsTweets_to_IP
