@@ -172,7 +172,7 @@ rm(query_kw)
 ############# MODEL TWEETS_TO_IP   ##################
 
 # Max number of tweets to process
-maxTweets <- "50000"
+maxTweets <- "10000"
 
 # Queries to retrieve combinations of Tweets - Kewyords
 #Keywords
