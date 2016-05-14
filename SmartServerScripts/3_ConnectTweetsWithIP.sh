@@ -12,7 +12,7 @@ echo "Starting Connecting Tweets with IPs: $now"
 echo "Starting Connecting Tweets with IPs: $now" >> 3_ConnectTweetsWithIP.log 2>&1
 
 # Score Tweets
-Rscript ../TweetsToIP/FM_Keywords_Tweets_to_IP.R >> 3_ConnectTweetsWithIP.log 2>&1
+Rscript ../TweetsToIP/FM_Keywords_Tweets_to_IP_DT.R >> 3_ConnectTweetsWithIP.log 2>&1
 
 #End Connecting Tweets with IPs
 now=$(date)
