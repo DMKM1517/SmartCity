@@ -11,7 +11,7 @@ echo "Starting Scoring Tweets BOW: $now"
 echo "Starting Scoring Tweets BOW: $now" >> 2_ProcessTweetsSentiment.log 2>&1
 
 # Score Tweets BOW
-Rscript ../Sentiment\ Analysis\ R/Sentiment_Analysis.R >> 2_ProcessTweetsSentiment.log 2>&1
+Rscript ../SentimentAnalysisR/Sentiment_Analysis.R >> 2_ProcessTweetsSentiment.log 2>&1
 
 #End Scoring Tweets BOW
 now=$(date)
