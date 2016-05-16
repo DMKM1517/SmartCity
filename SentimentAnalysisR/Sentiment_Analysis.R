@@ -33,7 +33,7 @@ con <- dbConnect(
 query_kw <- "SELECT idd::varchar(100), text, lang
 FROM twitter.tweets
 WHERE local_score IS NULL 
-limit 2000
+limit 50000
 ;"
 
 # Retreives the table from the database
