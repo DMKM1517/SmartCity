@@ -186,17 +186,17 @@ score.sentiment.en = function(idd, sentences, pos.words, neg.words, .progress='n
 ###########################################
 ########    Read Dictionary    ############
 
-pos.words.fr <- read.csv('french_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
+pos.words.fr <- read.csv('../SentimentAnalysisR/french_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
 pos.words.fr <- pos.words.fr[,2]
 pos.words.fr <- as.character(pos.words.fr)
-neg.words.fr <- read.csv('french_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
+neg.words.fr <- read.csv('../SentimentAnalysisR/french_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
 neg.words.fr <- neg.words.fr[,2]
 neg.words.fr <- as.character(neg.words.fr)
 
-pos.words.en <-read.csv('english_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
+pos.words.en <-read.csv('../SentimentAnalysisR/english_positive.csv',header=TRUE,sep=",",encoding='UTF-8')
 pos.words.en <- pos.words.en[,2]
 pos.words.en <- as.character(pos.words.en)
-neg.words.en <- read.csv('english_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
+neg.words.en <- read.csv('../SentimentAnalysisR/english_negative.csv',header=TRUE,sep=",",encoding='UTF-8')
 neg.words.en <- neg.words.en[,2]
 neg.words.en <- as.character(neg.words.en)
 
