@@ -1,33 +1,17 @@
-SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$compile', '$templateRequest', '$timeout', '$translate', 'GoogleMapsFactory', 'PointsService', 'RatingFactory', 'colorsCnst', 'colorsTextCnst', 'paramsCnst', function($scope, $rootScope, $location, $compile, $templateRequest, $timeout, $translate, GoogleMapsFactory, PointsService, RatingFactory, colorsCnst, colorsTextCnst, paramsCnst) {
+SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$compile', '$templateRequest', '$timeout', '$translate', 'GoogleMapsFactory', 'PointsService', 'RatingFactory', 'colorsCnst', 'paramsCnst', function($scope, $rootScope, $location, $compile, $templateRequest, $timeout, $translate, GoogleMapsFactory, PointsService, RatingFactory, colorsCnst, paramsCnst) {
 
 	/* Variables */
 
 	var loading = true,
+		map_ready = false,
 		twitter_loaded = false, // if twitter widget is already loaded
 		min_width_menu = 700, // min width to open the menu at initialization
 		min_width_twitter = 800, // min width to open twitter
-		min_width_both = 1080, // min width to open twitter and menu at the same time
-		latlong_lyon = { // initial lat long
-			lat: 45.7591739,
-			lng: 4.8846752
-		},
-		opt_markers_clusters = { // options for marker clusterer
-			gridSize: 43,
-			minimumClusterSize: 2,
-			maxZoom: 16,
-			zoomOnClick: false,
-			styles: []
-		};
+		min_width_both = 1080; // min width to open twitter and menu at the same time
 	$scope.show_filter = true; // show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
-	$scope.markers = []; // array of markers
-	// $scope.group_markers = [];
-	$scope.markers_clusters = null; // object of marker clusterer
-	$scope.infoWindow = GoogleMapsFactory.createInfoWindow(); // infowindow for points
-	$scope.infoWindow2 = GoogleMapsFactory.createInfoWindow(); // infowindow for clusters
 	$scope.categories = []; // array of categories
-	$scope.searching = '';
 
 	/* --Variables-- */
 
@@ -46,6 +30,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				createMarker(data[i]);
 			}
 			$scope.filter();
+			map_ready = true;
 			loading = false;
 		}, function(response) {
 			loading = false;
@@ -53,44 +38,36 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	};
 
 	// open a infowindow
-	$scope.openInfoWindow = function(point_id, options) {
+	$scope.openMarkerInfowindow = function(point_id) {
 		$scope.point = {};
-		$scope.cluster = {};
-		$scope.infoWindow2.close();
-		if (point_id) {
-			PointsService.getPoint(point_id).then(function(point) {
-				var RF = RatingFactory.getRatingsAndClass(point.rating);
-				$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
-					point.translations = translations;
-					point.RF = RF;
-					point.zoom = $scope.map.getZoom();
-					if (point.address && $scope.current_language != paramsCnst.original_language) {
-						point.url_translate_address = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.address);
-					}
-					if (point.schedule && $scope.current_language != paramsCnst.original_language) {
-						point.url_translate_schedule = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
-					}
-					if (point.web) {
-						point.web_links = point.web.split(';');
-					}
-					$scope.point = point;
-					$templateRequest('/templates/infowindow.html').then(function(template) {
-						var content = $compile(template)($scope);
-						$timeout(function() {
-							$scope.infoWindow.setContent(content.html());
-							$scope.infoWindow.open($scope.map, $scope.markers[point_id]);
-						});
+		GoogleMapsFactory.closeInfowindow('cluster');
+		PointsService.getPoint(point_id).then(function(point) {
+			createMarker(point);
+			$scope.filter();
+			var RF = RatingFactory.getRatingsAndClass(point.rating);
+			$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
+				point.translations = translations;
+				point.RF = RF;
+				point.zoom = GoogleMapsFactory.getZoom();
+				if (point.address && $scope.current_language != paramsCnst.original_language) {
+					point.url_translate_address = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.address);
+				}
+				if (point.schedule && $scope.current_language != paramsCnst.original_language) {
+					point.url_translate_schedule = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/' + encodeURI(point.schedule);
+				}
+				if (point.web) {
+					point.web_links = point.web.split(';');
+				}
+				$scope.point = point;
+				$templateRequest('/templates/infowindow.html').then(function(template) {
+					var content = $compile(template)($scope);
+					$timeout(function() {
+						GoogleMapsFactory.openInfowindow('marker', content.html(), parseInt(point_id));
 					});
 				});
 			});
-		} else {
-			$translate(['points_here', 'avg_rating']).then(function(translations) {
-				var content = '<div>' + options.count + ' ' + translations.points_here + '. ' + translations.avg_rating + ': ' + options.rating + '</div>';
-				$scope.infoWindow2.setContent(content);
-				$scope.infoWindow2.setPosition(options.center);
-				$scope.infoWindow2.open($scope.map);
-			});
-		}
+			selectResultAnimation(point.id);
+		});
 	};
 
 	// toggle menu
@@ -125,17 +102,15 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// remove all markers and place only the filtered ones
 	$scope.filter = function() {
-		var filtered_ids = PointsService.filterCategories($rootScope.selected_categories, $rootScope.show.only_top);
-		var filtered_markers = [];
-		for (var id in $scope.markers) {
-			for (var i in filtered_ids) {
-				if (id == filtered_ids[i]) {
-					filtered_markers.push($scope.markers[id]);
-				}
-			}
+		var filtered_ids = [];
+		if ($rootScope.results && $rootScope.results.length > 0) {
+			filtered_ids = $rootScope.results.map(function(el) {
+				return el.id;
+			});
+		} else {
+			filtered_ids = PointsService.filterCategories($rootScope.selected_categories, $rootScope.show.only_top);
 		}
-		$scope.markers_clusters.clearMarkers();
-		$scope.markers_clusters.addMarkers(filtered_markers);
+		GoogleMapsFactory.filterMarkers(filtered_ids);
 	};
 
 	// set all values of selected categories
@@ -154,18 +129,21 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		});
 	};
 
+	// search while typing in local stored points
 	$scope.typeaheadSearch = function(query) {
 		return PointsService.search(query, true).then(function(results) {
 			return results;
 		});
 	};
 
-	$scope.typeaheadSelected = function(item, model, label, event) {
+	// select a result from typeahead results
+	$scope.typeaheadSelectResult = function(item, model, label, event) {
 		$scope.search_query = model.name;
 		$('#search_input').blur();
 		$scope.search($scope.search_query);
 	};
 
+	// if pressed enter, search
 	$scope.typing = function(event) {
 		if (event.which === 13) {
 			$('#search_input').blur();
@@ -173,18 +151,42 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	};
 
+	// search from server
 	$scope.search = function(query) {
-		$scope.results = [];
-		$translate(['searching', 'results_for']).then(function(translations) {
-			$scope.searching = translations.searching;
-			PointsService.search(query, false).then(function(results) {
-				if (query.length > 15) {
-					query = query.substr(0, 15) + '...';
-				}
-				$scope.searching = results.length + ' ' + translations.results_for + ': \'' + query + '\'';
-				$scope.results = results;
+		$scope.no_results = false;
+		$rootScope.results = [];
+		if (query.length > 0) {
+			$translate(['searching', 'results_for']).then(function(translations) {
+				$rootScope.searching = translations.searching;
+				PointsService.search(query, false).then(function(resp) {
+					GoogleMapsFactory.closeInfowindow('marker');
+					var results = resp.results;
+					for (var i in resp.new_points) {
+						createMarker(resp.new_points[i]);
+					}
+					if (query.length > 15) {
+						query = query.substr(0, 15) + '...';
+					}
+					$rootScope.searching = results.length + ' ' + translations.results_for + ': "' + query + '"';
+					$rootScope.results = results;
+					$scope.filter();
+					GoogleMapsFactory.fitMapToMarkers();
+				});
 			});
-		});
+		}
+	};
+
+	$scope.selectResult = function(point_id) {
+		GoogleMapsFactory.setZoom(paramsCnst.initial_zoom);
+		$scope.openMarkerInfowindow(point_id);
+	};
+
+	$scope.removeSearch = function() {
+		$scope.no_results = false;
+		$scope.search_query = '';
+		$rootScope.searching = '';
+		$rootScope.results = [];
+		$scope.filter();
 	};
 
 	/* --Functions-- */
@@ -224,39 +226,11 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		}
 	});*/
 
-	// setup the styles for markers clusterer
-	for (var i in colorsCnst) {
-		opt_markers_clusters.styles.push({
-			url: '/images/map_markers/m_small_' + colorsCnst[i] + '.png',
-			height: 49,
-			width: 48,
-			textColor: colorsTextCnst[i]
-		});
-		opt_markers_clusters.styles.push({
-			url: '/images/map_markers/m_medium_' + colorsCnst[i] + '.png',
-			height: 54,
-			width: 53,
-			textColor: colorsTextCnst[i]
-		});
-		opt_markers_clusters.styles.push({
-			url: '/images/map_markers/m_large_' + colorsCnst[i] + '.png',
-			height: 66,
-			width: 65,
-			textColor: colorsTextCnst[i]
-		});
-	}
-
 	// watch for changes in location search
 	$scope.$watch($location.search(), function() {
 		var param_id = $location.search().id;
-		var param_zoom = $location.search().z;
-		if (!param_zoom) {
-			param_zoom = paramsCnst.initial_zoom;
-		} else {
-			param_zoom = parseInt(param_zoom);
-		}
 		if (typeof param_id !== 'undefined') {
-			openPreviousInfoWindow(param_id, param_zoom);
+			openPreviousInfoWindow(param_id);
 		}
 	}, true);
 
@@ -267,46 +241,22 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// wait for dom ready
 	$timeout(function() {
-		// initialize google map
-		$scope.map = GoogleMapsFactory.createMap(document.getElementById('map'), {
-			center: latlong_lyon,
-			zoom: paramsCnst.initial_zoom
-		});
-		// initialize markers clusterer
-		$scope.markers_clusters = new MarkerClusterer($scope.map, null, opt_markers_clusters);
-		// set calculator for cluster icon
-		$scope.markers_clusters.setCalculator(function(markers, numStyles) {
-			var size = 0;
-			var count = markers.length;
-			var dv = count;
-			var avg_rating = markers.map(function(el) {
-				return el.rating;
-			}).reduce(function(x, y) {
-				return x + y;
-			}) / count;
-			while (dv !== 0) {
-				dv = parseInt(dv / 10, 10);
-				size++;
-			}
-			var tmp_rating = Math.min(Math.max(Math.floor(avg_rating), 0), 4);
-			size = Math.min(size, numStyles / colorsCnst.length);
-			return {
-				text: count,
-				index: tmp_rating * 3 + size
-			};
-		});
+		// initialize map
+		GoogleMapsFactory.initializeMap(document.getElementById('map'));
 
 		// listeners
-		$scope.map.addListener('zoom_changed', function() {
-			$scope.getPoints($scope.map.getZoom());
+		GoogleMapsFactory.addListener('map', 'zoom_changed', function() {
+			GoogleMapsFactory.closeInfowindow('cluster');
+			// $scope.getPoints(GoogleMapsFactory.getZoom());
 		});
-		$scope.map.addListener('click', function() {
-			$scope.infoWindow.close();
+		GoogleMapsFactory.addListener('map', 'click', function() {
+			GoogleMapsFactory.closeInfowindow('marker');
+			$('.result').removeClass('result_selected');
 		});
-		$scope.infoWindow.addListener('domready', function() {
+		GoogleMapsFactory.addListener('infowindow_marker', 'domready', function() {
 			$('.rating').rating();
 		});
-		$scope.markers_clusters.addListener('mouseover', function(cluster) {
+		GoogleMapsFactory.addListener('markers_clusters', 'mouseover', function(cluster) {
 			var markers = cluster.getMarkers();
 			var count = markers.length;
 			var avg_rating = markers.map(function(el) {
@@ -319,15 +269,18 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				rating: avg_rating.toFixed(1),
 				count: count,
 			};
-			$scope.openInfoWindow(null, options);
+			$translate(['points_here', 'avg_rating'], { num: options.count }).then(function(translations) {
+				var content = '<div>' + translations.points_here + '. ' + translations.avg_rating + ': ' + options.rating + '</div>';
+				GoogleMapsFactory.openInfowindow('cluster', content, options.center);
+			});
 		});
-		$scope.markers_clusters.addListener('mouseout', function(cluster) {
-			$scope.infoWindow2.close();
+		GoogleMapsFactory.addListener('markers_clusters', 'mouseout', function(cluster) {
+			GoogleMapsFactory.closeInfowindow('cluster');
 		});
-		$scope.markers_clusters.addListener('click', function(cluster) {
-			$scope.infoWindow2.close();
-			$scope.map.fitBounds(cluster.getBounds());
-			$scope.map.setZoom($scope.map.getZoom() - 1);
+		GoogleMapsFactory.addListener('markers_clusters', 'click', function(cluster) {
+			GoogleMapsFactory.closeInfowindow('cluster');
+			GoogleMapsFactory.fitBounds(cluster.getBounds());
+			GoogleMapsFactory.setZoom('-1');
 		});
 
 		// show twitter widget
@@ -356,43 +309,28 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	/* Aux Functions */
 
-	// create a marker with the data of point, add it to the markers array
-	//and add listener to open the info window
+	// create a marker with the data of point
 	function createMarker(point) {
-		if (!$scope.markers[point.id]) {
-			var marker = GoogleMapsFactory.createMarker({
-				position: {
-					lat: parseFloat(point.latitude),
-					lng: parseFloat(point.longitude)
-				},
-				title: point.name
-			}, point.rating);
-			$scope.markers[point.id] = marker;
-			$scope.markers[point.id].addListener('click', function() {
-				$scope.openInfoWindow(point.id);
-			});
-		}
+		GoogleMapsFactory.createMarker({
+			position: {
+				lat: parseFloat(point.latitude),
+				lng: parseFloat(point.longitude)
+			},
+			title: point.name
+		}, point.id, point.rating, function() {
+			$scope.openMarkerInfowindow(point.id);
+		});
 	}
 
 	// open the info window of the point and pan to it
-	function openPreviousInfoWindow(point_id, zoom) {
+	function openPreviousInfoWindow(point_id) {
 		loading = true;
-		if (!$scope.map) {
+		if (!map_ready) {
 			setTimeout(function() {
-				openPreviousInfoWindow(point_id, zoom);
+				openPreviousInfoWindow(point_id);
 			}, 500);
 		} else {
-			PointsService.getPoint(point_id).then(function(data) {
-				createMarker(data);
-				$scope.map.setZoom(zoom);
-				$scope.filter();
-				$scope.map.panTo($scope.markers[point_id].getPosition());
-				$scope.openInfoWindow(point_id);
-				loading = false;
-			}, function(resp) {
-				$location.search({});
-				loading = false;
-			});
+			$scope.openMarkerInfowindow(point_id);
 		}
 	}
 
@@ -407,7 +345,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			offset_width_menu = 0;
 		}
 		$('#cont_map').width((window.innerWidth - offset_width_twitter - offset_width_menu));
-		GoogleMapsFactory.resize($scope.map);
+		GoogleMapsFactory.resize();
 	}
 
 	// show/hide twitter widget
@@ -436,6 +374,18 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			$('#menu_twitter').hide();
 		}
 		resizeMap();
+	}
+
+	function selectResultAnimation(point_id) {
+		var result = $('#r' + point_id),
+			container = $('#results_table');
+		$('.result').removeClass('result_selected');
+		if (result.offset()) {
+			result.addClass('result_selected');
+			container.animate({
+				scrollTop: result.offset().top - container.offset().top + container.scrollTop() - result.height()
+			});
+		}
 	}
 
 	/* --Aux Functions-- */

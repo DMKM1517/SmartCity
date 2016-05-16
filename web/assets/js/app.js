@@ -64,9 +64,19 @@ SmartApp.constant('colorsCnst', ['red', 'orange', 'yellow', 'lgreen', 'green']);
 SmartApp.constant('colorsTextCnst', ['#015154', '#061761', '#5D0A40', '#310572', '#ddffff']);
 SmartApp.constant('paramsCnst', {
 	initial_zoom: 12,
-	limit_points: 150,
+	initial_latlng: { // lat long of lyon
+		lat: 45.7591739,
+		lng: 4.8846752
+	},
+	limit_points: 300, // limit to load from server each time
 	original_language: 'fr',
-	languages: ['en', 'fr', 'es', 'ru', 'hi', 'zh', 'de'],
+	languages: ['en', 'fr', 'es', 'ru', 'hi', 'zh', 'de'], // available languages
+	opt_markers_clusters: { // options for markers clusterer
+		gridSize: 43,
+		minimumClusterSize: 2,
+		maxZoom: 16,
+		zoomOnClick: false,
+	}
 });
 
 /* --Constants-- */

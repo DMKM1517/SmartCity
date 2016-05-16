@@ -1,5 +1,6 @@
 SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
-	var points = {},
+	var _points = {},
+		_categories = [],
 		keys_sorted = [],
 		pages_loaded = [],
 		history = {},
@@ -13,13 +14,13 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 				if (data) {
 					for (var i in data) {
 						point = data[i];
-						if (!points[point.id]) {
-							points[point.id] = point;
+						if (!_points[point.id]) {
+							_points[point.id] = point;
 						}
 					}
 					sortPoints();
 					pages_loaded.push(page);
-					defer.resolve(points);
+					defer.resolve(_points);
 				} else {
 					defer.reject('no data');
 				}
@@ -27,7 +28,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 				defer.reject(err);
 			});
 		} else {
-			defer.resolve(points);
+			defer.resolve(_points);
 		}
 		return defer.promise;
 	};
@@ -35,18 +36,24 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	// get a point by id
 	this.getPoint = function(id) {
 		var defer = $q.defer();
-		if (!points[id]) {
+		if (!_points[id]) {
 			$http.get('/points/' + id).success(function(point) {
-				if (!points[point.id]) {
-					points[point.id] = point;
+				if (!_points[point.id]) {
+					_points[point.id] = point;
 					sortPoints();
+				}
+				if (!point.rating) {
+					point.rating = 0;
 				}
 				defer.resolve(point);
 			}).error(function(err) {
 				defer.reject(err);
 			});
 		} else {
-			defer.resolve(points[id]);
+			if (!_points[id].rating) {
+				_points[id].rating = 0;
+			}
+			defer.resolve(_points[id]);
 		}
 		return defer.promise;
 	};
@@ -54,11 +61,16 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	// get all categories
 	this.getCategories = function() {
 		var defer = $q.defer();
-		$http.get('/points/getCategories').success(function(categories) {
-			defer.resolve(categories);
-		}).error(function(err) {
-			defer.reject(err);
-		});
+		if (_categories.length === 0) {
+			$http.get('/points/getCategories').success(function(categories) {
+				_categories = categories;
+				defer.resolve(_categories);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		} else {
+			defer.resolve(_categories);
+		}
 		return defer.promise;
 	};
 
@@ -77,8 +89,8 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	this.filterCategories = function(selected_categories, show_only_top) {
 		var filtered = [],
 			point;
-		for (var i in points) {
-			point = points[i];
+		for (var i in _points) {
+			point = _points[i];
 			if (selected_categories[point.category]) {
 				if (!show_only_top || point.rating >= 4) {
 					filtered.push(point.id);
@@ -143,7 +155,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		query = removeDiacritics(query.trim().toLowerCase());
 		if (local) {
 			for (var i = 0; i < keys_sorted.length && count <= 10; i++) {
-				point_name = points[keys_sorted[i]].name;
+				point_name = _points[keys_sorted[i]].name;
 				index = removeDiacritics(point_name.toLowerCase()).indexOf(query);
 				if (index != -1) {
 					count++;
@@ -164,24 +176,29 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 			}
 			defer.resolve(results);
 		} else {
+			var resp = {},
+				new_points = [];
 			$http.get('/points/search?q=' + query).success(function(data) {
 				for (var i in data) {
 					point = data[i];
 					results.push({ id: point.id, name: point.name });
-					if (!points[point.id]) {
-						points[point.id] = point;
+					if (!_points[point.id]) {
+						_points[point.id] = point;
+						new_points.push(point);
 					}
 				}
 				sortPoints();
-				defer.resolve(results);
+				resp.results = results;
+				resp.new_points = new_points;
+				defer.resolve(resp);
 			});
 		}
 		return defer.promise;
 	};
 
 	function sortPoints() {
-		keys_sorted = Object.keys(points).sort(function(x, y) {
-			return points[x].rating < points[y].rating ? 1 : -1;
+		keys_sorted = Object.keys(_points).sort(function(x, y) {
+			return _points[x].rating < _points[y].rating ? 1 : -1;
 		});
 	}
 

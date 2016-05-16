@@ -185,6 +185,10 @@
 		border-right: 15px solid transparent;
 		border-bottom: 20px solid white;
 	}
+	.form-control-feedback {
+		pointer-events: all;
+		cursor: pointer;
+	}
 }
 
 
@@ -223,8 +227,19 @@
 }
 
 #results {
-	max-width: 270px;
-	max-height: 220px;
+	max-width: @width_menu - 20px;
+}
+
+#results_table {
+	max-height: 210px;
+}
+
+.result {
+	cursor: pointer;
+}
+
+.result_selected {
+	background-color: #A5D4FD;
 }
 
 

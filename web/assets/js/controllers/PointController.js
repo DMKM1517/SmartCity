@@ -3,7 +3,6 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	/* Variables */
 
 	var id = $routeParams.id, // point id
-		param_zoom = $location.search().z, // param zoom
 		// stats_sources = ['all', 'twitter', 'foursquare', 'yelp'];
 		stats_sources = ['all']; // sources to plot
 	$scope.show_filter = false; // don't show the menu
@@ -19,11 +18,6 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	if (!$translate.use()) {
 		$translate.use($translate.preferredLanguage());
 		$scope.current_language = $translate.preferredLanguage();
-	}
-
-	// set default zoom if not param
-	if (!param_zoom) {
-		param_zoom = paramsCnst.initial_zoom;
 	}
 
 	// get the information of the point
@@ -56,11 +50,10 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 
 	/* Functions */
 
-	// go back to map with parameters id and zoom
+	// go back to map with parameters id
 	$scope.back = function() {
 		$location.path('/').search({
-			id: id,
-			z: param_zoom
+			id: id
 		});
 	};
 
