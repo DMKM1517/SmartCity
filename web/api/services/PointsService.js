@@ -49,7 +49,7 @@ module.exports = {
 		    commune
 			FROM ip.v_interest_points_agregated 
 			WHERE lower(unaccent(ip.v_interest_points_agregated.name)) like '%${q}%'
-			ORDER BY average_rating desc
+			ORDER BY average_rating DESC NULLS LAST
 			LIMIT ${limit};
 		`;
 		Points.query(query, function(err, results) {

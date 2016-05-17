@@ -3,7 +3,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	/* Variables */
 
 	var loading = true,
-		map_ready = false,
+		param_id = $location.search().id,
 		twitter_loaded = false, // if twitter widget is already loaded
 		min_width_menu = 700, // min width to open the menu at initialization
 		min_width_twitter = 800, // min width to open twitter
@@ -30,20 +30,21 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				createMarker(data[i]);
 			}
 			$scope.filter();
-			map_ready = true;
+			if (!param_id) {
+				GoogleMapsFactory.fitMapToMarkers();
+			}
+			$rootScope.map_ready = true;
 			loading = false;
 		}, function(response) {
 			loading = false;
 		});
 	};
 
-	// open a infowindow
+	// open the marker infowindow
 	$scope.openMarkerInfowindow = function(point_id) {
 		$scope.point = {};
 		GoogleMapsFactory.closeInfowindow('cluster');
 		PointsService.getPoint(point_id).then(function(point) {
-			createMarker(point);
-			$scope.filter();
 			var RF = RatingFactory.getRatingsAndClass(point.rating);
 			$translate(['address', 'web', 'schedule', 'more_information', 'translate_google', point.category]).then(function(translations) {
 				point.translations = translations;
@@ -74,7 +75,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	$scope.toggleMenu = function() {
 		$rootScope.menu_opened = !$rootScope.menu_opened;
 		$('#toggle').toggleClass('on');
-		$('#menu').fadeToggle(320, function() {
+		$('#menu').slideToggle('fast', function() {
 			resizeMap();
 		});
 		var offset_width_menu = $('#menu').outerWidth(true),
@@ -89,26 +90,38 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	// toggle twitter
 	$scope.toggleTwitter = function() {
 		$rootScope.twitter_opened = !$rootScope.twitter_opened;
-		$('#cont_twitter').show();
 		$('.btn_hide').toggleClass('fa-angle-double-up');
 		$('.btn_hide').toggleClass('fa-angle-double-down');
-		$('#twitter').slideToggle('fast', function() {
-			resizeMap();
+		$('#cont_twitter').slideToggle('fast', function() {
+			if ($rootScope.twitter_opened && window.innerWidth < min_width_both && $rootScope.menu_opened) {
+				$scope.toggleMenu();
+			} else {
+				resizeMap();
+			}
 		});
-		if ($rootScope.twitter_opened && window.innerWidth < min_width_both && $rootScope.menu_opened) {
-			$scope.toggleMenu();
-		}
 	};
 
 	// remove all markers and place only the filtered ones
 	$scope.filter = function() {
-		var filtered_ids = [];
+		var filtered_ids = [],
+			count = 0,
+			results_ids;
 		if ($rootScope.results && $rootScope.results.length > 0) {
-			filtered_ids = $rootScope.results.map(function(el) {
+			results_ids = $rootScope.results.map(function(el) {
 				return el.id;
 			});
+			filtered_ids = PointsService.filter($rootScope.selected_categories, $rootScope.show.only_top, results_ids);
+			for (var i in $rootScope.results) {
+				if (filtered_ids.indexOf($rootScope.results[i].id) != -1) {
+					$rootScope.results[i].visible = true;
+					count++;
+				} else {
+					$rootScope.results[i].visible = false;
+				}
+			}
+			$rootScope.num_results = count;
 		} else {
-			filtered_ids = PointsService.filterCategories($rootScope.selected_categories, $rootScope.show.only_top);
+			filtered_ids = PointsService.filter($rootScope.selected_categories, $rootScope.show.only_top);
 		}
 		GoogleMapsFactory.filterMarkers(filtered_ids);
 	};
@@ -143,7 +156,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$scope.search($scope.search_query);
 	};
 
-	// if pressed enter, search
+	// when if pressed enter, search
 	$scope.typing = function(event) {
 		if (event.which === 13) {
 			$('#search_input').blur();
@@ -153,38 +166,39 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// search from server
 	$scope.search = function(query) {
+		$scope.searching = true;
+		$rootScope.got_results = false;
 		$scope.no_results = false;
+		$scope.loading_results = false;
 		$rootScope.results = [];
 		if (query.length > 0) {
-			$translate(['searching', 'results_for']).then(function(translations) {
-				$rootScope.searching = translations.searching;
-				PointsService.search(query, false).then(function(resp) {
-					GoogleMapsFactory.closeInfowindow('marker');
-					var results = resp.results;
-					for (var i in resp.new_points) {
-						createMarker(resp.new_points[i]);
-					}
-					if (query.length > 15) {
-						query = query.substr(0, 15) + '...';
-					}
-					$rootScope.searching = results.length + ' ' + translations.results_for + ': "' + query + '"';
-					$rootScope.results = results;
-					$scope.filter();
+			PointsService.search(query, false).then(function(resp) {
+				GoogleMapsFactory.closeInfowindow('marker');
+				var results = resp.results;
+				for (var i in resp.new_points) {
+					createMarker(resp.new_points[i]);
+				}
+				if (query.length > 15) {
+					query = query.substr(0, 15) + '...';
+				}
+				$rootScope.searched = query;
+				$rootScope.results = results;
+				$scope.filter();
+				$scope.searching = false;
+				$rootScope.got_results = true;
+				if ($rootScope.num_results > 0) {
 					GoogleMapsFactory.fitMapToMarkers();
-				});
+				}
 			});
 		}
 	};
 
-	$scope.selectResult = function(point_id) {
-		GoogleMapsFactory.setZoom(paramsCnst.initial_zoom);
-		$scope.openMarkerInfowindow(point_id);
-	};
-
+	// remove query and results
 	$scope.removeSearch = function() {
 		$scope.no_results = false;
 		$scope.search_query = '';
-		$rootScope.searching = '';
+		$scope.searching = false;
+		$rootScope.got_results = false;
 		$rootScope.results = [];
 		$scope.filter();
 	};
@@ -228,7 +242,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// watch for changes in location search
 	$scope.$watch($location.search(), function() {
-		var param_id = $location.search().id;
+		param_id = $location.search().id;
 		if (typeof param_id !== 'undefined') {
 			openPreviousInfoWindow(param_id);
 		}
@@ -239,12 +253,46 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		showTwitter();
 	});
 
-	// wait for dom ready
-	$timeout(function() {
+	// if map is not initialized
+	if (!$rootScope.map_ready) {
 		// initialize map
 		GoogleMapsFactory.initializeMap(document.getElementById('map'));
+		// add listeners
+		addListeners();
+	} else {
+		GoogleMapsFactory.moveMap('#map');
+	}
 
-		// listeners
+	// get initial points
+	$scope.getPoints(paramsCnst.initial_zoom);
+
+
+	// wait for dom ready
+	$timeout(function() {
+		// show twitter widget
+		showTwitter();
+
+		// open menu if the window is big enough
+		if (typeof $rootScope.menu_opened === 'undefined') {
+			if (window.innerWidth > min_width_menu) {
+				$rootScope.menu_opened = true;
+			} else {
+				$rootScope.menu_opened = false;
+			}
+		}
+		if ($rootScope.menu_opened) {
+			$rootScope.menu_opened = false; // it will be toggled to true
+			$scope.toggleMenu();
+		}
+	}, 700);
+
+	/* --Initialization-- */
+
+
+	/* Aux Functions */
+
+	// add listeners to elements of the map
+	function addListeners() {
 		GoogleMapsFactory.addListener('map', 'zoom_changed', function() {
 			GoogleMapsFactory.closeInfowindow('cluster');
 			// $scope.getPoints(GoogleMapsFactory.getZoom());
@@ -264,14 +312,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}).reduce(function(x, y) {
 				return x + y;
 			}) / count;
-			var options = {
-				center: cluster.getCenter(),
-				rating: avg_rating.toFixed(1),
-				count: count,
-			};
-			$translate(['points_here', 'avg_rating'], { num: options.count }).then(function(translations) {
-				var content = '<div>' + translations.points_here + '. ' + translations.avg_rating + ': ' + options.rating + '</div>';
-				GoogleMapsFactory.openInfowindow('cluster', content, options.center);
+			$translate(['points_here', 'avg_rating'], { num: count }).then(function(translations) {
+				var content = '<div>' + translations.points_here + '. ' + translations.avg_rating + ': ' + avg_rating.toFixed(1) + '</div>';
+				GoogleMapsFactory.openInfowindow('cluster', content, cluster.getCenter());
 			});
 		});
 		GoogleMapsFactory.addListener('markers_clusters', 'mouseout', function(cluster) {
@@ -282,32 +325,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			GoogleMapsFactory.fitBounds(cluster.getBounds());
 			GoogleMapsFactory.setZoom('-1');
 		});
-
-		// show twitter widget
-		showTwitter();
-
-		// open menu if the window is big enough
-		if (typeof $rootScope.menu_opened === 'undefined') {
-			if (window.innerWidth > min_width_menu) {
-				$rootScope.menu_opened = true;
-			} else {
-				$rootScope.menu_opened = false;
-			}
-		}
-		if ($rootScope.menu_opened) {
-			$rootScope.menu_opened = false; // it will be toggled to true
-			$scope.toggleMenu();
-		}
-
-		// get initial points
-		$scope.getPoints(paramsCnst.initial_zoom);
-
-	}, 300);
-
-	/* --Initialization-- */
-
-
-	/* Aux Functions */
+	}
 
 	// create a marker with the data of point
 	function createMarker(point) {
@@ -322,15 +340,21 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		});
 	}
 
-	// open the info window of the point and pan to it
+	// open the marker infowindow of the point
 	function openPreviousInfoWindow(point_id) {
-		loading = true;
-		if (!map_ready) {
+		if (!$rootScope.map_ready) {
+			// if (!map_ready) {
 			setTimeout(function() {
 				openPreviousInfoWindow(point_id);
 			}, 500);
 		} else {
-			$scope.openMarkerInfowindow(point_id);
+			PointsService.getPoint(point_id).then(function(point) {
+				createMarker(point);
+				$scope.filter();
+				$scope.openMarkerInfowindow(point_id);
+			}, function() {
+				$location.search({});
+			});
 		}
 	}
 
@@ -360,7 +384,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 					}
 				} catch (e) {
 					console.log(e);
-					$rootScope.twitter_opened = false;
 				}
 			}
 			if (twitter_loaded) {
@@ -376,6 +399,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		resizeMap();
 	}
 
+	// change class result_selected of the results and scroll
 	function selectResultAnimation(point_id) {
 		var result = $('#r' + point_id),
 			container = $('#results_table');

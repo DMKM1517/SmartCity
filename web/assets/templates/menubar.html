@@ -41,11 +41,14 @@
 		<i class="glyphicon glyphicon-search"></i> {{ 'press_enter_to_search' | translate }}
 	</div>
 	<div id="results">
-		<span>{{ searching }}</span>
+		<span ng-show="searching">{{ 'searching' | translate }}</span>
+		<span ng-show="!searching && got_results">{{ num_results }} {{ 'results_for' | translate }}: "{{ searched }}"</span>
+		<br>
+		<span ng-show="got_results && num_results == 0" style="font-size:small">{{ 'try_another_query_or_categories' | translate }}</span>
 		<div id="results_table" class="table-responsive">
 			<table class="table table-hover">
 				<tr ng-repeat="point in results">
-					<td id="r{{point.id}}" ng-click="selectResult(point.id)" class="result">{{ point.name }}</td>
+					<td ng-if="point.visible" id="r{{point.id}}" ng-click="openMarkerInfowindow(point.id)" class="result">{{ point.name }}</td>
 				</tr>
 			</table>
 		</div>

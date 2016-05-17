@@ -24,7 +24,7 @@ module.exports = {
 	},
 	search: function(req, res) {
 		var q = req.query.q;
-		var limit = req.query.limit || 20;
+		var limit = req.query.limit || 25;
 		PointsService.search(q, limit, function(results) {
 			res.json(results);
 		});

@@ -85,15 +85,27 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		return defer.promise;
 	};
 
-	// filter by category
-	this.filterCategories = function(selected_categories, show_only_top) {
+	// filter by category all points or just the ids_to_filter
+	this.filter = function(selected_categories, show_only_top, ids_to_filter) {
 		var filtered = [],
-			point;
-		for (var i in _points) {
-			point = _points[i];
-			if (selected_categories[point.category]) {
-				if (!show_only_top || point.rating >= 4) {
-					filtered.push(point.id);
+			point,
+			i;
+		if (ids_to_filter) {
+			for (i in ids_to_filter) {
+				point = _points[ids_to_filter[i]];
+				if (selected_categories[point.category]) {
+					if (!show_only_top || point.rating >= 4) {
+						filtered.push(point.id);
+					}
+				}
+			}
+		} else {
+			for (i in _points) {
+				point = _points[i];
+				if (selected_categories[point.category]) {
+					if (!show_only_top || point.rating >= 4) {
+						filtered.push(point.id);
+					}
 				}
 			}
 		}
