@@ -22,6 +22,12 @@ module.exports = {
 			res.json(communes);
 		});
 	},
+	getTweetsOfPoint: function(req, res) {
+		var id = req.query.id || 47272; //TODO: random default pont... improve default
+		PointsService.getTweetsOfPoint(id, function(tweets) {
+			res.json(tweets);
+		});
+	},
 	search: function(req, res) {
 		var q = req.query.q;
 		var limit = req.query.limit || 25;

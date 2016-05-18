@@ -1,6 +1,7 @@
 SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	var _points = {},
 		_categories = [],
+		_tweets = [],
 		keys_sorted = [],
 		pages_loaded = [],
 		history = {},
@@ -54,6 +55,22 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 				_points[id].rating = 0;
 			}
 			defer.resolve(_points[id]);
+		}
+		return defer.promise;
+	};
+
+	// get a tweets of a point using its id
+	this.getTweetsOfPoint = function(id) {
+		var defer = $q.defer();
+		if (!_tweets[id]) {
+			$http.get('/points/getTweetsOfPoint?id=' + id).success(function(tweetsOfPoint) {
+				_tweets[id] = tweetsOfPoint;
+				defer.resolve(_tweets[id]);
+			}).error(function(err) {
+				defer.reject(err);
+			});
+		} else {
+			defer.resolve(_tweets[id]);
 		}
 		return defer.promise;
 	};

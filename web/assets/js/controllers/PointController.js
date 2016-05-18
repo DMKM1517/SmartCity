@@ -45,10 +45,51 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		};
 	});
 
+	//TEST: GET categories
+	PointsService.getCategories().then(function(data){
+		$scope.categories = data;
+	}, function() {
+		// if error
+		$scope.categories = {
+			category: 'No Categories found'
+		};
+	});
+
+
+	PointsService.getTweetsOfPoint(id).then(function(data){
+		$scope.tweets = data;
+	}, function() {
+		// if error
+		$scope.tweets = {
+			error: 'No Tweets found'
+		};
+	});
+
 	/* --Initialization-- */
 
 
 	/* Functions */
+
+// Gets the class for the sentiment color
+	$scope.getClassLabelSentiment = function(sentiment){
+		if (sentiment === 1) {
+			return 'label label-pill label-danger';
+		} else if (sentiment === 2) {
+			return 'label label-pill label-danger';
+		} else if (sentiment === 3) {
+			return 'label label-pill label-warning';
+		} else if (sentiment === 4) {
+			return 'label label-pill label-success';
+		} else if (sentiment === 5) {
+			return 'label label-pill label-success';
+		} else {
+			return 'label label-pill label-success';
+		}
+	}
+
+	$scope.feedbackTweet = function(point_id, tweet_id, feed_value) {
+		//TODO: Disable button and insert in table the feedback: twitter.tweet_to_ip_feedback
+	}
 
 	// go back to map with parameters id
 	$scope.back = function() {

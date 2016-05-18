@@ -27,10 +27,31 @@ module.exports = {
 			next(results.rows);
 		});
 	},
+	getTweetsOfPoint: function(id, next) {
+		var query = `
+			select
+			 	ip_id as id,
+				idd as tweet_id,
+				"timestamp",
+				usert as user,
+				"text",
+				sentiment
+			from
+				twitter.current_tweets_of_ip
+			where
+				ip_id = ${id}
+			order by timestamp::timestamp desc
+			limit 10;`;
+
+		Points.query(query, function(err, results) {
+			if (err) throw err;
+			next(results.rows);
+		});
+	},
 	search: function(q, limit, next) {
 		"use strict";
 		var query = `
-			SELECT 
+			SELECT
 				id,
 		    name,
 		    type as category,
@@ -47,7 +68,7 @@ module.exports = {
 		    source_create_date as create_date,
 		    last_update_date as update_date,
 		    commune
-			FROM ip.v_interest_points_agregated 
+			FROM ip.v_interest_points_agregated
 			WHERE lower(unaccent(ip.v_interest_points_agregated.name)) like '%${q}%'
 			ORDER BY average_rating DESC NULLS LAST
 			LIMIT ${limit};
