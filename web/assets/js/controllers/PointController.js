@@ -8,6 +8,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	$scope.show_filter = false; // don't show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
+	$scope.tweets = []; // tweets of the point
 
 	/* --Variables-- */
 
@@ -58,6 +59,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 
 	PointsService.getTweetsOfPoint(id).then(function(data){
 		$scope.tweets = data;
+		localeDateTweets();
 	}, function() {
 		// if error
 		$scope.tweets = {
@@ -85,11 +87,25 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		} else {
 			return 'label label-pill label-success';
 		}
-	}
+	};
 
-	$scope.feedbackTweet = function(point_id, tweet_id, feed_value) {
-		//TODO: Disable button and insert in table the feedback: twitter.tweet_to_ip_feedback
-	}
+	$scope.feedbackTweet = function(event, point_id, tweet_id, feedback_value) {
+		//TODO: insert in table the feedback: twitter.tweet_to_ip_feedback
+		var target = $(event.target);
+		if(!target.is('button')){
+			target = target.parent();
+		}
+		target.addClass('active');
+		if (feedback_value == 1) {
+			target.addClass('btn-success');
+		} else {
+			target.addClass('btn-danger');
+		}
+		$('#t'+tweet_id+' .btn').prop('disabled', true);
+		$translate('thank_you_feedback').then(function(translation) {
+			$('#t'+tweet_id+' .feedback_label').text(translation);
+		});
+	};
 
 	// go back to map with parameters id
 	$scope.back = function() {
@@ -105,6 +121,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 			$scope.url_translate_address = null;
 			$scope.current_language = lang;
 			externalTranslate();
+			localeDateTweets();
 			// draw charts with the new language
 			for (var i in stats_sources) {
 				drawCharts(stats_sources[i]);
@@ -124,6 +141,17 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 			var url = 'https://translate.google.com/#' + paramsCnst.original_language + '/' + $scope.current_language + '/';
 			$scope.url_translate_schedule = url + encodeURI($scope.point.schedule);
 			$scope.url_translate_address = url + encodeURI($scope.point.address);
+		}
+	}
+
+	function localeDateTweets() {
+		for (var i in $scope.tweets){
+			$scope.tweets[i].date = new Date($scope.tweets[i].timestamp).toLocaleDateString($scope.current_language, { 
+				day: 'numeric', 
+				month: 'numeric', 
+				year: 'numeric',
+				hour: 'numeric',
+				minute: 'numeric' });
 		}
 	}
 

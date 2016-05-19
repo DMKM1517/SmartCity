@@ -57,177 +57,72 @@
 			<hr>
 			<!-- TABS -->
 			<uib-tabset>
-			    <uib-tab heading="{{ 'stats' | translate }}">
-						<div class="tab-container">
-							<div class="row">
-								<div class="col-md-6">
-									<div google-chart chart="all_chart_rating" class="chart"></div>
-									<div class="measures">
-										<div class="col-sm-4">
-											<label>{{ 'avg' | translate }}:</label> {{ all_rating_measures.avg }}
+				<uib-tab heading="{{ 'stats' | translate }}">
+					<div class="tab-container">
+						<div class="col-md-6">
+							<div google-chart chart="all_chart_rating" class="chart"></div>
+							<div class="measures">
+								<div class="col-sm-4">
+									<label>{{ 'avg' | translate }}:</label> {{ all_rating_measures.avg }}
+								</div>
+								<div class="col-sm-4">
+									<label>{{ 'min' | translate }}:</label> {{ all_rating_measures.min }}
+								</div>
+								<div class="col-sm-4">
+									<label>{{ 'max' | translate }}:</label> {{ all_rating_measures.max }}
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div google-chart chart="all_chart_count" class="chart"></div>
+							<div class="measures">
+								<div class="col-xs-offset-4 col-xs-4">
+									<label>{{ 'avg' | translate }}:</label> {{ all_count_measures.avg }}
+								</div>
+							</div>
+						</div>
+						<!-- /.stats -->
+					</div>
+				</uib-tab>
+				<uib-tab heading="{{ 'related_tweets' | translate }}">
+					<hr>
+					<div class="tab-container">
+						<div class="well well-sm" ng-repeat="t in tweets">
+							<div class="row related_tweet">
+								<div class="col-sm-9">
+									<div class="row">
+										<span><b>{{ t.user }}:</b></span>
+										<p>{{ t.text }}</p>
+									</div>
+									<div class="row">
+										<div class="col-sm-6">
+											<span>{{ 'sentiment' | translate }}:</span>
+											<span style="font-size: 10pt" ng-class="getClassLabelSentiment(t.sentiment)"> {{ t.sentiment }} </span>
 										</div>
-										<div class="col-sm-4">
-											<label>{{ 'min' | translate }}:</label> {{ all_rating_measures.min }}
-										</div>
-										<div class="col-sm-4">
-											<label>{{ 'max' | translate }}:</label> {{ all_rating_measures.max }}
+										<div class="col-sm-6">
+											<p class="text-right text-muted">{{ t.date }}</p>
 										</div>
 									</div>
 								</div>
-								<div class="col-md-6">
-									<div google-chart chart="all_chart_count" class="chart"></div>
-									<div class="measures">
-										<div class="col-xs-offset-4 col-xs-4">
-											<label>{{ 'avg' | translate }}:</label> {{ all_count_measures.avg }}
+								<div class="col-sm-3 feedback">
+									<div class="text-right" id="t{{ t.tweet_id }}">
+										<span class="hidden-xs feedback_label">{{ 'sentiment_correct' | translate }}</span>
+										<br>
+										<div class="btn-group" role="group" aria-label="correct_incorrect">
+											<button type="button" ng-click="feedbackTweet($event, point.id, t.tweet_id, 1)" class="btn btn-default"><span class="glyphicon glyphicon-thumbs-up"></span></button>
+											<button type="button" ng-click="feedbackTweet($event, point.id, t.tweet_id, -1)" class="btn btn-default"><span class="glyphicon glyphicon-thumbs-down"></span></button>
 										</div>
 									</div>
 								</div>
-							</div> <!-- /.stats -->
+							</div>
 						</div>
-					</uib-tab>
-					<uib-tab heading="Related Tweets"> <!-- TODO: Add language translation to this tittle -->
-						<hr>
-						<div class="tab-container">
-							<div class="row">
-								<div class="col-md-7">
-										<div class="container" ng-repeat="t in tweets">
-											<div class="well well-sm">
-											  <div class="row">
-											    <div class="col-md-7 col-sm-7 col-xs-6">
-											      <span><b>{{ t.user }}:</b></span>
-											      <p>{{ t.text }}</p>
-											    </div>
-													<div class="col-rnd-2 col-sm-2 col-xs-5 text-right" style="position: relative; transform: translateY(50%);">
-														<div class="btn-group" role="group" aria-label="correct_incorrect">
-															<button type="button" ng-click="feedbackTweet(point.id, t.tweet_id, 1)" class="btn btn-primary btn-success"><span class="glyphicon glyphicon-thumbs-up"></span></button>
-															<button type="button" ng-click="feedbackTweet(point.id, t.tweet_id, -1)" class="btn btn-primary btn-danger"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-														</div>
-											    </div>
-											  </div><!-- /.row -->
-												<div class="row">
-											    <div class="col-md-4 col-sm-4 col-xs-5">
-														<span>Sentiment:</span>
-											      <span style="font-size: 10pt" ng-class="getClassLabelSentiment(t.sentiment)"> {{ t.sentiment }} </span>
-											    </div>
-													<div class="col-md-5 col-sm-5 col-xs-6">
-											      <p class="text-right text-muted">{{ t.timestamp  | date:"MM/dd/yyyy 'at' h:mma" }}</p>
-											    </div>
-											  </div><!-- /.row -->
-											</div>
-										</div>
-						      </div>
-								</div><!-- /.related tweets-->
-						</div>
-					</uib-tab>
+						<!-- /.related tweets-->
+					</div>
+				</uib-tab>
 			</uib-tabset>
 			<hr>
 		</div>
-
-			<!-- <div class="table-responsive">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>User</th>
-								<th>Tweet</th>
-								<th>Sentiment</th>
-								<th style="width: 100px">Like</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr ng-repeat="t in tweets">
-								<td>{{ t.user }}</td>
-								<td>{{ t.text }}</td>
-								<td><h3><span ng-class="getClassLabelSentiment(t.sentiment)"> {{ t.sentiment }} </span></h3></td>
-								<td>
-									<div class="btn-group" role="group" aria-label="correct_incorrect">
-										<button type="button" class="btn btn-primary btn-success"><span class="glyphicon glyphicon-thumbs-up"></span></button>
-										<button type="button" class="btn btn-primary btn-danger"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div> -->
-
-			<br>
-			<!-- <div class="row">
-		<h4>{{ 'twitter' | translate }}</h4>
-		<div class="col-sm-offset-1 col-sm-5">
-			<div google-chart chart="twitter_chart_rating" class="chart"></div>
-			<div class="measures">
-				<div class="col-sm-4">
-					<label>{{ 'avg' | translate }}:</label> {{ twitter_rating_measures.avg }}
-				</div>
-				<div class="col-sm-4">
-					<label>{{ 'min' | translate }}:</label> {{ twitter_rating_measures.min }}
-				</div>
-				<div class="col-sm-4">
-					<label>{{ 'max' | translate }}:</label> {{ twitter_rating_measures.max }}
-				</div>
-			</div>
-		</div>
-		<div class="col-sm-5">
-			<div google-chart chart="twitter_chart_count" class="chart"></div>
-			<div class="measures">
-				<div class="col-xs-offset-4 col-xs-4">
-					<label>{{ 'avg' | translate }}:</label> {{ twitter_count_measures.avg }}
-				</div>
-			</div>
-		</div>
 	</div>
-	<br>
-	<div class="row">
-		<h4>{{ 'foursquare' | translate }}</h4>
-		<div class="col-sm-offset-1 col-sm-5">
-			<div google-chart chart="fs_chart_rating" class="chart"></div>
-			<div class="measures">
-				<div class="col-sm-4">
-					<label>{{ 'avg' | translate }}:</label> {{ fs_rating_measures.avg }}
-				</div>
-				<div class="col-sm-4">
-					<label>{{ 'min' | translate }}:</label> {{ fs_rating_measures.min }}
-				</div>
-				<div class="col-sm-4">
-					<label>{{ 'max' | translate }}:</label> {{ fs_rating_measures.max }}
-				</div>
-			</div>
-		</div>
-		<div class="col-sm-5">
-			<div google-chart chart="fs_chart_count" class="chart"></div>
-			<div class="measures">
-				<div class="col-xs-offset-4 col-xs-4">
-					<label>{{ 'avg' | translate }}:</label> {{ fs_count_measures.avg }}
-				</div>
-			</div>
-		</div>
-	</div>
-	<br>
-	<div class="row">
-		<h4>{{ 'yelp' | translate }}</h4>
-		<div class="col-sm-offset-1 col-sm-5">
-			<div google-chart chart="yelp_chart_rating" class="chart"></div>
-			<div class="measures">
-				<div class="col-xs-4">
-					<label>{{ 'avg' | translate }}:</label> {{ yelp_rating_measures.avg }}
-				</div>
-				<div class="col-xs-4">
-					<label>{{ 'min' | translate }}:</label> {{ yelp_rating_measures.min }}
-				</div>
-				<div class="col-xs-4">
-					<label>{{ 'max' | translate }}:</label> {{ yelp_rating_measures.max }}
-				</div>
-			</div>
-		</div>
-		<div class="col-sm-5">
-			<div google-chart chart="yelp_chart_count" class="chart"></div>
-			<div class="measures">
-				<div class="col-xs-offset-4 col-xs-4">
-					<label>{{ 'avg' | translate }}:</label> {{ yelp_count_measures.avg }}
-				</div>
-			</div>
-		</div>
-	</div> -->
-		</div>
-	</div>
+</div>
 </div>
 <div class="col-sm-1 hidden-xs map_blur map_blur_right" cont>&nbsp;</div>
