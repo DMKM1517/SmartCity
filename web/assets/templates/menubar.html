@@ -22,7 +22,7 @@
 <div id="menu_twitter" ng-if="show_filter">
 	<h4>
 		<a href="https://twitter.com/search?q=%23Lyon" target="_blank">#Lyon</a>
-		<i class="btn_hide fa fa-angle-double-up" ng-click="toggleTwitter()"></i>
+		<i class="btn_hide fa fa-angle-double-down" ng-click="toggleTwitter()"></i>
 	</h4>
 </div>
 <div id="cont_twitter" ng-if="show_filter" cont>
@@ -57,7 +57,7 @@
 	<h2>{{ 'show_me' | translate }}</h2>
 	<div class="checkbox">
 		<label>
-			<input type="checkbox" ng-model="show.only_top" ng-click="filter()"> {{ 'cool_stuff' | translate }}
+			<input type="checkbox" ng-model="show.only_top" ng-click="filter(true)"> {{ 'cool_stuff' | translate }}
 		</label>
 	</div>
 	<a class="pointer" ng-click="selectAll(true)">{{ 'all' | translate }}</a> /
@@ -65,7 +65,7 @@
 	<div class="categories">
 		<div class="checkbox" ng-repeat="value in categories">
 			<label>
-				<input type="checkbox" ng-model="selected_categories[value.category]" ng-change="filter()"> {{ ''+value.category | translate }} ({{ value.count }})
+				<input type="checkbox" ng-model="selected_categories[value.category]" ng-change="filter(true)"> {{ ''+value.category | translate }} ({{ value.count }})
 			</label>
 		</div>
 	</div>

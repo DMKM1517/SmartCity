@@ -3,7 +3,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	/* Variables */
 
 	var loading = true,
-		param_id = $location.search().id,
+		param_id = $location.search().id, // parameter of point id
 		twitter_loaded = false, // if twitter widget is already loaded
 		min_width_menu = 700, // min width to open the menu at initialization
 		min_width_twitter = 800, // min width to open twitter
@@ -68,6 +68,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				});
 			});
 			selectResultAnimation(point.id);
+			checkMenu();
 		});
 	};
 
@@ -76,7 +77,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$rootScope.menu_opened = !$rootScope.menu_opened;
 		$('#toggle').toggleClass('on');
 		$('#menu').slideToggle('fast', function() {
-			resizeMap();
+			if (window.innerWidth > min_width_menu) {
+				resizeMap();
+			}
 		});
 		var offset_width_menu = $('#menu').outerWidth(true),
 			sign = $rootScope.menu_opened ? '+=' : '-=';
@@ -102,7 +105,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	};
 
 	// remove all markers and place only the filtered ones
-	$scope.filter = function() {
+	$scope.filter = function(close_menu) {
 		var filtered_ids = [],
 			count = 0,
 			results_ids;
@@ -124,6 +127,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			filtered_ids = PointsService.filter($rootScope.selected_categories, $rootScope.show.only_top);
 		}
 		GoogleMapsFactory.filterMarkers(filtered_ids);
+		if (close_menu) {
+			checkMenu();
+		}
 	};
 
 	// set all values of selected categories
@@ -132,11 +138,12 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			$rootScope.selected_categories[i] = value;
 		}
 		$scope.filter();
+		checkMenu();
 	};
 
 	// change language
 	$scope.changeLanguage = function(lang) {
-		$scope.infoWindow.close();
+		GoogleMapsFactory.closeInfowindow('marker');
 		$translate.use(lang).then(function() {
 			$scope.current_language = lang;
 		});
@@ -219,6 +226,13 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$rootScope.show = { only_top: false };
 	}
 
+	/*if (typeof $rootScope.twitter_opened === 'undefined') {
+		$rootScope.twitter_opened = false;
+	}
+	if (typeof $rootScope.menu_opened === 'undefined') {
+		$rootScope.menu_opened = false;
+	}*/
+
 	// selected categories
 	if (!$rootScope.selected_categories) {
 		$rootScope.selected_categories = {};
@@ -233,12 +247,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}
 		}
 	});
-
-	/*PointsService.getCommunes().then(function(communes) {
-		for (var i in communes) {
-			createGroupMarker(communes[i]);
-		}
-	});*/
 
 	// watch for changes in location search
 	$scope.$watch($location.search(), function() {
@@ -270,10 +278,10 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	// wait for dom ready
 	$timeout(function() {
 		// show twitter widget
-		showTwitter();
+		// showTwitter();
 
 		// open menu if the window is big enough
-		if (typeof $rootScope.menu_opened === 'undefined') {
+		/*if (typeof $rootScope.menu_opened === 'undefined') {
 			if (window.innerWidth > min_width_menu) {
 				$rootScope.menu_opened = true;
 			} else {
@@ -283,7 +291,25 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		if ($rootScope.menu_opened) {
 			$rootScope.menu_opened = false; // it will be toggled to true
 			$scope.toggleMenu();
+		}*/
+		if (window.innerWidth > min_width_both) {
+			if (typeof($rootScope.menu_opened) === 'undefined' || $rootScope.menu_opened) {
+				$rootScope.menu_opened = false;
+				$scope.toggleMenu();
+			}
+			if (typeof($rootScope.twitter_opened) === 'undefined' || $rootScope.twitter_opened) {
+				$rootScope.twitter_opened = false;
+				$scope.toggleTwitter();
+			}
+		} else {
+			if (window.innerWidth > min_width_menu) {
+					if (typeof($rootScope.menu_opened) === 'undefined' || $rootScope.menu_opened) {
+					$rootScope.menu_opened = false;
+					$scope.toggleMenu();
+				}
+			}
 		}
+		showTwitter();
 	}, 700);
 
 	/* --Initialization-- */
@@ -374,12 +400,12 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// show/hide twitter widget
 	function showTwitter() {
-		if (window.innerWidth > min_width_twitter) {
+		/*if (window.innerWidth > min_width_twitter) {
 			if (!twitter_loaded) {
 				try {
 					twttr.widgets.load(document.getElementById("twitter"));
 					twitter_loaded = true;
-					if (typeof $rootScope.twitter_opened === 'undefined') {
+					if (typeof $rootScope.twitter_opened === 'undefined' && window.innerWidth > min_width_both) {
 						$rootScope.twitter_opened = true;
 					}
 				} catch (e) {
@@ -388,15 +414,59 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}
 			if (twitter_loaded) {
 				$('#menu_twitter').show();
+				console.log($rootScope.twitter_opened);
 				if ($rootScope.twitter_opened) {
-					$('#cont_twitter').show();
+					if ($rootScope.menu_opened && window.innerWidth < min_width_both) {
+						$scope.toggleTwitter();
+					} else {
+						$('#cont_twitter').show();
+					}
+				} else {
+					$('#cont_twitter').hide();
 				}
 			}
 		} else {
 			$('#cont_twitter').hide();
 			$('#menu_twitter').hide();
+		}*/
+		loadTwitterWidget();
+		if (window.innerWidth > min_width_both) {
+			if (window.innerWidth > min_width_twitter) {
+				if (twitter_loaded) {
+					$('#menu_twitter').show();
+				} else {
+					$('#menu_twitter').hide();
+				}
+			}
+		} else {
+			if (window.innerWidth > min_width_twitter) {
+				if (twitter_loaded) {
+					$('#menu_twitter').show();
+					if ($rootScope.twitter_opened && $rootScope.menu_opened) {
+						$scope.toggleTwitter();
+					}
+				} else {
+					$('#menu_twitter').hide();
+				}
+			} else {
+				$('#menu_twitter').hide();
+				if ($rootScope.twitter_opened) {
+					$scope.toggleTwitter();
+				}
+			}
 		}
 		resizeMap();
+	}
+
+	function loadTwitterWidget() {
+		if (!twitter_loaded) {
+			try {
+				twttr.widgets.load(document.getElementById("twitter"));
+				twitter_loaded = true;
+			} catch (e) {
+				console.log(e);
+			}
+		}
 	}
 
 	// change class result_selected of the results and scroll
@@ -409,6 +479,13 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			container.animate({
 				scrollTop: result.offset().top - container.offset().top + container.scrollTop() - result.height()
 			});
+		}
+	}
+
+	// close menu if screen is too small
+	function checkMenu() {
+		if (window.innerWidth < min_width_menu && $rootScope.menu_opened) {
+			$scope.toggleMenu();
 		}
 	}
 
