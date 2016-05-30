@@ -5,6 +5,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	var id = $routeParams.id, // point id
 		// stats_sources = ['all', 'twitter', 'foursquare', 'yelp'];
 		stats_sources = ['all']; // sources to plot
+	$scope.loading = true; // show loading animation
 	$scope.show_filter = false; // don't show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
@@ -39,11 +40,13 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		// 	drawCharts(stats_sources[i]);
 		// }
 		drawChart();
+		$scope.loading = false;
 	}, function() {
 		// if error
 		$scope.point = {
 			name: 'Point not found'
 		};
+		$scope.loading = false;
 	});
 
 	// get tweets of the point

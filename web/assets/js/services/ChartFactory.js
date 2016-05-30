@@ -151,7 +151,7 @@ SmartApp.factory('ChartFactory', function($http) {
 				_series = {
 					0: {
 						lineWidth: 4,
-						color: 'green'
+						color: all_data[0].color
 					}
 				},
 				_vAxis = {

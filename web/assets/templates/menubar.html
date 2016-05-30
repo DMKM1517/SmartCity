@@ -1,3 +1,9 @@
+<div ng-show="loading" class="loader">
+	<div class="loader-ball">
+		<div></div>
+		<div></div>
+	</div>
+</div>
 <nav class="navbar navbar-inverse">
 	<a class="navbar-brand" href="#/">
 		<img src="images/logo.png" height="21">
@@ -33,7 +39,8 @@
 <div id="menu" cont>
 	<h2>{{ 'search_for' | translate }}</h2>
 	<div class="form-group has-feedback">
-		<input type="text" id="search_input" ng-model="search_query" placeholder="{{ 'something_interesting' | translate }}" uib-typeahead="point for point in typeaheadSearch($viewValue)" typeahead-loading="loading_results" typeahead-focus-first="false" typeahead-no-results="no_results" typeahead-select-on-exact="true" typeahead-wait-ms="300" typeahead-template-url="templates/typeahead.html" typeahead-on-select="typeaheadSelectResult($item, $model, $label, $event)" class="form-control" ng-keypress="typing($event)">
+		<input type="text" id="search_input" ng-model="search_query" placeholder="{{ 'something_interesting' | translate }}" uib-typeahead="point for point in typeaheadSearch($viewValue)" typeahead-loading="loading_results" typeahead-focus-first="false" typeahead-no-results="no_results"
+				typeahead-select-on-exact="true" typeahead-wait-ms="300" typeahead-template-url="templates/typeahead.html" typeahead-on-select="typeaheadSelectResult($item, $model, $label, $event)" class="form-control" ng-keypress="typing($event)">
 		<span class="glyphicon glyphicon-remove-circle form-control-feedback" ng-click="removeSearch()"></span>
 	</div>
 	<i ng-show="loading_results" class="glyphicon glyphicon-refresh"></i>

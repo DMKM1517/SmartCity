@@ -8,6 +8,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		min_width_menu = 700, // min width to open the menu at initialization
 		min_width_twitter = 800, // min width to open twitter
 		min_width_both = 1080; // min width to open twitter and menu at the same time
+	$scope.loading = true; // show loading animation
 	$scope.show_filter = true; // show the menu
 	$scope.languages = paramsCnst.languages; // available languages
 	$scope.current_language = $translate.use(); // current language
@@ -20,7 +21,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// get the points and create the markers
 	$scope.getPoints = function(zoom) {
-		loading = true;
+		$scope.loading = true;
 		var page = zoom - paramsCnst.initial_zoom;
 		if (page < 0) {
 			page = 0;
@@ -34,9 +35,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				GoogleMapsFactory.fitMapToMarkers();
 			}
 			$rootScope.map_ready = true;
-			loading = false;
+			$scope.loading = false;
 		}, function(response) {
-			loading = false;
+			$scope.loading = false;
 		});
 	};
 

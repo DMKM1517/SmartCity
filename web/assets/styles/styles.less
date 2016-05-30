@@ -25,10 +25,79 @@
 
 /* Loader */
 
-#loader {
-	float: left;
-	padding-top: 15px;
-	color: gray;
+.loader {
+	position: absolute;
+	background-color: rgba(130, 140, 130, 0.8);
+	width: 100%;
+	height: 100%;
+	z-index: 99;
+}
+
+@keyframes rotate {
+	0% {
+		-webkit-transform: rotate(0);
+		transform: rotate(0);
+	}
+	50% {
+		-webkit-transform: rotate(180deg);
+		transform: rotate(180deg);
+	}
+	100% {
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes scale {
+	30% {
+		-webkit-transform: scale(.4);
+		transform: scale(.4);
+	}
+	100% {
+		-webkit-transform: scale(1);
+		transform: scale(1);
+	}
+}
+
+.loader-ball {
+	position: relative;
+	top: 50%;
+	margin-left: 50%;
+	-webkit-transform: translateY(-15px);
+	-ms-transform: translateY(-15px);
+	transform: translateY(-15px);
+}
+
+.loader-ball>div {
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-radius: 100%;
+}
+
+.loader-ball>div:first-child {
+	background: #fff;
+	height: 30px;
+	width: 30px;
+	top: 15px;
+	left: 15px;
+	-webkit-animation: scale 1s 0s cubic-bezier(.09, .57, .49, .9) infinite;
+	animation: scale 1s 0s cubic-bezier(.09, .57, .49, .9) infinite;
+}
+
+.loader-ball>div:last-child {
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	background: 0 0;
+	border: 2px solid;
+	border-color: #fff transparent;
+	-webkit-animation: rotate 1s 0s cubic-bezier(.09, .57, .49, .9) infinite;
+	animation: rotate 1s 0s cubic-bezier(.09, .57, .49, .9) infinite;
+	-webkit-animation-duration: 1s;
+	animation-duration: 1s;
 }
 
 
@@ -325,9 +394,11 @@
 .map_blur {
 	background-size: 100% 100%;
 }
+
 .map_blur_right {
 	background-image: url('../images/map_right_blur.jpg')
 }
+
 .map_blur_left {
 	background-image: url('../images/map_left_blur.jpg')
 }
