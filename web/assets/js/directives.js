@@ -31,7 +31,7 @@ SmartApp.directive('cont', function() {
 					setTimeout(function() {
 						offset_height += $('#point_title').height();
 						element.css('height', (window.innerHeight - offset_height) + 'px');
-					}, 1400);
+					}, 1100);
 				}
 			} else {
 				element.css('height', (window.innerHeight - offset_height) + 'px');

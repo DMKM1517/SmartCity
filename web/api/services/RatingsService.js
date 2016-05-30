@@ -26,11 +26,8 @@ module.exports = {
 			select 
 			d.date_id as date, 
 			avg(f.twitter_sentiment) as twitter_rating,
-			sum(f.twitter_count) as twitter_count,
 			avg(f.fs_rating) as foursquare_rating,
-			sum(f.fs_checkinscount) as foursquare_count,
-			avg(f.yelp_rating) as yelp_rating,
-			sum(f.yelp_review_count) as yelp_count
+			avg(f.yelp_rating) as yelp_rating
 			from
 			data_warehouse.fact_ratings f
 			join data_warehouse.dim_interest_points ip on f.ip_id = ip.ip_id

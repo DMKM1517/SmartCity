@@ -4,7 +4,7 @@
  * @description :: Server-side logic for managing Ratings
  */
 
- /*jshint esversion: 6 */
+/*jshint esversion: 6 */
 
 module.exports = {
 	getHistory: function(req, res) {
@@ -54,24 +54,34 @@ module.exports = {
 					} else {
 						h.twitter_rating = 0;
 					}
-					h.twitter_count = parseInt(h.twitter_count);
 					if (h.foursquare_rating) {
-						h.foursquare_rating = parseFloat(+h.foursquare_rating.toFixed(2));
+						h.foursquare_rating = parseFloat((+h.foursquare_rating / 2).toFixed(2));
 					} else {
 						h.foursquare_rating = 0;
 					}
-					h.foursquare_count = parseInt(h.foursquare_count);
 					if (h.yelp_rating) {
 						h.yelp_rating = parseFloat(+h.yelp_rating.toFixed(2));
 					} else {
 						h.yelp_rating = 0;
 					}
-					h.yelp_count = parseInt(h.yelp_count);
 				}
 				res.json(history);
 			});
 		} else {
 			res.badRequest();
 		}
+	},
+	forecast: function(req, res) {
+		"use strict";
+		let nostradamus = require('nostradamus'),
+			data = req.body.data,
+			alpha = req.body.alpha || 0.1,
+			beta = req.body.beta || 0.4,
+			gamma = req.body.gamma || 0.1,
+			period = req.body.period || 7,
+			future = req.body.future || 7,
+			predictions = [];
+		predictions = nostradamus(data, alpha, beta, gamma, period, future);
+		res.json(predictions);
 	}
 };

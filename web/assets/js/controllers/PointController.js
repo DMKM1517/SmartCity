@@ -35,10 +35,10 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 			$('.rating').rating();
 		});
 		// draw charts of all sources
-		for (var i in stats_sources) {
-			drawCharts(stats_sources[i]);
-		}
-		// drawChart();
+		// for (var i in stats_sources) {
+		// 	drawCharts(stats_sources[i]);
+		// }
+		drawChart();
 	}, function() {
 		// if error
 		$scope.point = {
@@ -46,18 +46,8 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		};
 	});
 
-	//TEST: GET categories
-	PointsService.getCategories().then(function(data){
-		$scope.categories = data;
-	}, function() {
-		// if error
-		$scope.categories = {
-			category: 'No Categories found'
-		};
-	});
-
-
-	PointsService.getTweetsOfPoint(id).then(function(data){
+	// get tweets of the point
+	PointsService.getTweetsOfPoint(id).then(function(data) {
 		$scope.tweets = data;
 		localeDateTweets();
 	}, function() {
@@ -72,8 +62,8 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 
 	/* Functions */
 
-// Gets the class for the sentiment color
-	$scope.getClassLabelSentiment = function(sentiment){
+	// Gets the class for the sentiment color
+	$scope.getClassLabelSentiment = function(sentiment) {
 		if (sentiment === 1) {
 			return 'label label-pill label-danger';
 		} else if (sentiment === 2) {
@@ -92,7 +82,7 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	$scope.feedbackTweet = function(event, point_id, tweet_id, feedback_value) {
 		//TODO: insert in table the feedback: twitter.tweet_to_ip_feedback
 		var target = $(event.target);
-		if(!target.is('button')){
+		if (!target.is('button')) {
 			target = target.parent();
 		}
 		target.addClass('active');
@@ -101,9 +91,9 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 		} else {
 			target.addClass('btn-danger');
 		}
-		$('#t'+tweet_id+' .btn').prop('disabled', true);
+		$('#t' + tweet_id + ' .btn').prop('disabled', true);
 		$translate('thank_you_feedback').then(function(translation) {
-			$('#t'+tweet_id+' .feedback_label').text(translation);
+			$('#t' + tweet_id + ' .feedback_label').text(translation);
 		});
 	};
 
@@ -123,9 +113,10 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 			externalTranslate();
 			localeDateTweets();
 			// draw charts with the new language
-			for (var i in stats_sources) {
-				drawCharts(stats_sources[i]);
-			}
+			// for (var i in stats_sources) {
+			// 	drawCharts(stats_sources[i]);
+			// }
+			drawChart();
 		});
 	};
 
@@ -145,71 +136,88 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	}
 
 	function localeDateTweets() {
-		for (var i in $scope.tweets){
-			$scope.tweets[i].date = new Date($scope.tweets[i].timestamp).toLocaleDateString($scope.current_language, { 
-				day: 'numeric', 
-				month: 'numeric', 
+		for (var i in $scope.tweets) {
+			$scope.tweets[i].date = new Date($scope.tweets[i].timestamp).toLocaleDateString($scope.current_language, {
+				day: 'numeric',
+				month: 'numeric',
 				year: 'numeric',
 				hour: 'numeric',
-				minute: 'numeric' });
+				minute: 'numeric'
+			});
 		}
 	}
 
-	/*function drawChart() {
-		PointsService.getAllHistory(id, 30).then(function(sources_data) {
-			$translate(['rating', 'count', 'date']).then(function(translations) {
+	function drawChart() {
+		PointsService.getAllHistory(id, 35).then(function(sources_data) {
+			$translate(['rating', 'count', 'date', 'twitter', 'foursquare', 'yelp', 'overall', 'prediction']).then(function(translations) {
 				var data = [],
-					all_data = [];
-				for (var i in sources_data) {
-					data[i] = {};
-					data[i].date = sources_data[i].date;
-					var weights = 0,
-						total = 0;
-					if (sources_data[i].twitter_rating !== 0) {
+					all_data = [],
+					data_twitter = [],
+					data_fs = [],
+					data_yelp = [],
+					weights,
+					total,
+					i;
+				for (i in sources_data) {
+					weights = 0;
+					total = 0;
+					if (sources_data[i].twitter_rating > 0) {
 						total += 4 * sources_data[i].twitter_rating;
 						weights += 4;
 					}
-					if (sources_data[i].foursquare_rating !== 0) {
-						total += 3 * (sources_data[i].foursquare_rating / 2);
+					if (sources_data[i].foursquare_rating > 0) {
+						total += 3 * sources_data[i].foursquare_rating;
 						weights += 3;
 					}
-					if (sources_data[i].yelp_rating !== 0) {
+					if (sources_data[i].yelp_rating > 0) {
 						total += 3 * sources_data[i].yelp_rating;
 						weights += 3;
 					}
 					if (weights > 0) {
-						data[i].rating = Math.round((total / weights) * 100) / 100;
+						data[i] = Math.round((total / weights) * 100) / 100;
 					}
-					data[i].count = sources_data[i].twitter_count + sources_data[i].foursquare_count + sources_data[i].yelp_count;
+					data_twitter.push(sources_data[i].twitter_rating);
+					data_fs.push(sources_data[i].foursquare_rating);
+					data_yelp.push(sources_data[i].yelp_rating);
 				}
-				all_data.push(data);
-				$scope.all_chart_rating = ChartFactory.newChartDatePropertyMultiple(all_data, 'rating', {
+				all_data.push({
+					label: translations.overall,
+					color: 'green',
+					data: data
+				});
+				all_data.push({
+					label: translations.twitter,
+					color: '#1DA1F2',
+					data: data_twitter
+				});
+				all_data.push({
+					label: translations.foursquare,
+					color: '#2D5BE3',
+					data: data_fs
+				});
+				all_data.push({
+					label: translations.yelp,
+					color: '#C41200',
+					data: data_yelp
+				});
+				$scope.all_chart_rating = ChartFactory.newChartMultiplePrediction(all_data, {
 					title: translations.rating,
 					label_date: translations.date,
-					label_property: translations.rating,
+					label_prediction: translations.prediction,
+					start_date: sources_data[0].date,
+					prediction_days: 7,
 					language: $scope.current_language,
-					step: 0.4,
 					max: 5
 				});
-				$scope.all_chart_count = ChartFactory.newChartDateProperty(data, 'count', {
-					title: translations.count,
-					label_date: translations.date,
-					label_property: translations.count,
-					language: $scope.current_language,
-					step: 2
-				});
 				$scope.all_rating_measures = {
-					avg: measureValue(data, 'rating', 'avg').toFixed(1),
-					min: measureValue(data, 'rating', 'min'),
-					max: measureValue(data, 'rating', 'max'),
-				};
-				$scope.all_count_measures = {
-					avg: Math.round(measureValue(data, 'count', 'avg')),
+					avg: measureValue(data, 'avg').toFixed(1),
+					min: measureValue(data, 'min'),
+					max: measureValue(data, 'max'),
 				};
 
 			});
 		});
-	}*/
+	}
 
 	// get history data and set chart object
 	function drawCharts(source) {
@@ -282,21 +290,21 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 									step: 0.4,
 									max: 5
 								});
-								$scope.all_chart_count = ChartFactory.newChartDatePropertyMultiple(all_data, 'count', {
+								/*$scope.all_chart_count = ChartFactory.newChartDatePropertyMultiple(all_data, 'count', {
 									title: translations.count,
 									label_date: translations.date,
 									label_property: translations.count,
 									language: $scope.current_language,
 									step: 2
-								});
+								});*/
 								$scope.all_rating_measures = {
 									avg: measureValue(data, 'rating', 'avg').toFixed(1),
 									min: measureValue(data, 'rating', 'min'),
 									max: measureValue(data, 'rating', 'max'),
 								};
-								$scope.all_count_measures = {
+								/*$scope.all_count_measures = {
 									avg: Math.round(measureValue(data, 'count', 'avg')),
-								};
+								};*/
 							});
 						});
 					});
@@ -392,11 +400,15 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	}
 
 	// get value of a measure from data.property
-	function measureValue(data, property, measure) {
-		var values = 1;
-		var mapreduce = data.map(function(elem) {
-			return elem[property];
-		}).reduce(function(x, y) {
+	function measureValue(data, measure, property) {
+		var values = 1,
+			mapreduce = data;
+		if (property) {
+			mapreduce = data.map(function(elem) {
+				return elem[property];
+			});
+		}
+		mapreduce = mapreduce.reduce(function(x, y) {
 			if (measure == 'avg') {
 				if (!x) {
 					x = 0;

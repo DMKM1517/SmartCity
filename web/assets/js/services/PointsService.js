@@ -132,7 +132,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	// history
 	this.getHistory = function(id, source) {
 		var defer = $q.defer(),
-			url = '/ratings/getHistory?source=' + source + '&days=30&ip_id=' + id;
+			url = '/ratings/getHistory?source=' + source + '&days=35&ip_id=' + id;
 		if (!history[id]) {
 			$http.get(url).success(function(data) {
 				history = {};

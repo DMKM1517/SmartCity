@@ -226,13 +226,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$rootScope.show = { only_top: false };
 	}
 
-	/*if (typeof $rootScope.twitter_opened === 'undefined') {
-		$rootScope.twitter_opened = false;
-	}
-	if (typeof $rootScope.menu_opened === 'undefined') {
-		$rootScope.menu_opened = false;
-	}*/
-
 	// selected categories
 	if (!$rootScope.selected_categories) {
 		$rootScope.selected_categories = {};
@@ -277,34 +270,19 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// wait for dom ready
 	$timeout(function() {
-		// show twitter widget
-		// showTwitter();
-
-		// open menu if the window is big enough
-		/*if (typeof $rootScope.menu_opened === 'undefined') {
-			if (window.innerWidth > min_width_menu) {
-				$rootScope.menu_opened = true;
-			} else {
-				$rootScope.menu_opened = false;
-			}
-		}
-		if ($rootScope.menu_opened) {
-			$rootScope.menu_opened = false; // it will be toggled to true
-			$scope.toggleMenu();
-		}*/
 		if (window.innerWidth > min_width_both) {
 			if (typeof($rootScope.menu_opened) === 'undefined' || $rootScope.menu_opened) {
-				$rootScope.menu_opened = false;
+				$rootScope.menu_opened = false; // it will be toggled to true
 				$scope.toggleMenu();
 			}
 			if (typeof($rootScope.twitter_opened) === 'undefined' || $rootScope.twitter_opened) {
-				$rootScope.twitter_opened = false;
+				$rootScope.twitter_opened = false; // it will be toggled to true
 				$scope.toggleTwitter();
 			}
 		} else {
 			if (window.innerWidth > min_width_menu) {
-					if (typeof($rootScope.menu_opened) === 'undefined' || $rootScope.menu_opened) {
-					$rootScope.menu_opened = false;
+				if (typeof($rootScope.menu_opened) === 'undefined' || $rootScope.menu_opened) {
+					$rootScope.menu_opened = false; // it will be toggled to true
 					$scope.toggleMenu();
 				}
 			}
@@ -369,7 +347,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	// open the marker infowindow of the point
 	function openPreviousInfoWindow(point_id) {
 		if (!$rootScope.map_ready) {
-			// if (!map_ready) {
 			setTimeout(function() {
 				openPreviousInfoWindow(point_id);
 			}, 500);
@@ -400,35 +377,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// show/hide twitter widget
 	function showTwitter() {
-		/*if (window.innerWidth > min_width_twitter) {
-			if (!twitter_loaded) {
-				try {
-					twttr.widgets.load(document.getElementById("twitter"));
-					twitter_loaded = true;
-					if (typeof $rootScope.twitter_opened === 'undefined' && window.innerWidth > min_width_both) {
-						$rootScope.twitter_opened = true;
-					}
-				} catch (e) {
-					console.log(e);
-				}
-			}
-			if (twitter_loaded) {
-				$('#menu_twitter').show();
-				console.log($rootScope.twitter_opened);
-				if ($rootScope.twitter_opened) {
-					if ($rootScope.menu_opened && window.innerWidth < min_width_both) {
-						$scope.toggleTwitter();
-					} else {
-						$('#cont_twitter').show();
-					}
-				} else {
-					$('#cont_twitter').hide();
-				}
-			}
-		} else {
-			$('#cont_twitter').hide();
-			$('#menu_twitter').hide();
-		}*/
 		loadTwitterWidget();
 		if (window.innerWidth > min_width_both) {
 			if (window.innerWidth > min_width_twitter) {
@@ -442,7 +390,10 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			if (window.innerWidth > min_width_twitter) {
 				if (twitter_loaded) {
 					$('#menu_twitter').show();
-					if ($rootScope.twitter_opened && $rootScope.menu_opened) {
+					if ($rootScope.twitter_opened) {
+						if (!$rootScope.menu_opened) {
+							$rootScope.twitter_opened = false; // it will be toggled to true
+						}
 						$scope.toggleTwitter();
 					}
 				} else {
@@ -458,6 +409,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		resizeMap();
 	}
 
+	// load twitter widget, if not loaded yet
 	function loadTwitterWidget() {
 		if (!twitter_loaded) {
 			try {
