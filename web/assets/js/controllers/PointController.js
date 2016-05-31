@@ -1,4 +1,4 @@
-SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '$timeout', '$translate', 'PointsService', 'RatingFactory', 'ChartFactory', 'paramsCnst', function($scope, $routeParams, $location, $timeout, $translate, PointsService, RatingFactory, ChartFactory, paramsCnst) {
+SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '$timeout', '$http', '$translate', 'PointsService', 'RatingFactory', 'ChartFactory', 'paramsCnst', function($scope, $routeParams, $location, $timeout, $http, $translate, PointsService, RatingFactory, ChartFactory, paramsCnst) {
 
 	/* Variables */
 
@@ -83,7 +83,6 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 	};
 
 	$scope.feedbackTweet = function(event, point_id, tweet_id, feedback_value) {
-		//TODO: insert in table the feedback: twitter.tweet_to_ip_feedback
 		var target = $(event.target);
 		if (!target.is('button')) {
 			target = target.parent();
@@ -95,6 +94,15 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 			target.addClass('btn-danger');
 		}
 		$('#t' + tweet_id + ' .btn').prop('disabled', true);
+		$http.post('/feedback/add',{
+			ip: point_id,
+			tweet: tweet_id,
+			value: feedback_value
+		}).then(function(response) {
+			console.log('Feedback');
+		}, function(error) {
+			console.log('Already sent');
+		});
 		$translate('thank_you_feedback').then(function(translation) {
 			$('#t' + tweet_id + ' .feedback_label').text(translation);
 		});

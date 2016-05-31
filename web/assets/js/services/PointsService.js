@@ -59,7 +59,7 @@ SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q
 		return defer.promise;
 	};
 
-	// get a tweets of a point using its id
+	// get tweets of a point using its id
 	this.getTweetsOfPoint = function(id) {
 		var defer = $q.defer();
 		if (!_tweets[id]) {
