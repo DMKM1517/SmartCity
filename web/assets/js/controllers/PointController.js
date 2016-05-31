@@ -186,6 +186,8 @@ SmartApp.controller('PointController', ['$scope', '$routeParams', '$location', '
 					}
 					if (weights > 0) {
 						data[i] = Math.round((total / weights) * 100) / 100;
+					} else {
+						data[i] = null;
 					}
 					data_twitter.push(sources_data[i].twitter_rating);
 					data_fs.push(sources_data[i].foursquare_rating);

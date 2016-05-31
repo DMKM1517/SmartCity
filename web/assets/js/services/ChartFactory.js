@@ -208,33 +208,41 @@ SmartApp.factory('ChartFactory', ['$http', function($http) {
 				gamma: 0.05
 			}).then(function(response) {
 				if (response.data) {
-					var predictions = response.data;
-					_series[num_sources] = {
-						lineDashStyle: [4, 2],
-						color: '#14db05'
-					};
-					_cols.push({
-						id: 'prediction',
-						label: _label_prediction,
-						type: 'number'
-					});
-					// uncomment to see the pattern of prediction
-					// for (j = 0; j < predictions.length; j++) {
-					for (j = all_data[0].data.length - 1; j < predictions.length; j++) {
-						var prediction = parseFloat(+predictions[j].toFixed(2));
-						if (prediction <= 0) {
-							prediction = null;
-						} else if (prediction > 5) {
-							prediction = 5.0
+					var predictions = response.data,
+						valid_prediction = true;
+					for (i = predictions.length - _prediction_days; i < predictions.length; i++) {
+						if (!predictions[i]) {
+							valid_prediction = false;
+							break;
 						}
-						_rows[j].c[num_sources + 1] = {
-							"v": prediction
+					}
+					if (valid_prediction) {
+						_series[num_sources] = {
+							lineDashStyle: [4, 2],
+							color: '#14db05'
 						};
+						_cols.push({
+							id: 'prediction',
+							label: _label_prediction,
+							type: 'number'
+						});
+						// uncomment to see the pattern of prediction
+						// for (j = 0; j < predictions.length; j++) {
+						for (j = all_data[0].data.length - 1; j < predictions.length; j++) {
+							var prediction = parseFloat(+predictions[j].toFixed(2));
+							if (prediction <= 0) {
+								prediction = null;
+							} else if (prediction > 5) {
+								prediction = 5.0
+							}
+							_rows[j].c[num_sources + 1] = {
+								"v": prediction
+							};
+						}
 					}
 				}
 			}, function(error) {
 				console.log('Failed to forecast');
-				console.log(error);
 			});
 			return {
 				"type": _type,

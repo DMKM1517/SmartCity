@@ -263,7 +263,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	if (!$rootScope.selected_categories) {
 		$rootScope.selected_categories = {};
 	}
-	// get categories
+	// get categories and then initial points
 	PointsService.getCategories().then(function(categories) {
 		$scope.categories = categories;
 		// initially all categories are selected
@@ -272,6 +272,8 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 				$rootScope.selected_categories[$scope.categories[i].category] = true;
 			}
 		}
+		// get initial points
+		$scope.getPoints(paramsCnst.initial_zoom);
 	});
 
 	// watch for changes in location search
@@ -296,10 +298,6 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 	} else {
 		GoogleMapsFactory.moveMap('#map');
 	}
-
-	// get initial points
-	$scope.getPoints(paramsCnst.initial_zoom);
-
 
 	// wait for dom ready
 	$timeout(function() {

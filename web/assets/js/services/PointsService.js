@@ -1,4 +1,4 @@
-SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q, $timeout) {
+SmartApp.service('PointsService', ['$http', '$q', '$timeout', 'localStorageService', function($http, $q, $timeout, localStorageService) {
 	var _points = {},
 		_categories = [],
 		_tweets = [],
@@ -9,25 +9,33 @@ SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q
 
 	// get points by page with limit
 	this.getPoints = function(page, limit) {
-		var defer = $q.defer();
+		var defer = $q.defer(),
+			local_storage = angular.fromJson(localStorageService.get('points'));
 		if (_pages_loaded.indexOf(page) == -1) {
-			$http.get('/points/getPoints?page=' + (page + 1) + '&limit=' + limit).success(function(data) {
-				if (data) {
-					for (var i in data) {
-						point = data[i];
-						if (!_points[point.id]) {
-							_points[point.id] = point;
+			if (local_storage && Object.keys(local_storage).length >= limit) {
+				_points = local_storage;
+				sortPoints();
+				defer.resolve(_points);
+			} else {
+				$http.get('/points/getPoints?page=' + (page + 1) + '&limit=' + limit).success(function(data) {
+					if (data) {
+						for (var i in data) {
+							point = data[i];
+							if (!_points[point.id]) {
+								_points[point.id] = point;
+							}
 						}
+						sortPoints();
+						_pages_loaded.push(page);
+						localStorageService.set('points', angular.toJson(_points));
+						defer.resolve(_points);
+					} else {
+						defer.reject('no data');
 					}
-					sortPoints();
-					_pages_loaded.push(page);
-					defer.resolve(_points);
-				} else {
-					defer.reject('no data');
-				}
-			}).error(function(err) {
-				defer.reject(err);
-			});
+				}).error(function(err) {
+					defer.reject(err);
+				});
+			}
 		} else {
 			defer.resolve(_points);
 		}
@@ -36,20 +44,35 @@ SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q
 
 	// get a point by id
 	this.getPoint = function(id) {
-		var defer = $q.defer();
+		var defer = $q.defer(),
+			resolved = false,
+			local_storage;
 		if (!_points[id]) {
-			$http.get('/points/' + id).success(function(point) {
-				if (!_points[point.id]) {
-					_points[point.id] = point;
-					sortPoints();
+			local_storage = angular.fromJson(localStorageService.get('points'));
+			if (local_storage) {
+				if (Object.keys(_points).length === 0) {
+					_points = local_storage;
+					if (_points[id]) {
+						defer.resolve(_points[id]);
+						resolved = true;
+					}
 				}
-				if (!point.rating) {
-					point.rating = 0;
-				}
-				defer.resolve(point);
-			}).error(function(err) {
-				defer.reject(err);
-			});
+			}
+			if (!resolved) {
+				$http.get('/points/' + id).success(function(point) {
+					if (!_points[point.id]) {
+						_points[point.id] = point;
+						if (!_points[id].rating) {
+							_points[id].rating = 0;
+						}
+						localStorageService.set('points', angular.toJson(_points));
+						sortPoints();
+					}
+					defer.resolve(_points[id]);
+				}).error(function(err) {
+					defer.reject(err);
+				});
+			}
 		} else {
 			if (!_points[id].rating) {
 				_points[id].rating = 0;
@@ -233,8 +256,10 @@ SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q
 				// notify the results from the local stored points
 				defer.notify(prev_results);
 			}, 10);
+			// double apostrophes for querying in postgresql
+			query2 = query.split("'").join("''");
 			// call to the server
-			$http.get('/points/search?q=' + query + '&limit=' + max_results).success(function(data) {
+			$http.get('/points/search?q=' + query2 + '&limit=' + max_results).success(function(data) {
 				for (var i in data) {
 					point = data[i];
 					// results for display
@@ -247,6 +272,9 @@ SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q
 						_points[point.id] = point;
 						new_points.push(point);
 					}
+				}
+				if (new_points.length > 0) {
+					localStorageService.set('points', angular.toJson(_points));
 				}
 				// sort by rating including the new points
 				sortPoints();

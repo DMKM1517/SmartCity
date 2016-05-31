@@ -1,4 +1,4 @@
-var SmartApp = angular.module('SmartApp', ['ngRoute', 'ui.bootstrap', 'ui.bootstrap.tpls', 'angular-loading-bar', 'pascalprecht.translate', 'ngSanitize', 'googlechart']);
+var SmartApp = angular.module('SmartApp', ['ngRoute', 'ui.bootstrap', 'ui.bootstrap.tpls', 'angular-loading-bar', 'pascalprecht.translate', 'ngSanitize', 'googlechart', 'LocalStorageModule']);
 
 
 /* Config */
@@ -53,6 +53,11 @@ SmartApp.config(['$translateProvider', 'paramsCnst', function($translateProvider
 		.preferredLanguage(preferred_language.substring(0, 2))
 		.registerAvailableLanguageKeys(paramsCnst.languages, availables)
 		.fallbackLanguage('en');
+}]);
+
+// local storage
+SmartApp.config(['localStorageServiceProvider', function(localStorageServiceProvider) {
+	localStorageServiceProvider.setPrefix('LyonEye');
 }]);
 
 /* --Config-- */
