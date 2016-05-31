@@ -1,16 +1,16 @@
-SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
+SmartApp.service('PointsService', ['$http', '$q', '$timeout', function($http, $q, $timeout) {
 	var _points = {},
 		_categories = [],
 		_tweets = [],
-		keys_sorted = [],
-		pages_loaded = [],
-		history = {},
-		all_history = {};
+		_keys_sorted = [],
+		_pages_loaded = [],
+		_history = {},
+		_all_history = {};
 
 	// get points by page with limit
 	this.getPoints = function(page, limit) {
 		var defer = $q.defer();
-		if (pages_loaded.indexOf(page) == -1) {
+		if (_pages_loaded.indexOf(page) == -1) {
 			$http.get('/points/getPoints?page=' + (page + 1) + '&limit=' + limit).success(function(data) {
 				if (data) {
 					for (var i in data) {
@@ -20,7 +20,7 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 						}
 					}
 					sortPoints();
-					pages_loaded.push(page);
+					_pages_loaded.push(page);
 					defer.resolve(_points);
 				} else {
 					defer.reject('no data');
@@ -133,45 +133,46 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 	this.getHistory = function(id, source) {
 		var defer = $q.defer(),
 			url = '/ratings/getHistory?source=' + source + '&days=35&ip_id=' + id;
-		if (!history[id]) {
+		if (!_history[id]) {
 			$http.get(url).success(function(data) {
-				history = {};
-				history[id] = {};
-				history[id][source] = data;
-				defer.resolve(history[id][source]);
+				_history = {};
+				_history[id] = {};
+				_history[id][source] = data;
+				defer.resolve(_history[id][source]);
 			}).error(function(err) {
 				defer.reject(err);
 			});
-		} else if (!history[id][source]) {
+		} else if (!_history[id][source]) {
 			$http.get(url).success(function(data) {
-				history[id][source] = data;
-				defer.resolve(history[id][source]);
+				_history[id][source] = data;
+				defer.resolve(_history[id][source]);
 			}).error(function(err) {
 				defer.reject(err);
 			});
 		} else {
-			defer.resolve(history[id][source]);
+			defer.resolve(_history[id][source]);
 		}
 		return defer.promise;
 	};
 
-
+	// get history of all sources
 	this.getAllHistory = function(id, days) {
 		var defer = $q.defer(),
 			url = '/ratings/getAllHistory?ip_id=' + id + '&days=' + days;
-		if (!all_history[id]) {
+		if (!_all_history[id]) {
 			$http.get(url).success(function(data) {
-				all_history[id] = data;
-				defer.resolve(all_history[id]);
+				_all_history[id] = data;
+				defer.resolve(_all_history[id]);
 			}).error(function(err) {
 				defer.reject(err);
 			});
 		} else {
-			defer.resolve(all_history[id]);
+			defer.resolve(_all_history[id]);
 		}
 		return defer.promise;
 	};
 
+	// search in the local stored points or in the server 
 	this.search = function(query, local) {
 		var defer = $q.defer(),
 			results = [],
@@ -181,14 +182,19 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 			index,
 			start,
 			result;
+		defer.promise.abort = function() {
+			defer.resolve();
+		};
 		query = removeDiacritics(query.trim().toLowerCase());
 		if (local) {
-			for (var i = 0; i < keys_sorted.length && count <= 10; i++) {
-				point_name = _points[keys_sorted[i]].name;
+			// search local stored points
+			for (var i = 0; i < _keys_sorted.length && count < 10; i++) {
+				point_name = _points[_keys_sorted[i]].name;
 				index = removeDiacritics(point_name.toLowerCase()).indexOf(query);
-				if (index != -1) {
+				if (index != -1) { // result found
 					count++;
 					result = point_name;
+					// if the name is too long, get the part that contains the query
 					if (point_name.length > max_length) {
 						result = '';
 						start = Math.max(0, index - Math.round((max_length - query.length) / 2));
@@ -200,22 +206,49 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 							result += '...';
 						}
 					}
-					results.push({ label: result, name: point_name });
+					results.push({
+						label: result,
+						name: point_name
+					});
 				}
 			}
 			defer.resolve(results);
 		} else {
+			// search in server
 			var resp = {},
-				new_points = [];
-			$http.get('/points/search?q=' + query).success(function(data) {
+				prev_results = [],
+				new_points = [],
+				count = 0,
+				max_results = 30;
+			// timeout to be able to notify the prev results
+			$timeout(function() {
+				for (var i = 0; i < _keys_sorted.length && count < max_results; i++) {
+					point_name = _points[_keys_sorted[i]].name;
+					index = removeDiacritics(point_name.toLowerCase()).indexOf(query);
+					if (index != -1) {
+						count++;
+						prev_results.push(_points[_keys_sorted[i]]);
+					}
+				}
+				// notify the results from the local stored points
+				defer.notify(prev_results);
+			}, 10);
+			// call to the server
+			$http.get('/points/search?q=' + query + '&limit=' + max_results).success(function(data) {
 				for (var i in data) {
 					point = data[i];
-					results.push({ id: point.id, name: point.name });
+					// results for display
+					results.push({
+						id: point.id,
+						name: point.name
+					});
+					// store locally new points found
 					if (!_points[point.id]) {
 						_points[point.id] = point;
 						new_points.push(point);
 					}
 				}
+				// sort by rating including the new points
 				sortPoints();
 				resp.results = results;
 				resp.new_points = new_points;
@@ -225,8 +258,9 @@ SmartApp.service('PointsService', ['$http', '$q', function($http, $q) {
 		return defer.promise;
 	};
 
+	// sort points by rating
 	function sortPoints() {
-		keys_sorted = Object.keys(_points).sort(function(x, y) {
+		_keys_sorted = Object.keys(_points).sort(function(x, y) {
 			return _points[x].rating < _points[y].rating ? 1 : -1;
 		});
 	}

@@ -50,7 +50,7 @@ module.exports = {
 	},
 	search: function(q, limit, next) {
 		"use strict";
-		var query = `
+		let query = `
 			SELECT
 				id,
 		    name,
@@ -69,7 +69,8 @@ module.exports = {
 		    last_update_date as update_date,
 		    commune
 			FROM ip.v_interest_points_agregated
-			WHERE lower(unaccent(ip.v_interest_points_agregated.name)) like '%${q}%'
+			WHERE 
+				lower(unaccent(ip.v_interest_points_agregated.name)) like '%${q}%'
 			ORDER BY average_rating DESC NULLS LAST
 			LIMIT ${limit};
 		`;

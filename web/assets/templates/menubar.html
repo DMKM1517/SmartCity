@@ -48,8 +48,10 @@
 		<i class="glyphicon glyphicon-search"></i> {{ 'press_enter_to_search' | translate }}
 	</div>
 	<div id="results">
-		<span ng-show="searching">{{ 'searching' | translate }}</span>
-		<span ng-show="!searching && got_results">{{ num_results }} {{ 'results_for' | translate }}: "{{ searched }}"</span>
+		<span ng-show="searching">{{ 'searching_more' | translate }}</span>
+		<div ng-show="!searching && got_results">
+			<span>{{ num_results }} {{ 'results_for' | translate }}: "{{ searched }}"</span>
+		</div>
 		<br>
 		<span ng-show="got_results && num_results == 0" style="font-size:small">{{ 'try_another_query_or_categories' | translate }}</span>
 		<div id="results_table" class="table-responsive">
@@ -61,7 +63,11 @@
 		</div>
 	</div>
 	<hr>
-	<h2>{{ 'show_me' | translate }}</h2>
+	<h2>{{ 'show_me' | translate }}
+		<span class="pull-right pointer" ng-click="fitMarkers()">
+			<i class="material-icons">&#xE56B;</i>
+		</span>
+	</h2>
 	<div class="checkbox">
 		<label>
 			<input type="checkbox" ng-model="show.only_top" ng-click="filter(true)"> {{ 'cool_stuff' | translate }}

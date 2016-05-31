@@ -1,4 +1,4 @@
-SmartApp.factory('ChartFactory', function($http) {
+SmartApp.factory('ChartFactory', ['$http', function($http) {
 	return {
 		newChartDateProperty: function(data, property, options) {
 			var _type = options.type || 'LineChart',
@@ -204,7 +204,7 @@ SmartApp.factory('ChartFactory', function($http) {
 				period: 7,
 				future: 7,
 				alpha: 0.3,
-				beta: 0.2,
+				beta: 0.1,
 				gamma: 0.05
 			}).then(function(response) {
 				if (response.data) {
@@ -218,6 +218,7 @@ SmartApp.factory('ChartFactory', function($http) {
 						label: _label_prediction,
 						type: 'number'
 					});
+					// uncomment to see the pattern of prediction
 					// for (j = 0; j < predictions.length; j++) {
 					for (j = all_data[0].data.length - 1; j < predictions.length; j++) {
 						var prediction = parseFloat(+predictions[j].toFixed(2));
@@ -280,4 +281,4 @@ SmartApp.factory('ChartFactory', function($http) {
 		}
 		return [min, max];
 	}
-});
+}]);

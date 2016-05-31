@@ -7,7 +7,8 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		twitter_loaded = false, // if twitter widget is already loaded
 		min_width_menu = 700, // min width to open the menu at initialization
 		min_width_twitter = 800, // min width to open twitter
-		min_width_both = 1080; // min width to open twitter and menu at the same time
+		min_width_both = 1080, // min width to open twitter and menu at the same time
+		searching_promise;
 	$scope.loading = true; // show loading animation
 	$scope.show_filter = true; // show the menu
 	$scope.languages = paramsCnst.languages; // available languages
@@ -84,8 +85,12 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		});
 		var offset_width_menu = $('#menu').outerWidth(true),
 			sign = $rootScope.menu_opened ? '+=' : '-=';
-		$('#menu_twitter').animate({ right: sign + offset_width_menu + 'px' }, 350);
-		$('#cont_twitter').animate({ right: sign + offset_width_menu + 'px' }, 350);
+		$('#menu_twitter').animate({
+			right: sign + offset_width_menu + 'px'
+		}, 350);
+		$('#cont_twitter').animate({
+			right: sign + offset_width_menu + 'px'
+		}, 350);
 		if ($rootScope.menu_opened && window.innerWidth < min_width_both && $rootScope.twitter_opened) {
 			$scope.toggleTwitter();
 		}
@@ -125,6 +130,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}
 			$rootScope.num_results = count;
 		} else {
+			$rootScope.num_results = 0;
 			filtered_ids = PointsService.filter($rootScope.selected_categories, $rootScope.show.only_top);
 		}
 		GoogleMapsFactory.filterMarkers(filtered_ids);
@@ -164,7 +170,7 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$scope.search($scope.search_query);
 	};
 
-	// when if pressed enter, search
+	// when pressed enter, search
 	$scope.typing = function(event) {
 		if (event.which === 13) {
 			$('#search_input').blur();
@@ -174,27 +180,43 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// search from server
 	$scope.search = function(query) {
+		if ($scope.searching) {
+			searching_promise.abort();
+		}
 		$scope.searching = true;
 		$rootScope.got_results = false;
 		$scope.no_results = false;
 		$scope.loading_results = false;
 		$rootScope.results = [];
 		if (query.length > 0) {
-			PointsService.search(query, false).then(function(resp) {
-				GoogleMapsFactory.closeInfowindow('marker');
-				var results = resp.results;
-				for (var i in resp.new_points) {
-					createMarker(resp.new_points[i]);
+			var prev = false;
+			searching_promise = PointsService.search(query, false);
+			searching_promise.then(function(resp) {
+				if (resp) {
+					GoogleMapsFactory.closeInfowindow('marker');
+					var results = resp.results;
+					for (var i in resp.new_points) {
+						createMarker(resp.new_points[i]);
+					}
+					if (query.length > 15) {
+						query = query.substr(0, 15) + '...';
+					}
+					$rootScope.searched = query;
+					$rootScope.results = results;
+					$scope.filter();
+					$scope.searching = false;
+					$rootScope.got_results = true;
+					if (!prev && $rootScope.num_results > 0) {
+						GoogleMapsFactory.fitMapToMarkers();
+					}
 				}
-				if (query.length > 15) {
-					query = query.substr(0, 15) + '...';
-				}
-				$rootScope.searched = query;
-				$rootScope.results = results;
+			}, function(error) {
+				console.log(error);
+			}, function(update) {
+				$rootScope.results = update;
 				$scope.filter();
-				$scope.searching = false;
-				$rootScope.got_results = true;
 				if ($rootScope.num_results > 0) {
+					prev = true;
 					GoogleMapsFactory.fitMapToMarkers();
 				}
 			});
@@ -203,6 +225,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// remove query and results
 	$scope.removeSearch = function() {
+		if ($scope.searching) {
+			searching_promise.abort();
+		}
 		$scope.no_results = false;
 		$scope.search_query = '';
 		$scope.searching = false;
@@ -210,6 +235,11 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 		$rootScope.results = [];
 		$scope.filter();
 	};
+	
+	// fit map to markers
+	$scope.fitMarkers = function() {
+		GoogleMapsFactory.fitMapToMarkers();
+	}
 
 	/* --Functions-- */
 
@@ -224,7 +254,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 
 	// if not set, show all
 	if (typeof $rootScope.show === 'undefined') {
-		$rootScope.show = { only_top: false };
+		$rootScope.show = {
+			only_top: false
+		};
 	}
 
 	// selected categories
@@ -317,7 +349,9 @@ SmartApp.controller('HomeController', ['$scope', '$rootScope', '$location', '$co
 			}).reduce(function(x, y) {
 				return x + y;
 			}) / count;
-			$translate(['points_here', 'avg_rating'], { num: count }).then(function(translations) {
+			$translate(['points_here', 'avg_rating'], {
+				num: count
+			}).then(function(translations) {
 				var content = '<div>' + translations.points_here + '. ' + translations.avg_rating + ': ' + avg_rating.toFixed(1) + '</div>';
 				GoogleMapsFactory.openInfowindow('cluster', content, cluster.getCenter());
 			});

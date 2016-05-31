@@ -81,7 +81,7 @@ SmartApp.factory('GoogleMapsFactory', ['colorsCnst', 'colorsTextCnst', 'paramsCn
 			return _map.getZoom();
 		},
 		setZoom: function(zoom) {
-			if (Number.isInteger(zoom)) {
+			if (isInt(zoom) && zoom > 0) {
 				_map.setZoom(zoom);
 			} else if (zoom.substr(0, 1) == '+' || zoom.substr(0, 1) == '-') {
 				_map.setZoom(_map.getZoom() + parseInt(zoom));
@@ -89,7 +89,7 @@ SmartApp.factory('GoogleMapsFactory', ['colorsCnst', 'colorsTextCnst', 'paramsCn
 		},
 		openInfowindow: function(infowindow, content, position) {
 			_infowindows[infowindow].setContent(content);
-			if (Number.isInteger(position)) {
+			if (isInt(position)) {
 				_map.panTo(_markers[position].getPosition());
 				if (_markers[position].getMap() === null) {
 					_map.setZoom(paramsCnst.initial_zoom);
@@ -163,4 +163,13 @@ SmartApp.factory('GoogleMapsFactory', ['colorsCnst', 'colorsTextCnst', 'paramsCn
 	};
 
 	return _factory;
+
+	function isInt(value) {
+		var x;
+		if (isNaN(value)) {
+			return false;
+		}
+		x = parseFloat(value);
+		return (x | 0) === x;
+	}
 }]);
