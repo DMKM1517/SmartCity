@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import sys
 
+
+inputStringArg1 = sys.argv[1]
+inputStringArg2 = sys.argv[2]
+
 def processTweet(tweet):
     import re
     tweet = tweet.lower()
@@ -24,4 +28,13 @@ def SmartModel(text):
     predict = clf.predict(test_vectors)
     return predict
 
-print SmartModel(sys.argv[1])[0]
+def Word2Vec(text):
+    from gensim.models.word2vec import Word2Vec
+    model = Word2Vec.load('tweetW2V')
+    return model.most_similar(text)
+
+if inputStringArg1 == 'senti':
+    print SmartModel(inputStringArg2)[0]
+if inputStringArg1 == 'word2vec':
+    print Word2Vec(inputStringArg2)
+#print SmartModel(inputString)[0]
