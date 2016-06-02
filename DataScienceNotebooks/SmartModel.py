@@ -29,15 +29,12 @@ def SmartModel(text):
 
 def Word2Vec(text):
     from gensim.models.word2vec import Word2Vec
-    import numpy as np
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tweetW2V')
     model = Word2Vec.load(path)
     most_similar = model.most_similar(text)
     return most_similar
-    # return repr(np.reshape(most_similar, (len(most_similar), len(most_similar[0]))))
 
 if inputStringArg1 == 'senti':
     print SmartModel(inputStringArg2)[0]
 if inputStringArg1 == 'word2vec':
     print Word2Vec(inputStringArg2)
-#print SmartModel(inputString)[0]
