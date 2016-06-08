@@ -1,6 +1,6 @@
-# Relate Tweets to Interest Points
+# Connecting Tweets to Interest Points
 
-In order to relate Tweets with each Interest Point a the script `TweetsToIP.R` is excecuted in the following cronjob: [3_ConnectTweetsWithIP.sh](https://github.com/DMKM1517/SmartCity/blob/master/SmartServerScripts/3_ConnectTweetsWithIP.sh)
+In order to connect Tweets with each Interest Point a the script `TweetsToIP.R` is excecuted in the following cronjob: [3_ConnectTweetsWithIP.sh](https://github.com/DMKM1517/SmartCity/blob/master/SmartServerScripts/3_ConnectTweetsWithIP.sh)
 
 ## Methodology
 The objective is to compare the text of each tweet with the keywords assign to each Interest Point in order to assign tweets to their respective Interest Point.
