@@ -86,7 +86,7 @@ con <- dbConnect(
 # ########## ######### CONNECTION TO DB ###############
 
 ############    KEYWORDS   #################
-#query to get tweets
+#query to get Interest Points
 query_kw <- "
   select 
     t.id::varchar(100), t.name 
