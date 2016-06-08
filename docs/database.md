@@ -44,7 +44,7 @@ Install the extension Unaccent (used for searching):
  - `sudo su - postgres`
  - `psql -d smart`
  - `CREATE EXTENSION unaccent;`
- - `SELECT unaccent('Hôtel');`
+ - `SELECT unaccent('Hï¿½tel');`
 
 
 ### Run the Database Creation Script
@@ -108,4 +108,4 @@ This schema is used to store the information of the data warehouse of the applic
 This schema contains the tables used specifically by the web interface of the application.  The following tables are the most relevant:
 
  - `web.translation_keys`:  Contains the translation keys to allow the application function in multi-language.
- - - `web.translations`:  Contains the translations of the different elements of the user interface to the languages supported by the application.
+ - `web.translations`:  Contains the translations of the different elements of the user interface to the languages supported by the application.
