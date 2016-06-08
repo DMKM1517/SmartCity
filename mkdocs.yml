@@ -3,7 +3,17 @@ repo_url: https://github.com/DMKM1517/SmartCity
 site_author: DMKM1517
 pages:
 - Home: index.md
-- 'Web User Interface': ui.md
-- 'Alchemy API': alch.md
+- 'Database Schema': database.md
+- 'Data Warehouse ETL': dwh_etl.md
+- 'OLAP': olap.md
+- 'Alchmeny API': alch.md
 - 'Data Pipeline': pipeline.md
+- 'Lexicon-based Bag of Words Sentiment Analysis': BOW.md
+- 'Tweet to IP Connection': tweetToIP.md
+- 'Retreival From Sources - ELT': sources_elt.md
+- 'Automated Information Process': automatic_process.md
+- 'Web User Interface': ui.md
+
 theme: readthedocs
+
+

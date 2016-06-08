@@ -18,7 +18,8 @@ Below you can find the technichal documentation for the different modules below:
  - [Tweet to IP Connection](tweetToIP.md)
 
 ### Application
-- [Automated Information Process](automatic_process.md)
+ - [Retreival From Sources - ELT](sources_elt.md)
+ - [Automated Information Process](automatic_process.md)
 
 ### Web Application
  - [Web User Interface](ui.md)
