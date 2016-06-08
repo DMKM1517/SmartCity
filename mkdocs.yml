@@ -4,4 +4,6 @@ site_author: DMKM1517
 pages:
 - Home: index.md
 - 'Web User Interface': ui.md
+- 'Alchemy API': alch.md
+- 'Data Modelling': model.md
 theme: readthedocs
