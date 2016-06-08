@@ -1,9 +1,9 @@
 # Data Pipeline
 
 The data pipeline consists of three steps
-1. Reading raw data from database
-2. Preprocessing raw data
-3. Scoring
+1. Reading raw data from database  
+2. Preprocessing raw data  
+3. Scoring  
 
 ### Data Pipeline
 `ScoreData.py` is the master script  which scores all the tweets in the `twitter.tweets` table. Top 700 tweets are read based ontheir recent timestamp, followed by pre-procssing steps. The pickled model is loaded from disk to score the pre-processed data. 
