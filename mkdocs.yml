@@ -1,0 +1,5 @@
+site_name: LyonEye
+pages:
+- Home: index.md
+- UI: ui.md
+theme: readthedocs
