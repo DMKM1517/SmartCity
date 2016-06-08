@@ -1,5 +1,7 @@
 site_name: LyonEye
+repo_url: https://github.com/DMKM1517/SmartCity
+site_author: DMKM1517
 pages:
 - Home: index.md
-- UI: ui.md
+- 'Web User Interface': ui.md
 theme: readthedocs
