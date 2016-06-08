@@ -18,6 +18,7 @@ print("###################")
 timeNow = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 print(timeNow)
 
+#with open('/Users/krishna/MOOC/smart-city/login.json') as data_file:
 with open('/home/dmkm/SmartCity/login.json') as data_file:
     db = json.load(data_file)
 
@@ -48,8 +49,8 @@ def processTweet(tweet):
 
 
 
-clf = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/modelrfsvm.pkl') 
-vectorizer = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/tfidf1500.pkl') 
+clf = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/modelsvm07June.pkl') 
+vectorizer = joblib.load('/home/dmkm/SmartCity/DataScienceNotebooks/ModelObjects/tfidf07June.pkl') 
 
 
 
