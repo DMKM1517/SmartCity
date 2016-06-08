@@ -6,7 +6,7 @@ The data pipeline consists of three steps
 3. Scoring  
 
 ### Overview
-`ScoreData.py` is the master script  which scores all the tweets in the `twitter.tweets` table. Top 700 tweets are read based ontheir recent timestamp, followed by pre-procssing steps. The pickled model is loaded from disk to score the pre-processed data. 
+`ScoreData.py` is the master script  which scores all the tweets in the `twitter.tweets` table. Top 700 tweets are read based on their recent timestamp, followed by pre-procssing steps. The pickled model is loaded from disk to score the pre-processed data. 
 
 ### Machine Learning
 All notbooks and scripts related to machine learning can be found in `SmartCity/DataScienceNotebook`.  
