@@ -3,8 +3,12 @@ AlchemyAPI is a company that uses machine learning (specifically, deep learning)
 
 Register for an Alchey API key [here](http://www.alchemyapi.com/api/register.html).
 
-The folder `alchemyapi_python` is **only** present in the AWS server. Currently we can make 1500 API calls per day. 
-API keys should be updated `api_key.txt` which can be found under `alchemyapi_python` folder.
-The script in `score.py` scores all tweets by making calls to Alchemy API and stores the score into the database.
-A cron job calls `score.py` every day at `00:00` hrs which can be updated/modified by editing `crontab`.
-Logs can be found in the home folder in the file `cron.log`. 
+The folder `alchemyapi_python` is **only** present in the AWS server. Currently we can make 1500 API calls per day.
+  
+API keys should be updated `api_key.txt` which can be found under `alchemyapi_python` folder.  
+
+The script in `score.py` scores all tweets by making calls to Alchemy API and stores the score into the database.  
+
+A cron job calls `score.py` every day at `00:00` hrs which can be updated/modified by editing `crontab`.  
+
+Logs can be found in the home folder in the file `cron.log`.   
