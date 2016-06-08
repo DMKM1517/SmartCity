@@ -207,7 +207,7 @@ Install PM2
   "password" : "<password>"
 }
 ```
- - If using Redis, create a file `config/local.js` with the content:
+ - If using Redis, create a file `web/config/local.js` with the content:
 ```
 module.exports = {
   session: {
