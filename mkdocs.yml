@@ -5,5 +5,5 @@ pages:
 - Home: index.md
 - 'Web User Interface': ui.md
 - 'Alchemy API': alch.md
-- 'Data Modelling': model.md
+- 'Data Pipeline': pipeline.md
 theme: readthedocs
