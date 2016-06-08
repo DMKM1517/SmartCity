@@ -42,10 +42,3 @@ To run:
  - Start the server `sails lift`
  - Check on the browser [http://localhost:1337](http://localhost:1337)
 
-
-To test:
-
- - Client: `grunt karma`
-	 - To see the coverage open `tests/coverage/client/index.html`
- - Server: `grunt mochaTest`
-	 - To see the coverage open `tests/coverage/server.html`
