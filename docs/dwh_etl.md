@@ -1,0 +1,9 @@
+# Data Warehouse ETL
+
+Considering the asynchronous process of processing and rating tweets, along with the nature of the information we use to feed the data warehouse, an out-of-standard update process of the data warehouse is performed. This allows us to include within the metrics of the data warehouse the possible information that was processed after the previous update, which otherwise would be never taken into account. It is important to understand that with this decision it is possible that a reading of the ratings at one moment is different from a previous reading, nevertheless, and considering that this variance has no impact over the possible analysis that can be performed, we prioritize having all the possible information reflected over the data warehouse.
+
+For this a set of [Pentaho's Kettle](http://wiki.pentaho.com/display/ServerDoc2x/Kettle) jobs are used to update the data warehouse 3 times a day. This jobs are run sequentially and are described below:
+
+ - Update Interest Points Dimension: The IP dimension is updated with the new changes from the operational database. This is done with the kettle job`SmartCity\ETL_Kettle_Editables\ETL_SmartDW_1_IP.ktr`
+ - Update Locations Dimension: The Location dimension is updated with the new changes from the operational database. This is done with the kettle job`SmartCity\ETL_Kettle_Editables\ETL_SmartDW_2_Location.ktr`
+ - Update Ratings Fact table: The Ratings Fact table is updated by calculating all the measures required and taking into account the latest changes of the database. As mentioned before, not only the new information is inserted but we update the previous measures of the fact table, taking into account only a temporal window of 7 days before the current date. This is done with the kettle job`SmartCity\ETL_Kettle_Editables\ETL_SmartDW_3_FactTable.ktr`
