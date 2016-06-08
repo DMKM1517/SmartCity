@@ -1,6 +1,6 @@
 # Data Pipeline
 
-The data pipeline consists of three steps
+The data pipeline consists of three steps  
 1. Reading raw data from database  
 2. Preprocessing raw data  
 3. Scoring  
