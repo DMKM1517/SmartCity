@@ -1,7 +1,15 @@
+
+----------------------------------------------------------------------
+-- Create the Schemas for the Operational DB
+----------------------------------------------------------------------
+create schema landing;
+create schema ip;
+create schema twitter;
+
 ----------------------------------------------------------------------
 -- interest points tables
 ----------------------------------------------------------------------
--- drop table if exists landing.ip_interest_points;
+drop table if exists landing.ip_interest_points;
 CREATE TABLE landing.ip_interest_points (
 	id int4 NOT NULL,
 	"type" varchar(250),
@@ -31,7 +39,7 @@ CREATE TABLE landing.ip_interest_points (
 CREATE INDEX landing_interest_points_coordinates_lat_coordinates_long_idx ON landing.ip_interest_points (coordinates_lat,coordinates_long);
 CREATE INDEX landing_interest_points_nom_idx ON landing.ip_interest_points (name);
 
--- drop table if exists ip.interest_points_new;
+drop table if exists ip.interest_points_new;
 CREATE TABLE ip.interest_points_new (
 	id int4 NOT NULL,
 	"type" varchar(250),
@@ -69,7 +77,7 @@ CREATE INDEX interest_points_nom_idx ON ip.interest_points_new (name);
 ----------------------------------------------------------------------
 -- Foursquare table
 ----------------------------------------------------------------------
--- drop table if exists landing.ip_foursquare ;
+drop table if exists landing.ip_foursquare ;
 CREATE TABLE landing.ip_foursquare (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -99,7 +107,7 @@ CREATE INDEX foursquare_rating_idx ON ip.foursquare (rating);
 ----------------------------------------------------------------------
 -- Yelp table
 ----------------------------------------------------------------------
--- drop table if exists landing.ip_yelp;
+drop table if exists landing.ip_yelp;
 CREATE TABLE landing.ip_yelp (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -112,7 +120,7 @@ CREATE TABLE landing.ip_yelp (
 );
 CREATE INDEX yelp_pkey ON landing.ip_yelp (idd);
 
--- drop table if exists ip.yelp;
+drop table if exists ip.yelp;
 CREATE TABLE ip.yelp (
 	idd int8 NOT NULL,
 	"name" varchar(500),
@@ -131,12 +139,10 @@ CREATE INDEX yelp_latitude_longitude_idx ON ip.yelp (latitude,longitude);
 CREATE INDEX yelp_rating_idx ON ip.yelp (rating);
 
 
-
-
 ----------------------------------------------------------------------
 -- Twitter tables
 ----------------------------------------------------------------------
--- drop table if exists twitter.tweets;
+drop table if exists twitter.tweets;
 CREATE TABLE twitter.tweets (
 	idd bigint,
 	"timestamp" varchar(100),
@@ -157,22 +163,34 @@ CREATE TABLE twitter.tweets (
 CREATE INDEX ON twitter.tweets (idd);
 CREATE INDEX ON twitter.tweets (sentiment);
 CREATE INDEX ON twitter.tweets ("text");
+CREATE INDEX ON twitter.tweets (timestamp);
 
--- drop table if exists twitter.tweet_to_ip;
+drop table if exists twitter.tweet_to_ip;
 CREATE TABLE twitter.tweet_to_ip (
 	ip_id int,	
 	twitter_id bigint);
 CREATE INDEX ON twitter.tweet_to_ip (ip_id);
 CREATE INDEX ON twitter.tweet_to_ip (twitter_id);
 
--- drop table if exists twitter.processed_tweets;
+drop table if exists twitter.tweet_to_ip_feedback;
+CREATE TABLE twitter.tweet_to_ip_feedback (
+	ip_id int,	
+	twitter_id bigint,
+	feedback int,
+	timestamp timestamp,
+	session_id varchar(200));
+CREATE INDEX ON twitter.tweet_to_ip_feedback (ip_id);
+CREATE INDEX ON twitter.tweet_to_ip_feedback (twitter_id);
+
+
+drop table if exists twitter.processed_tweets;
 CREATE TABLE twitter.processed_tweets (
 	tweet_id bigint,
 	processed_date timestamp
 );
 CREATE INDEX ON twitter.processed_tweets (tweet_id);
 
--- drop table if exists twitter.keywords;
+drop table if exists twitter.keywords;
 CREATE TABLE twitter.keywords (
 	ip_id int,
 	keyword text
@@ -184,7 +202,7 @@ CREATE INDEX ON twitter.keywords (ip_id);
 -- View with twitter sentiment of each point
 ----------------------------------------------------------------------
 
--- drop view if exists twitter.ip_tweets_sentiment;
+drop view if exists twitter.ip_tweets_sentiment;
 CREATE VIEW twitter.ip_tweets_sentiment AS
 SELECT
 	tip.ip_id,
@@ -206,11 +224,44 @@ WHERE
 GROUP BY tip.ip_id
 --having avg(t.sentiment) is not null;
   
+----------------------------------------------------------------------
+-- View with the current tweets of an IP
+----------------------------------------------------------------------
+
+drop view if exists twitter.current_tweets_of_ip;
+CREATE VIEW twitter.current_tweets_of_ip AS
+SELECT
+	tip.ip_id,
+	t.idd,
+	t."timestamp"::timestamp,
+	t.usert, location, 
+	t."text", 
+	t.rt, 
+	t.lat, 
+	t.long, 
+	t.lang, 
+	t.sentiment
+FROM
+	twitter.tweet_to_ip tip
+	JOIN twitter.tweets t ON tip.twitter_id = t.idd
+	JOIN (
+		SELECT
+			tip2.ip_id,
+			max((t2."timestamp")::timestamp without time zone) AS max_timestamp
+		FROM 
+			twitter.tweets t2
+			JOIN twitter.tweet_to_ip tip2 ON tip2.twitter_id = t2.idd
+		GROUP BY tip2.ip_id
+		) lastt ON tip.ip_id = lastt.ip_id
+WHERE 
+	(t."timestamp")::timestamp > (lastt.max_timestamp - '1 day'::interval)
+order by tip.ip_id, (t."timestamp")::timestamp desc;
+
 
 ----------------------------------------------------------------------
 -- Aggregation View
 ----------------------------------------------------------------------
--- drop view if exists ip.v_interest_points_agregated;
+drop view if exists ip.v_interest_points_agregated;
 CREATE VIEW ip.v_interest_points_agregated AS
 select
 	ip.id,
@@ -271,5 +322,4 @@ from
 	left join twitter.ip_tweets_sentiment ts on ip.id = ts.ip_id
 where
 	ip.in_use is true;
-	
 	

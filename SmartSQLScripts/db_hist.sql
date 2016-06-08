@@ -1,5 +1,9 @@
+
+-- Creates the History Schema
 create schema hist;
 
+
+-- Creates the history tables
 CREATE TABLE hist.ip_foursquare (
 	hist_date timestamp,
 	hist_action_taken varchar(20),
@@ -111,22 +115,6 @@ CREATE TRIGGER log_foursquare
   EXECUTE PROCEDURE hist.log_foursquare();
   
  
-/*
-TEST
-  
-INSERT INTO ip.foursquare
-(idd, "name", checkinscount, tipcount, userscount, rating, flag, last_update_date)
-VALUES(18176, 'HELLO ITS ME', 0, 0, 0, 0, '', now());
-
-UPDATE ip.foursquare
-SET "name"='hahaha', checkinscount=0, tipcount=0, userscount=0, rating=0, flag='', last_update_date=now()
-WHERE idd=18176 and "name"='HELLO ITS ME';
-
-DELETE FROM  ip.foursquare
-WHERE idd=18176 and "name"='hahaha';
-
-*/
-
 -- CREATE FUNCTION FOR INTEREST POINTS LOGS
   
 CREATE OR REPLACE FUNCTION hist.log_interest_points()
@@ -185,23 +173,6 @@ CREATE TRIGGER log_interest_points
   EXECUTE PROCEDURE hist.log_interest_points();
   
   
-  
-/*
-
-TEST
-
-INSERT INTO ip.interest_points
-(id, "type", type_detail, "name", address, postal_code, commune, telephone, fax, telephone_fax, email, website, facebook, ranking, open_hours, price, price_min, price_max, producer, coordinates_lat, coordinates_long, source_create_date, source_last_update, sentiment, in_use, flag, last_update_date)
-VALUES(34324, 'Kat_was_here_again', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 0, 0, '', '', 0, false, '', now());
-
-UPDATE ip.interest_points
-SET "name"='Capybara Eater!!1'
-WHERE id=34324;
-
-DELETE FROM  ip.interest_points
-WHERE id=34324;
-
-**/
 
 -- CREATE FUNCTION FOR YELP LOGS
   
@@ -248,40 +219,4 @@ CREATE TRIGGER log_yelp
   FOR EACH ROW
   EXECUTE PROCEDURE hist.log_yelp();
   
-
-/*
-TEST
-
-INSERT INTO ip.yelp
-(idd, "name", rating, latitude, longitude, image_url, phone, review_count, flag, last_update_date)
-VALUES(18176, 'pumpumpum', 0, 0, 0, '', '', 0, '', now());
-
-UPDATE ip.yelp
-SET "name"='lalalal', rating=0, latitude=0, longitude=0, image_url='', phone='', review_count=0, flag='', last_update_date=now()
-WHERE idd=18176 and "name"='pumpumpum';
-
-DELETE FROM  ip.yelp
-WHERE idd=18176 and "name"='lalalal';*/
-  
---insert into hist.ip_foursquare  
---select
---   now() as hist_date,
---  'new' as hist_action_taken,
---  *
---from ip.foursquare;
---
---insert into hist.ip_interest_points
---select
---   now() as hist_date,
---  'new' as hist_action_taken,
---  *
---from ip.interest_points;
---
---insert into hist.ip_yelp
---select
---   now() as hist_date,
---  'new' as hist_action_taken,
---  *
---from ip.yelp;
-
 
