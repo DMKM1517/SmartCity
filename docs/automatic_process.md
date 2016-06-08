@@ -1,4 +1,4 @@
-# Automatic Information Process
+# Automated Information Process
 
 In order to automate the processes of the different modules, a set of scripts have been automated on the server to run at specific moments. These scripts and how are they automated will be described bellow.
 
