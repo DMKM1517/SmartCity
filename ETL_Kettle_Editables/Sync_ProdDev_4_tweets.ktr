@@ -82,7 +82,7 @@
     <database>smart</database>
     <port>5432</port>
     <username>dmkm</username>
-    <password>Encrypted 2be98afc86aa7f2e4af14a57d8fc0fc8e</password>
+    <password>Encrypted 2befcc2a307f88581aa0bab63d393bdce</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>

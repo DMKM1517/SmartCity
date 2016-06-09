@@ -82,7 +82,7 @@
     <database>smart</database>
     <port>5432</port>
     <username>dmkm</username>
-    <password>Encrypted 2be98afc86aa7f2e4af14a57d8fc0fc8e</password>
+    <password>Encrypted 2befcc2a307f88581aa0bab63d393bdce</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -126,7 +126,65 @@
   <hop> <from>Merge twitter.tweet_to_ip</from><to>Sync into DEV twitter.tweets</to><enabled>Y</enabled> </hop>
   <hop> <from>DEV twitter.tweet_to_ip</from><to>Merge twitter.tweet_to_ip</to><enabled>Y</enabled> </hop>
   <hop> <from>PROD twitter.tweet_to_ip</from><to>Merge twitter.tweet_to_ip</to><enabled>Y</enabled> </hop>
+  <hop> <from>DEV tweet_to_ip_feedback</from><to>Merge tweet_to_ip_feedback</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge tweet_to_ip_feedback</from><to>Sync into DEV tweet_to_ip_feedback</to><enabled>Y</enabled> </hop>
+  <hop> <from>PROD tweet_to_ip_feedback</from><to>Merge tweet_to_ip_feedback</to><enabled>Y</enabled> </hop>
+  <hop> <from>DEV processed_tweets</from><to>Merge twitter.processed_tweets</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge twitter.processed_tweets</from><to>Sync into DEV twitter.processed_tweets</to><enabled>Y</enabled> </hop>
+  <hop> <from>PROD processed_tweets</from><to>Merge twitter.processed_tweets</to><enabled>Y</enabled> </hop>
   </order>
+  <step>
+    <name>DEV processed_tweets</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <sql>SELECT&#xd;&#xa;  tweet_id&#xd;&#xa;, processed_date&#xd;&#xa;FROM twitter.processed_tweets&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>448</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>DEV tweet_to_ip_feedback</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <sql>SELECT&#xd;&#xa;  ip_id&#xd;&#xa;, twitter_id&#xd;&#xa;, feedback&#xd;&#xa;, &#x22;timestamp&#x22;&#xd;&#xa;, session_id&#xd;&#xa;FROM twitter.tweet_to_ip_feedback&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>272</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
   <step>
     <name>DEV twitter.tweet_to_ip</name>
     <type>TableInput</type>
@@ -147,8 +205,74 @@
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>64</xloc>
-      <yloc>80</yloc>
+      <xloc>96</xloc>
+      <yloc>112</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge tweet_to_ip_feedback</name>
+    <type>MergeRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <keys>
+      <key>ip_id</key>
+      <key>twitter_id</key>
+    </keys>
+    <values>
+      <value>ip_id</value>
+      <value>twitter_id</value>
+      <value>feedback</value>
+      <value>timestamp</value>
+      <value>session_id</value>
+    </values>
+<flag_field>sync_flag</flag_field>
+<reference>DEV tweet_to_ip_feedback</reference>
+<compare>PROD tweet_to_ip_feedback</compare>
+    <compare>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>272</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge twitter.processed_tweets</name>
+    <type>MergeRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <keys>
+      <key>tweet_id</key>
+    </keys>
+    <values>
+      <value>tweet_id</value>
+      <value>processed_date</value>
+    </values>
+<flag_field>sync_flag</flag_field>
+<reference>DEV processed_tweets</reference>
+<compare>PROD processed_tweets</compare>
+    <compare>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>272</xloc>
+      <yloc>416</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -179,8 +303,60 @@
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>240</xloc>
-      <yloc>48</yloc>
+      <xloc>272</xloc>
+      <yloc>80</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>PROD processed_tweets</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartAWD</connection>
+    <sql>SELECT&#xd;&#xa;  tweet_id&#xd;&#xa;, processed_date&#xd;&#xa;FROM twitter.processed_tweets&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>384</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>PROD tweet_to_ip_feedback</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartAWD</connection>
+    <sql>SELECT&#xd;&#xa;  ip_id&#xd;&#xa;, twitter_id&#xd;&#xa;, feedback&#xd;&#xa;, &#x22;timestamp&#x22;&#xd;&#xa;, session_id&#xd;&#xa;FROM twitter.tweet_to_ip_feedback&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>208</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -205,8 +381,127 @@
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>64</xloc>
-      <yloc>16</yloc>
+      <xloc>96</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sync into DEV tweet_to_ip_feedback</name>
+    <type>SynchronizeAfterMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <commit>100</commit>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <use_batch>N</use_batch>
+    <perform_lookup>N</perform_lookup>
+    <operation_order_field>sync_flag</operation_order_field>
+    <order_insert>new</order_insert>
+    <order_update>changed</order_update>
+    <order_delete>deleted</order_delete>
+    <lookup>
+      <schema>twitter</schema>
+      <table>tweet_to_ip_feedback</table>
+      <key>
+        <name>ip_id</name>
+        <field>ip_id</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <key>
+        <name>twitter_id</name>
+        <field>twitter_id</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <value>
+        <name>ip_id</name>
+        <rename>ip_id</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>twitter_id</name>
+        <rename>twitter_id</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>feedback</name>
+        <rename>feedback</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>timestamp</name>
+        <rename>timestamp</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>session_id</name>
+        <rename>session_id</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>448</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sync into DEV twitter.processed_tweets</name>
+    <type>SynchronizeAfterMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <commit>100</commit>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <use_batch>N</use_batch>
+    <perform_lookup>N</perform_lookup>
+    <operation_order_field>sync_flag</operation_order_field>
+    <order_insert>new</order_insert>
+    <order_update>changed</order_update>
+    <order_delete>deleted</order_delete>
+    <lookup>
+      <schema>twitter</schema>
+      <table>processed_tweets</table>
+      <key>
+        <name>tweet_id</name>
+        <field>tweet_id</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <value>
+        <name>tweet_id</name>
+        <rename>tweet_id</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>processed_date</name>
+        <rename>processed_date</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>448</xloc>
+      <yloc>416</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
@@ -260,8 +555,8 @@
     </lookup>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>416</xloc>
-      <yloc>48</yloc>
+      <xloc>448</xloc>
+      <yloc>80</yloc>
       <draw>Y</draw>
       </GUI>
     </step>

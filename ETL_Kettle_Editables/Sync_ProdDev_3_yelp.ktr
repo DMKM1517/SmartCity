@@ -82,7 +82,7 @@
     <database>smart</database>
     <port>5432</port>
     <username>dmkm</username>
-    <password>Encrypted 2be98afc86aa7f2e4af14a57d8fc0fc8e</password>
+    <password>Encrypted 2befcc2a307f88581aa0bab63d393bdce</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
@@ -206,7 +206,7 @@
     <connection>SmartAWD</connection>
     <sql>SELECT&#xd;&#xa;  &#x22;name&#x22;&#xd;&#xa;, rating&#xd;&#xa;, latitude&#xd;&#xa;, longitude&#xd;&#xa;, image_url&#xd;&#xa;, phone&#xd;&#xa;, review_count&#xd;&#xa;, idd&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.yelp&#xd;&#xa;ORDER BY idd</sql>
     <limit>0</limit>
-    <lookup>Sync into DEV ip.foursquare</lookup>
+    <lookup/>
     <execute_each_row>N</execute_each_row>
     <variables_active>N</variables_active>
     <lazy_conversion_active>N</lazy_conversion_active>

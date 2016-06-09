@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <transformation>
   <info>
-    <name>Sync_ProdDev_1_ip</name>
+    <name>Sync_ProdDev_4_tweets</name>
     <description/>
     <extended_description/>
     <trans_version/>
@@ -123,12 +123,15 @@
     </attributes>
   </connection>
   <order>
-  <hop> <from>DEV ip.interest_points</from><to>Merge ip.interest_points</to><enabled>Y</enabled> </hop>
-  <hop> <from>PROD ip.interest_points</from><to>Merge ip.interest_points</to><enabled>Y</enabled> </hop>
-  <hop> <from>Merge ip.interest_points</from><to>Sync into DEV ip.interest_points</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge web.translation_keys</from><to>Sync into DEV web.translation_keys</to><enabled>Y</enabled> </hop>
+  <hop> <from>DEV web.translation_keys</from><to>Merge web.translation_keys</to><enabled>Y</enabled> </hop>
+  <hop> <from>PROD web.translation_keys</from><to>Merge web.translation_keys</to><enabled>Y</enabled> </hop>
+  <hop> <from>DEV web.translations</from><to>Merge web.translation_keys 2</to><enabled>Y</enabled> </hop>
+  <hop> <from>Merge web.translation_keys 2</from><to>Sync into DEV web.translations</to><enabled>Y</enabled> </hop>
+  <hop> <from>PROD web.translations</from><to>Merge web.translation_keys 2</to><enabled>Y</enabled> </hop>
   </order>
   <step>
-    <name>DEV ip.interest_points</name>
+    <name>DEV web.translation_keys</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -139,7 +142,7 @@
            <schema_name/>
            </partitioning>
     <connection>SmartLocal</connection>
-    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, sentiment&#xd;&#xa;, in_use&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.interest_points&#xd;&#xa;ORDER BY id&#xd;&#xa;</sql>
+    <sql>SELECT&#xd;&#xa;  &#x22;key&#x22;&#xd;&#xa;, namespace&#xd;&#xa;FROM web.translation_keys&#xd;&#xa;</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -147,14 +150,14 @@
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>48</xloc>
-      <yloc>80</yloc>
+      <xloc>96</xloc>
+      <yloc>112</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Merge ip.interest_points</name>
+    <name>Merge web.translation_keys</name>
     <type>MergeRows</type>
     <description/>
     <distribute>Y</distribute>
@@ -165,52 +168,27 @@
            <schema_name/>
            </partitioning>
     <keys>
-      <key>id</key>
+      <key>key</key>
     </keys>
     <values>
-      <value>id</value>
-      <value>type</value>
-      <value>type_detail</value>
-      <value>name</value>
-      <value>address</value>
-      <value>postal_code</value>
-      <value>commune</value>
-      <value>telephone</value>
-      <value>fax</value>
-      <value>telephone_fax</value>
-      <value>email</value>
-      <value>website</value>
-      <value>facebook</value>
-      <value>ranking</value>
-      <value>open_hours</value>
-      <value>price</value>
-      <value>price_min</value>
-      <value>price_max</value>
-      <value>producer</value>
-      <value>coordinates_lat</value>
-      <value>coordinates_long</value>
-      <value>source_create_date</value>
-      <value>source_last_update</value>
-      <value>sentiment</value>
-      <value>in_use</value>
-      <value>flag</value>
-      <value>last_update_date</value>
+      <value>key</value>
+      <value>namespace</value>
     </values>
 <flag_field>sync_flag</flag_field>
-<reference>DEV ip.interest_points</reference>
-<compare>PROD ip.interest_points</compare>
+<reference>DEV web.translation_keys</reference>
+<compare>PROD web.translation_keys</compare>
     <compare>
     </compare>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>224</xloc>
-      <yloc>48</yloc>
+      <xloc>272</xloc>
+      <yloc>80</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>PROD ip.interest_points</name>
+    <name>PROD web.translation_keys</name>
     <type>TableInput</type>
     <description/>
     <distribute>Y</distribute>
@@ -221,7 +199,7 @@
            <schema_name/>
            </partitioning>
     <connection>SmartAWD</connection>
-    <sql>SELECT&#xd;&#xa;  id&#xd;&#xa;, &#x22;type&#x22;&#xd;&#xa;, type_detail&#xd;&#xa;, &#x22;name&#x22;&#xd;&#xa;, address&#xd;&#xa;, postal_code&#xd;&#xa;, commune&#xd;&#xa;, telephone&#xd;&#xa;, fax&#xd;&#xa;, telephone_fax&#xd;&#xa;, email&#xd;&#xa;, website&#xd;&#xa;, facebook&#xd;&#xa;, ranking&#xd;&#xa;, open_hours&#xd;&#xa;, price&#xd;&#xa;, price_min&#xd;&#xa;, price_max&#xd;&#xa;, producer&#xd;&#xa;, coordinates_lat&#xd;&#xa;, coordinates_long&#xd;&#xa;, source_create_date&#xd;&#xa;, source_last_update&#xd;&#xa;, sentiment&#xd;&#xa;, in_use&#xd;&#xa;, flag&#xd;&#xa;, last_update_date&#xd;&#xa;FROM ip.interest_points&#xd;&#xa;ORDER BY id&#x3b;</sql>
+    <sql>SELECT&#xd;&#xa;  &#x22;key&#x22;&#xd;&#xa;, namespace&#xd;&#xa;FROM web.translation_keys&#xd;&#xa;</sql>
     <limit>0</limit>
     <lookup/>
     <execute_each_row>N</execute_each_row>
@@ -229,14 +207,14 @@
     <lazy_conversion_active>N</lazy_conversion_active>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>48</xloc>
-      <yloc>16</yloc>
+      <xloc>96</xloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
 
   <step>
-    <name>Sync into DEV ip.interest_points</name>
+    <name>Sync into DEV web.translation_keys</name>
     <type>SynchronizeAfterMerge</type>
     <description/>
     <distribute>Y</distribute>
@@ -257,154 +235,174 @@
     <order_update>changed</order_update>
     <order_delete>deleted</order_delete>
     <lookup>
-      <schema>ip</schema>
-      <table>interest_points</table>
+      <schema>web</schema>
+      <table>translation_keys</table>
       <key>
-        <name>id</name>
-        <field>id</field>
+        <name>key</name>
+        <field>key</field>
         <condition>&#x3d;</condition>
         <name2/>
       </key>
       <value>
-        <name>id</name>
-        <rename>id</rename>
+        <name>key</name>
+        <rename>key</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>type</name>
-        <rename>type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>type_detail</name>
-        <rename>type_detail</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>name</name>
-        <rename>name</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>address</name>
-        <rename>address</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>postal_code</name>
-        <rename>postal_code</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>commune</name>
-        <rename>commune</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>telephone</name>
-        <rename>telephone</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>fax</name>
-        <rename>fax</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>telephone_fax</name>
-        <rename>telephone_fax</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>email</name>
-        <rename>email</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>website</name>
-        <rename>website</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>facebook</name>
-        <rename>facebook</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>ranking</name>
-        <rename>ranking</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>open_hours</name>
-        <rename>open_hours</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>price</name>
-        <rename>price</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>price_min</name>
-        <rename>price_min</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>price_max</name>
-        <rename>price_max</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>producer</name>
-        <rename>producer</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>coordinates_lat</name>
-        <rename>coordinates_lat</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>coordinates_long</name>
-        <rename>coordinates_long</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_create_date</name>
-        <rename>source_create_date</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_last_update</name>
-        <rename>source_last_update</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>sentiment</name>
-        <rename>sentiment</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>in_use</name>
-        <rename>in_use</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>flag</name>
-        <rename>flag</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>last_update_date</name>
-        <rename>last_update_date</rename>
+        <name>namespace</name>
+        <rename>namespace</rename>
         <update>Y</update>
       </value>
     </lookup>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>400</xloc>
-      <yloc>48</yloc>
+      <xloc>448</xloc>
+      <yloc>80</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>DEV web.translations</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <sql>SELECT&#xd;&#xa;  &#x22;language&#x22;&#xd;&#xa;, &#x22;key&#x22;&#xd;&#xa;, &#x22;translation&#x22;&#xd;&#xa;FROM web.translations&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Merge web.translation_keys 2</name>
+    <type>MergeRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <keys>
+      <key>language</key>
+      <key>key</key>
+    </keys>
+    <values>
+      <value>language</value>
+      <value>key</value>
+      <value>translation</value>
+    </values>
+<flag_field>sync_flag</flag_field>
+<reference>DEV web.translations</reference>
+<compare>PROD web.translations</compare>
+    <compare>
+    </compare>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>272</xloc>
+      <yloc>272</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>PROD web.translations</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartAWD</connection>
+    <sql>SELECT&#xd;&#xa;  &#x22;language&#x22;&#xd;&#xa;, &#x22;key&#x22;&#xd;&#xa;, &#x22;translation&#x22;&#xd;&#xa;FROM web.translations&#xd;&#xa;</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>96</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Sync into DEV web.translations</name>
+    <type>SynchronizeAfterMerge</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <connection>SmartLocal</connection>
+    <commit>100</commit>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <use_batch>N</use_batch>
+    <perform_lookup>N</perform_lookup>
+    <operation_order_field>sync_flag</operation_order_field>
+    <order_insert>new</order_insert>
+    <order_update>changed</order_update>
+    <order_delete>deleted</order_delete>
+    <lookup>
+      <schema>web</schema>
+      <table>translations</table>
+      <key>
+        <name>language</name>
+        <field>language</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <key>
+        <name>key</name>
+        <field>key</field>
+        <condition>&#x3d;</condition>
+        <name2/>
+      </key>
+      <value>
+        <name>language</name>
+        <rename>language</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>key</name>
+        <rename>key</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>translation</name>
+        <rename>translation</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>448</xloc>
+      <yloc>272</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
