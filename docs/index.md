@@ -2,9 +2,9 @@
 
 LyonEye is an application using Big Data Analytics over the Open Data of Lyon-France.
 
-You can view the application following this [link](http://www.mr3m.me/smart) and a video demo [here](https://youtu.be/pjmnTizn2vQ)
+You can view the application following this [link](http://www.mr3m.me/smart) and a video demo [here](https://youtu.be/pjmnTizn2vQ).
 
-A virtual machine containing the enviroment already configured can be found [here](https://drive.google.com/open?id=0B0E_OntLtUbZckFreHNKOG9ac2s)
+A virtual machine containing the enviroment already configured can be found [here](https://drive.google.com/open?id=0B0E_OntLtUbZckFreHNKOG9ac2s).
 
 Below you can find the technichal documentation for the different modules below:
 
