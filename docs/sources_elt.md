@@ -20,3 +20,27 @@ This script recollects the necessary information from Foursquare and then popula
 
 
 ## Twitter
+
+The Twitter data source was queried using a real time 24/7 ELT job using the [tweetpy](http://www.tweepy.org/) Python library. Credential secrets must be provided as a file called `config_secret.json` and with content: 
+
+```
+{
+  "access_token" : "<token>",
+  "access_token_secret" : "<secret>",
+  "consumer_key" : "<key>",
+  "consumer_secret" : "<secret>"
+}
+```
+The script `EC2_tweet\tweetscollect.py` runs an event listener with the following keyword filter: 
+
+```
+    stream.filter(track=['lyon','villeurbanne','bron','priest','bellecour','fourviere','gerland','lyonnais','lyoneon','venissieux'])
+```
+
+You may need to change line 72 to include more or less keywords. The script writes to the table `twitter.tweets`. The script `EC2_tweet\tweetscollect.py` is monitored by PM2, in case of exception PM2 will restart the tweet collection and also will loadbalance the action listener to maximize tweet collection. It's sufficient to add this script to PM2 using: 
+
+```
+pm2 start EC2_tweet\tweetscollect.py --name tweets
+```
+
+in the root of the repository. 
