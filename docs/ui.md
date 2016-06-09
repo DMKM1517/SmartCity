@@ -6,7 +6,7 @@ The Web User Interface is built on [NodeJS](https://nodejs.org/) using the frame
 The versions are:
 
  - NodeJS: 4.4.1
- - PostgreSQL: 9.4
+ - PostgreSQL: 9.5
  - Redis: 2.8.4
  - For the frameworks and other libraries, check the files `package.json` and `bower.json`
 
@@ -122,16 +122,16 @@ Follow any guide, for example the [official one for Ubuntu](https://www.postgres
 	  sudo apt-key add -`
 	 - `sudo apt-get update`
  - Install postgresql
-	 - `sudo apt-get install postgresql-9.4`
+	 - `sudo apt-get install postgresql-9.5`
 
 Now, make the database accesible:
 
  - Change to postgres user
 	`sudo su - postgres`
  - Change these config files using `vi` or any other editor
-	 - `vi /etc/postgresql/9.4/main/postgresql.conf`
+	 - `vi /etc/postgresql/9.5/main/postgresql.conf`
 		Change this line `listen_addresses = '*'`
-	 - `vi /etc/postgresql/9.1/main/pg_hba.conf`
+	 - `vi /etc/postgresql/9.5/main/pg_hba.conf`
 		Change this line `host all all 0.0.0.0/0 md5`
  - Reload configuration and restart
 	 - `psql`
