@@ -23,5 +23,5 @@ We have the following dashboards:
   + Bottom 10 Tweets by Commune in Lyon: Displays the Sectors of Lyon with the lowest mentions of Interest Points in tweets.
   + Sentiment by Area: Displays a map of the city of Lyon with the interest points in proportion to metions and the color according to the average sentiment
 - [Type of IP Dashboard](https://public.tableau.com/profile/saul.garcia#!/vizhome/InterestPoints/TypeofIPDashboard):
-  + Popular Type of Interest Points: Displays a proportion of data for each type if Interest Point.
+  + Popular Type of Interest Points: Displays a proportion of data for each type of Interest Point.
   + Sentiment by Type of Interest Point: Displays the average sentiment for the types of Interest Points.
