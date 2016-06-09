@@ -9,3 +9,4 @@
 - Documentation can be found [here](http://smartcity.readthedocs.io)
 - Tableau Dashboards are available in this [link](https://public.tableau.com/profile/saul.garcia/)
 - A video of the application demo can be found [here](https://youtu.be/pjmnTizn2vQ)
+- A virtual machine containing the enviroment already configured can be found [here](https://drive.google.com/open?id=0B0E_OntLtUbZckFreHNKOG9ac2s)
