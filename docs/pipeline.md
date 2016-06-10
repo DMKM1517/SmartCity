@@ -14,6 +14,7 @@ After training a scikit-learn model, it is desirable to have a way to persist th
 
 ### Smart Labs 
 Script for smart labs can be found in `SmartModel.py`. They contain the following products:
+
 1. Sentiment Analysis
 2. Word Embedding
 
